@@ -135,8 +135,6 @@ Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are no
 
 ### Your catalog is yours
 
-A database commissioned for a single customer is not listed to anyone else. It is ABSENT from `List` for an organization that does not license it, rather than present with an `unlicensed` standing, and the server is what decides that. So a listing is an answer about the key that asked for it: this library returns exactly what was served, never caches one listing to answer for a different key, and compiles in no catalog of its own.
-
 ## Other Libraries
 
 There are official InternetData client libraries available for many languages including PHP, Python, Go, Java, Ruby, and many popular frameworks such as Django, Rails, and Laravel. See our GitHub at https://github.com/internetdata for more.
