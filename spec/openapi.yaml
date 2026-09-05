@@ -1,0 +1,741 @@
+openapi: 3.0.3
+info:
+  title: InternetData API
+  description: |
+    The InternetData API. Please see https://docs.internetdata.io/api for more details.
+  contact:
+    name: InternetData.io Development Team
+    email: dev@internetdata.io
+    url: https://internetdata.io
+  termsOfService: https://internetdata.io/terms-of-service/
+  version: 2026.09.04
+servers:
+  - url: https://internetdata.io
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: Database
+    description: Download IP database files and fetch their checksums.
+  - name: Database v2
+    description: |
+      The current database API. Authenticate with an API key carrying the
+      `db.download` scope, as `Authorization: Bearer <key>`.
+
+      Access is granted by CONTRACT, one dataset family at a time: there is no
+      self-service purchase and no subscription behind it.
+
+      A successful download answers `302` with a time-limited URL pointing
+      straight at object storage. Follow the redirect (`curl -L`); the link
+      authorizes the START of a transfer, so a download already running is not
+      interrupted when it lapses.
+paths:
+  /api/v2/database/list:
+    get:
+      tags:
+        - Database v2
+      operationId: listDatabases
+      summary: Every database your organization may see, and where each one stands
+      description: |
+        The whole published catalog, with your organization's licence beside
+        each entry, so `standing` says whether a database is yours today
+        (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
+
+        Databases commissioned for a single customer are not listed to anyone
+        else.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - databases
+                properties:
+                  databases:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Database'
+        '401':
+          $ref: '#/components/responses/V2Unauthorized'
+  /api/v2/database/download:
+    get:
+      tags:
+        - Database v2
+      operationId: downloadDatabaseV2
+      summary: Redirect to a time-limited download URL for one database
+      description: |
+        Answers `302`; the bytes come straight from object storage rather than
+        through this API. Follow the redirect.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+        - $ref: '#/components/parameters/DbFormat'
+      responses:
+        '302':
+          description: Follow the Location header to object storage.
+          headers:
+            Location:
+              schema:
+                type: string
+        '400':
+          description: The database is not built in the requested format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2NotLicensed'
+        '404':
+          $ref: '#/components/responses/V2UnknownDatabase'
+        '503':
+          $ref: '#/components/responses/V2NotAvailable'
+  /api/v2/database/metadata:
+    get:
+      tags:
+        - Database v2
+      operationId: databaseMetadataV2
+      summary: What is inside one database - schema, sample rows, row count, sizes
+      description: |
+        Poll this to decide whether today's build is worth fetching: it carries
+        `updated` and `entries` without downloading anything.
+
+        No `format` parameter - one document describes every format the database
+        is built in.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseMetadata'
+        '401':
+          $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2NotLicensed'
+        '404':
+          $ref: '#/components/responses/V2UnknownDatabase'
+        '503':
+          $ref: '#/components/responses/V2NotAvailable'
+  /api/v2/database/checksum:
+    get:
+      tags:
+        - Database v2
+      operationId: databaseChecksumV2
+      summary: Checksums for one published file, to verify a download
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+        - $ref: '#/components/parameters/DbFormat'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - format
+                  - checksums
+                properties:
+                  id:
+                    type: string
+                  format:
+                    type: string
+                    enum:
+                      - csvgz
+                      - mmdb
+                  checksums:
+                    $ref: '#/components/schemas/DbChecksums'
+        '400':
+          description: The database is not built in the requested format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2NotLicensed'
+        '404':
+          $ref: '#/components/responses/V2UnknownDatabase'
+        '503':
+          $ref: '#/components/responses/V2NotAvailable'
+  /api/v2/database/downloads:
+    get:
+      tags:
+        - Database v2
+      operationId: listDownloads
+      summary: Your organization's recent download attempts, newest first
+      description: |
+        Refusals are listed too: a denial is what answers "it stopped working",
+        and its absence answers nothing.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: How many attempts to return. Clamped to 200.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - downloads
+                properties:
+                  downloads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Download'
+        '401':
+          $ref: '#/components/responses/V2Unauthorized'
+  /api/v1/database/download:
+    get:
+      tags:
+        - Database
+      operationId: databaseDownload
+      summary: Download a database file
+      description: |
+        Returns the requested database file as a binary download.
+        The response's `Content-Type` depends on `format`:
+        `application/gzip` for `csvgz`, `application/octet-stream` for `mmdb`.
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+        - $ref: '#/components/parameters/DbFormat'
+      responses:
+        '200':
+          description: Database file.
+          headers:
+            Content-Disposition:
+              description: Attachment with the database filename.
+              schema:
+                type: string
+          content:
+            application/gzip:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/database/checksum:
+    get:
+      tags:
+        - Database
+      operationId: databaseChecksum
+      summary: Get checksums for a database file
+      description: |
+        Returns MD5, SHA-1, SHA-256, and SHA-512 checksums for the currently
+        published version of the requested database.
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+        - $ref: '#/components/parameters/DbFormat'
+      responses:
+        '200':
+          description: Checksums for the requested database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DbChecksumSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/database/metadata:
+    get:
+      tags:
+        - Database
+      operationId: databaseMetadata
+      summary: Get metadata for a database
+      description: |
+        Returns publish freshness information for the currently published version
+        of the requested database: when it was last updated, how many entries
+        the dataset contains, and the size of each output format in bytes.
+      parameters:
+        - $ref: '#/components/parameters/DbId'
+      responses:
+        '200':
+          description: Metadata for the requested database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DbMetadataSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: apikey
+      description: |
+        UUID-format API key issued to the customer. Each key is authorized for a
+        specific set of database ids; requesting any other id returns 403.
+
+        v1 only. The v2 endpoints take a console-issued key as a bearer token.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        `Authorization: Bearer <key>`, with a key from the console carrying the
+        `db.download` scope. Keys are default-deny, so an existing key does not
+        gain database access until the scope is added to it.
+
+        A v1 `?apikey=` credential is not accepted here, and a v2 key is not
+        accepted on the v1 endpoints: they are separate vocabularies.
+  parameters:
+    DbId:
+      name: id
+      in: query
+      required: true
+      description: Database identifier (e.g. `vpn_ip_v1`, `resproxy_provider_v1`).
+      schema:
+        type: string
+        pattern: ^[a-zA-Z0-9_]+$
+        example: vpn_ip_v1
+    DbFormat:
+      name: format
+      in: query
+      required: true
+      description: Database file format.
+      schema:
+        type: string
+        enum:
+          - csvgz
+          - mmdb
+        example: mmdb
+  schemas:
+    Error:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          description: |
+            A machine-readable result code. Deliberately not an enum: a code
+            added later must stay parseable by a client generated today.
+    Database:
+      type: object
+      description: |
+        One database FAMILY, with your organization's licence beside it. A
+        licence covers the family, while a download names a specific version,
+        so the ids passed to `download` and `checksum` come from `versions`.
+      required:
+        - base
+        - name
+        - summary
+        - standing
+        - redistribution
+        - starts
+        - expires
+        - versions
+      properties:
+        base:
+          type: string
+          description: The family, e.g. `vpn_ip`. What a licence is held against.
+          example: vpn_ip
+        name:
+          type: string
+          example: VPN IP
+        summary:
+          type: string
+          description: One line on what the newest version contains.
+        standing:
+          type: string
+          enum:
+            - licensed
+            - expired
+            - unlicensed
+          description: |
+            `licensed` is a live grant, `expired` one whose term has ended, and
+            `unlicensed` a database published but never bought.
+        redistribution:
+          type: string
+          nullable: true
+          enum:
+            - evaluation
+            - internal
+            - redistribute
+            - null
+          description: |
+            What your licence permits you to do with the data. Null when there
+            is no licence.
+        starts:
+          type: string
+          format: date-time
+          nullable: true
+        expires:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null when the licence has no end date, or when there is none.
+        versions:
+          type: array
+          description: |
+            Every published version of this family, oldest first. Old versions
+            are frozen rather than migrated, so both stay downloadable.
+          items:
+            $ref: '#/components/schemas/DatabaseVersion'
+    DatabaseVersion:
+      type: object
+      required:
+        - id
+        - version
+        - summary
+        - formats
+      properties:
+        id:
+          type: string
+          description: The versioned id. Pass this to `download`, `checksum` and `metadata`.
+          example: vpn_ip_v1
+        version:
+          type: integer
+          example: 1
+        summary:
+          type: string
+        formats:
+          type: array
+          description: |
+            The formats this version is BUILT in. Asking for another is a 400,
+            not a gap - the `_provider` catalogs are keyed by provider id, so no
+            MMDB exists for them.
+          items:
+            type: string
+            enum:
+              - csvgz
+              - mmdb
+    Download:
+      type: object
+      description: One download ATTEMPT, refusals included.
+      required:
+        - dataset_id
+        - format
+        - outcome
+        - bytes
+        - http_status
+        - apikey_id
+        - client_ip
+        - user_agent
+        - created
+      properties:
+        dataset_id:
+          type: string
+        format:
+          type: string
+        outcome:
+          type: string
+          enum:
+            - ok
+            - unauthorized
+            - denied
+            - expired
+            - unknown
+            - unavailable
+        bytes:
+          type: integer
+          format: int64
+          nullable: true
+          description: |
+            Object size at redirect time, NOT bytes delivered: the transfer is a
+            presigned redirect straight to object storage, so we never observe
+            how much of it was taken.
+        http_status:
+          type: integer
+          nullable: true
+        apikey_id:
+          type: string
+          nullable: true
+          description: The key that made the request. Null when it could not be resolved.
+        client_ip:
+          type: string
+          nullable: true
+        user_agent:
+          type: string
+          nullable: true
+        created:
+          type: string
+          format: date-time
+    DatabaseMetadataColumn:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+    DatabaseMetadata:
+      type: object
+      description: The build document written by the exporter, served through unchanged.
+      required:
+        - id
+        - updated
+        - entries
+        - schema
+        - size
+      properties:
+        id:
+          type: string
+        update_freq:
+          type: string
+          description: How often a new build is published.
+        updated:
+          type: string
+          format: date
+          description: ISO-8601 date (YYYY-MM-DD) the published build was generated on.
+          example: '2026-09-04'
+        entries:
+          type: integer
+          format: int64
+          description: Row count in the current build.
+        schema:
+          type: object
+          description: Columns, keyed by format.
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/DatabaseMetadataColumn'
+        sample:
+          type: object
+          description: A few real rows, keyed by format.
+          additionalProperties:
+            type: array
+            items:
+              type: object
+        size:
+          type: object
+          description: Bytes per format.
+          additionalProperties:
+            type: integer
+            format: int64
+    DbChecksumSuccessResponse:
+      type: object
+      required:
+        - rc
+        - data
+      properties:
+        rc:
+          type: string
+          enum:
+            - SUCCESS
+        data:
+          $ref: '#/components/schemas/DbChecksums'
+    DbChecksums:
+      type: object
+      required:
+        - md5
+        - sha1
+        - sha256
+        - sha512
+      properties:
+        md5:
+          type: string
+          description: Hex-encoded MD5 digest.
+        sha1:
+          type: string
+          description: Hex-encoded SHA-1 digest.
+        sha256:
+          type: string
+          description: Hex-encoded SHA-256 digest.
+        sha512:
+          type: string
+          description: Hex-encoded SHA-512 digest.
+    DbMetadataSuccessResponse:
+      type: object
+      required:
+        - rc
+        - data
+      properties:
+        rc:
+          type: string
+          enum:
+            - SUCCESS
+        data:
+          $ref: '#/components/schemas/DbMetadata'
+    DbMetadata:
+      type: object
+      required:
+        - updated
+        - entries
+        - size
+      properties:
+        updated:
+          type: string
+          format: date
+          description: >-
+            ISO-8601 calendar date (YYYY-MM-DD) on which the currently published version was
+            generated.
+          example: '2026-04-25'
+        entries:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Number of data rows in the published dataset (excluding the CSV header).
+          example: 114000000
+        size:
+          type: object
+          required:
+            - csvgz
+          description: Sizes in bytes of the published files, keyed by format.
+          properties:
+            csvgz:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Size of the gzipped CSV file in bytes.
+            mmdb:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Size of the MMDB file in bytes (omitted when the dataset has no MMDB output).
+    DbInvalidApiKeyError:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          enum:
+            - INVALID_APIKEY
+    DbInvalidFormatError:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          enum:
+            - INVALID_FORMAT
+    DbInvalidIdError:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          enum:
+            - INVALID_ID
+    DbUnauthorizedIdError:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          enum:
+            - UNAUTHORIZED_ID
+    DbNotFoundError:
+      type: object
+      required:
+        - rc
+      properties:
+        rc:
+          type: string
+          enum:
+            - DB_NOT_FOUND
+  responses:
+    V2Unauthorized:
+      description: |
+        Missing or invalid bearer key, the key lacks the `db.download` scope, or
+        it belongs to no organization.
+        `rc`: `UNAUTHORIZED`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    V2NotLicensed:
+      description: |
+        Your organization holds no licence for this database, or its term has
+        ended.
+        `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    V2UnknownDatabase:
+      description: |
+        No such database.
+        `rc`: `UNKNOWN_DATASET`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    V2NotAvailable:
+      description: |
+        Licensed, but the current build has not been published yet.
+        `rc`: `NOT_AVAILABLE`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: |
+        The request query parameters were malformed.
+        Possible `rc` values: `INVALID_FORMAT`, `INVALID_ID`.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/DbInvalidFormatError'
+              - $ref: '#/components/schemas/DbInvalidIdError'
+    Unauthorized:
+      description: The `apikey` query parameter was missing or not recognized.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbInvalidApiKeyError'
+    Forbidden:
+      description: The `apikey` is valid but is not authorized for the requested database id.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbUnauthorizedIdError'
+    NotFound:
+      description: The requested database file does not exist on the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DbNotFoundError'

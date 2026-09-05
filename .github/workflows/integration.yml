@@ -1,0 +1,33 @@
+name: Integration
+
+# Exercises the module as PUBLISHED on the proxy, against staging. CI covers this
+# working tree; nothing there would notice a tag that was never pushed, an import
+# path a consumer cannot resolve, or a release that never landed.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+  schedule:
+    # Off the hour on purpose: scheduled runs bunched at :00 are queued behind
+    # everyone else's and can be dropped entirely under load.
+    - cron: '23 6 * * *'
+
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+      # No module cache: the point is the download a stranger gets. The script
+      # skips with a reason when nothing is published yet, and the suite skips
+      # from inside itself when the key is missing.
+      #
+      # A secret that does not exist interpolates to an empty string here, which
+      # the suite treats as absent.
+      - run: ./scripts/run.sh
+        working-directory: integration
+        env:
+          INTERNETDATA_STAGING_KEY: ${{ secrets.INTERNETDATA_STAGING_KEY }}

@@ -1,0 +1,146 @@
+{
+  "errors": [
+    {
+      "name": "no-key",
+      "status": 401,
+      "headers": {},
+      "body": {
+        "rc": "UNAUTHORIZED"
+      },
+      "expect": {
+        "kind": "unauthorized",
+        "retryable": false,
+        "message": "UNAUTHORIZED"
+      }
+    },
+    {
+      "name": "key-not-licensed-for-dataset",
+      "status": 403,
+      "headers": {},
+      "body": {
+        "rc": "NOT_LICENSED"
+      },
+      "expect": {
+        "kind": "forbidden",
+        "retryable": false,
+        "message": "NOT_LICENSED"
+      }
+    },
+    {
+      "name": "licence-lapsed",
+      "status": 403,
+      "headers": {},
+      "body": {
+        "rc": "LICENSE_EXPIRED"
+      },
+      "expect": {
+        "kind": "forbidden",
+        "retryable": false,
+        "message": "LICENSE_EXPIRED"
+      }
+    },
+    {
+      "name": "unknown-dataset",
+      "status": 404,
+      "headers": {},
+      "body": {
+        "rc": "NOT_FOUND"
+      },
+      "expect": {
+        "kind": "bad_request",
+        "retryable": false,
+        "message": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "not-published-yet",
+      "status": 404,
+      "headers": {},
+      "body": {
+        "rc": "DB_NOT_FOUND"
+      },
+      "expect": {
+        "kind": "bad_request",
+        "retryable": false,
+        "message": "DB_NOT_FOUND"
+      }
+    },
+    {
+      "name": "format-not-built",
+      "status": 400,
+      "headers": {},
+      "body": {
+        "rc": "INVALID_FORMAT"
+      },
+      "expect": {
+        "kind": "bad_request",
+        "retryable": false,
+        "message": "INVALID_FORMAT"
+      }
+    },
+    {
+      "name": "rate-limited-transient",
+      "status": 429,
+      "headers": {
+        "retry-after": "2"
+      },
+      "body": {
+        "rc": "RATE_LIMITED"
+      },
+      "expect": {
+        "kind": "rate_limited",
+        "retryable": true,
+        "retryAfterSeconds": 2,
+        "message": "RATE_LIMITED"
+      }
+    },
+    {
+      "name": "quota-spent",
+      "status": 429,
+      "headers": {},
+      "body": {
+        "rc": "QUOTA_EXCEEDED"
+      },
+      "expect": {
+        "kind": "quota_exceeded",
+        "retryable": false,
+        "message": "QUOTA_EXCEEDED"
+      }
+    },
+    {
+      "name": "server-fault",
+      "status": 503,
+      "headers": {},
+      "body": {
+        "rc": "UNAVAILABLE"
+      },
+      "expect": {
+        "kind": "server_error",
+        "retryable": true,
+        "message": "UNAVAILABLE"
+      }
+    }
+  ],
+  "standings": [
+    "licensed",
+    "expired",
+    "unlicensed"
+  ],
+  "redistribution": [
+    "evaluation",
+    "internal",
+    "redistribute"
+  ],
+  "formats": [
+    "csvgz",
+    "mmdb"
+  ],
+  "visibility": {
+    "why": "A private family is one built for a single customer. It must be ABSENT from a listing for an org that does not license it, not present with standing 'unlicensed' - the standing field is the discovery surface for public datasets only. The server enforces this; an SDK must not reconstruct a catalog from any other source and must not assume the listing is the same for every key. The private ids are deliberately NOT named here: this corpus is committed into twelve PUBLIC repositories, so naming them would publish the customer relationship the rule exists to keep private.",
+    "clientRules": [
+      "listing-is-returned-as-served",
+      "no-catalog-is-compiled-into-the-client",
+      "a-listing-is-never-reused-across-clients"
+    ]
+  }
+}

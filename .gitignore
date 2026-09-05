@@ -1,0 +1,12 @@
+# Go build and test output.
+*.exe
+*.test
+*.out
+/coverage.out
+
+# A local vendor tree is never committed; the module graph is go.mod + go.sum.
+/vendor/
+
+# Resolved fresh on every integration run, so the daily run keeps testing
+# whatever is newest on the module proxy.
+/integration/go.sum

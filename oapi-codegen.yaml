@@ -1,0 +1,20 @@
+# Reads spec/openapi.yaml, the PINNED copy, never a URL: a build has to be
+# reproducible and work offline, and the diff has to show which spec version
+# produced the client. Refresh with scripts/download-spec.sh.
+package: api
+output: internal/api/api_gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+  # v2 only. v1 is a separate, legacy vocabulary on the same host: a different
+  # credential (`?apikey=<uuid>`), a hardcoded customer list, and clients that
+  # do not follow redirects. Generating it would put a second way to do
+  # everything into a library whose whole job is the current one.
+  include-operation-ids:
+    - listDatabases
+    - downloadDatabaseV2
+    - databaseMetadataV2
+    - databaseChecksumV2
+    - listDownloads
