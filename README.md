@@ -29,11 +29,13 @@ if err != nil {
     log.Fatal(err)
 }
 
-databases, err := client.List(ctx)
+databases, err := client.Database.List(ctx)
 for _, db := range databases {
     fmt.Println(db.Base, db.Standing)   // bogon_ip licensed
 }
 ```
+
+Every call hangs off `client.Database`, which is the whole of this API and is where the sibling VPNDetection library keeps the same seven calls.
 
 ### The catalog
 
@@ -57,7 +59,7 @@ for _, db := range databases {
 `Metadata` carries the row count, the build date, the columns of each format and the byte size of each file, without downloading anything. Poll it to decide whether today's build is worth fetching, and read `Size` to budget a transfer before you start one:
 
 ```go
-meta, err := client.Metadata(ctx, "vpn_ip_v1")
+meta, err := client.Database.Metadata(ctx, "vpn_ip_v1")
 fmt.Println(meta.Updated, meta.Entries, meta.Size["mmdb"])
 
 for _, column := range meta.Schema["csvgz"] {
@@ -70,7 +72,7 @@ for _, column := range meta.Schema["csvgz"] {
 `DownloadFile` writes one file to a path, streaming it straight to disk so that nothing bigger than a chunk is ever held in memory:
 
 ```go
-written, err := client.DownloadFile(ctx, "vpn_ip_v1", internetdata.FormatMMDB, "./vpn_ip_v1.mmdb")
+written, err := client.Database.DownloadFile(ctx, "vpn_ip_v1", internetdata.FormatMMDB, "./vpn_ip_v1.mmdb")
 fmt.Printf("%d bytes\n", written)
 ```
 
@@ -79,8 +81,8 @@ The bytes land in a neighboring `.part` file that is renamed on completion, so a
 Or stream it into a writer of your own, or take a small one as bytes:
 
 ```go
-written, err := client.Download(ctx, "vpn_ip_v1", internetdata.FormatMMDB, w)
-raw, err := client.DownloadBytes(ctx, "bogon_ip_v1", internetdata.FormatCSVGZ)
+written, err := client.Database.Download(ctx, "vpn_ip_v1", internetdata.FormatMMDB, w)
+raw, err := client.Database.DownloadBytes(ctx, "bogon_ip_v1", internetdata.FormatCSVGZ)
 ```
 
 `DownloadBytes` holds the whole file in memory, and the catalog spans five orders of magnitude, so use `DownloadFile` for anything you have not measured against `Metadata`'s `Size`.
@@ -90,7 +92,7 @@ raw, err := client.DownloadBytes(ctx, "bogon_ip_v1", internetdata.FormatCSVGZ)
 The API answers a download with a redirect to a time-limited URL on object storage. `DownloadURL` hands you that URL rather than following it, so you can pass it to a downloader, a job queue or another machine:
 
 ```go
-url, err := client.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
+url, err := client.Database.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
 ```
 
 The link is presigned and so authorizes itself; it carries no API key of yours, and the library never sends your key to object storage. It authorizes the START of a transfer, so one already running is not interrupted when the link lapses.
@@ -100,7 +102,7 @@ The link is presigned and so authorizes itself; it carries no API key of yours, 
 `Checksums` returns all four digests the exporter publishes for one file:
 
 ```go
-sums, err := client.Checksums(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
+sums, err := client.Database.Checksums(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
 fmt.Println(sums.SHA256)
 ```
 
@@ -109,7 +111,7 @@ fmt.Println(sums.SHA256)
 `Downloads` is your organization's recent attempts, newest first, refusals included: a denial is what answers "it stopped working", and its absence answers nothing.
 
 ```go
-history, err := client.Downloads(ctx, 50)
+history, err := client.Database.Downloads(ctx, 50)
 for _, attempt := range history {
     fmt.Println(attempt.Created, attempt.DatasetID, attempt.Outcome)
 }
@@ -120,7 +122,7 @@ for _, attempt := range history {
 Failures return an `*internetdata.Error` carrying a `Kind`, the API's own result code, and a `Retryable` flag:
 
 ```go
-_, err := client.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
+_, err := client.Database.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
 var apiErr *internetdata.Error
 if errors.As(err, &apiErr) {
     fmt.Println(apiErr.Kind, apiErr.Message, apiErr.Retryable())

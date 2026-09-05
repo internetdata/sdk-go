@@ -51,16 +51,16 @@ func TestTheKeyIsSentAsABearerTokenOnEveryEndpoint(t *testing.T) {
 	})
 	client := newKeyedTestClient(t, stub, "a-real-key")
 
-	if _, err := client.List(t.Context()); err != nil {
+	if _, err := client.Database.List(t.Context()); err != nil {
 		t.Fatalf("List: %v", err)
 	}
-	if _, err := client.Metadata(t.Context(), "bogon_ip_v1"); err != nil {
+	if _, err := client.Database.Metadata(t.Context(), "bogon_ip_v1"); err != nil {
 		t.Fatalf("Metadata: %v", err)
 	}
-	if _, err := client.Checksums(t.Context(), "bogon_ip_v1", FormatCSVGZ); err != nil {
+	if _, err := client.Database.Checksums(t.Context(), "bogon_ip_v1", FormatCSVGZ); err != nil {
 		t.Fatalf("Checksums: %v", err)
 	}
-	if _, err := client.Downloads(t.Context(), 10); err != nil {
+	if _, err := client.Database.Downloads(t.Context(), 10); err != nil {
 		t.Fatalf("Downloads: %v", err)
 	}
 
@@ -81,7 +81,7 @@ func TestChecksumsUnwrapsPastTheEnvelopeAndKeepsAllFour(t *testing.T) {
 	stub := newStub(map[string]stubRoute{pathChecksum: {body: checksumBody}})
 	client := newTestClient(t, stub)
 
-	sums, err := client.Checksums(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	sums, err := client.Database.Checksums(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 	if err != nil {
 		t.Fatalf("Checksums: %v", err)
 	}
@@ -104,11 +104,11 @@ func TestDownloadsOmitsALimitItWasNotGiven(t *testing.T) {
 	client := newTestClient(t, stub)
 
 	for _, limit := range []int{0, -1} {
-		if _, err := client.Downloads(t.Context(), limit); err != nil {
+		if _, err := client.Database.Downloads(t.Context(), limit); err != nil {
 			t.Fatalf("Downloads(%d): %v", limit, err)
 		}
 	}
-	if _, err := client.Downloads(t.Context(), 25); err != nil {
+	if _, err := client.Database.Downloads(t.Context(), 25); err != nil {
 		t.Fatalf("Downloads(25): %v", err)
 	}
 
@@ -127,7 +127,7 @@ func TestDownloadURLReturnsTheRedirectRatherThanFollowingIt(t *testing.T) {
 	})
 	client := newTestClient(t, stub)
 
-	url, err := client.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	url, err := client.Database.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 	if err != nil {
 		t.Fatalf("DownloadURL: %v", err)
 	}
@@ -147,7 +147,7 @@ func TestA302WithNoLocationIsAnError(t *testing.T) {
 	stub := newStub(map[string]stubRoute{pathDownload: {status: http.StatusFound}})
 	client := newTestClient(t, stub, WithRetries(0))
 
-	_, err := client.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	_, err := client.Database.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 
 	var apiErr *Error
 	if !errors.As(err, &apiErr) || apiErr.Kind != KindServerError {
@@ -161,7 +161,7 @@ func TestRetriesAreConfigurable(t *testing.T) {
 	})
 	client := newTestClient(t, stub, WithRetries(3))
 
-	if _, err := client.List(t.Context()); err == nil {
+	if _, err := client.Database.List(t.Context()); err == nil {
 		t.Fatal("a 500 should have failed the call")
 	}
 	// One initial attempt plus three retries.
@@ -178,7 +178,7 @@ func TestASpentQuotaIsNeverRetried(t *testing.T) {
 	})
 	client := newTestClient(t, stub, WithRetries(5))
 
-	_, err := client.List(t.Context())
+	_, err := client.Database.List(t.Context())
 	var apiErr *Error
 	if !errors.As(err, &apiErr) || apiErr.Kind != KindQuotaExceeded {
 		t.Fatalf("error was %v, want a quota_exceeded *Error", err)
@@ -199,7 +199,7 @@ func TestARateLimitIsRetriedAfterTheServerSuppliedWait(t *testing.T) {
 	client := newTestClient(t, stub, WithRetries(1))
 
 	start := time.Now()
-	if _, err := client.List(t.Context()); err == nil {
+	if _, err := client.Database.List(t.Context()); err == nil {
 		t.Fatal("the call should still have failed after its retry")
 	}
 
@@ -236,7 +236,7 @@ func TestRetryAfterIsReadAsSecondsOrAsAnHTTPDate(t *testing.T) {
 			})
 			client := newTestClient(t, stub, WithRetries(0))
 
-			_, err := client.List(t.Context())
+			_, err := client.Database.List(t.Context())
 			var apiErr *Error
 			if !errors.As(err, &apiErr) {
 				t.Fatalf("error was %v, want an *Error", err)
@@ -256,7 +256,7 @@ func TestARefusalWithNoEnvelopeStillCarriesAMessage(t *testing.T) {
 	})
 	client := newTestClient(t, stub, WithRetries(0))
 
-	_, err := client.List(t.Context())
+	_, err := client.Database.List(t.Context())
 	var apiErr *Error
 	if !errors.As(err, &apiErr) {
 		t.Fatalf("error was %v, want an *Error", err)
@@ -284,7 +284,7 @@ func TestACanceledContextEndsTheRetryLoop(t *testing.T) {
 	defer cancel()
 
 	start := time.Now()
-	if _, err := client.List(ctx); err == nil {
+	if _, err := client.Database.List(ctx); err == nil {
 		t.Fatal("the call should have failed")
 	}
 

@@ -25,7 +25,7 @@ func TestDownloadFileFollowsTheRedirectAndWritesTheFile(t *testing.T) {
 	origin := newOrigin(t, originConfig{})
 	path := filepath.Join(t.TempDir(), "bogon_ip_v1.csv.gz")
 
-	written, err := origin.client.DownloadFile(t.Context(), "bogon_ip_v1", FormatCSVGZ, path)
+	written, err := origin.client.Database.DownloadFile(t.Context(), "bogon_ip_v1", FormatCSVGZ, path)
 	if err != nil {
 		t.Fatalf("DownloadFile: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestDownloadStreamsIntoAWriter(t *testing.T) {
 	origin := newOrigin(t, originConfig{})
 	var sink bytes.Buffer
 
-	written, err := origin.client.Download(t.Context(), "bogon_ip_v1", FormatCSVGZ, &sink)
+	written, err := origin.client.Database.Download(t.Context(), "bogon_ip_v1", FormatCSVGZ, &sink)
 	if err != nil {
 		t.Fatalf("Download: %v", err)
 	}
@@ -66,12 +66,12 @@ func TestDownloadStreamsIntoAWriter(t *testing.T) {
 func TestDownloadBytesAgreesWithTheStreamedCopy(t *testing.T) {
 	origin := newOrigin(t, originConfig{})
 	var streamed bytes.Buffer
-	if _, err := origin.client.Download(
+	if _, err := origin.client.Database.Download(
 		t.Context(), "bogon_ip_v1", FormatCSVGZ, &streamed); err != nil {
 		t.Fatalf("Download: %v", err)
 	}
 
-	got, err := origin.client.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	got, err := origin.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 	if err != nil {
 		t.Fatalf("DownloadBytes: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestDownloadBytesAgreesWithTheStreamedCopy(t *testing.T) {
 func TestDownloadBytesRefusesATruncatedBody(t *testing.T) {
 	origin := newOrigin(t, originConfig{blobBytes: 4 << 20, dieAfterBytes: 1 << 20})
 
-	got, err := origin.client.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	got, err := origin.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 
 	if err == nil {
 		t.Fatalf("a truncated transfer returned %d byte(s) and no error", len(got))
@@ -106,7 +106,7 @@ func TestTheAPIKeyReachesTheAPIAndNeverObjectStorage(t *testing.T) {
 	origin := newOrigin(t, originConfig{})
 
 	path := filepath.Join(t.TempDir(), "keys.csv.gz")
-	if _, err := origin.client.DownloadFile(
+	if _, err := origin.client.Database.DownloadFile(
 		t.Context(), "bogon_ip_v1", FormatCSVGZ, path); err != nil {
 		t.Fatalf("DownloadFile: %v", err)
 	}
@@ -139,7 +139,7 @@ func TestALargeBodyIsStreamedNotBuffered(t *testing.T) {
 	var before, after runtime.MemStats
 	runtime.GC()
 	runtime.ReadMemStats(&before)
-	written, err := origin.client.Download(t.Context(), "bogon_ip_v1", FormatCSVGZ, io.Discard)
+	written, err := origin.client.Database.Download(t.Context(), "bogon_ip_v1", FormatCSVGZ, io.Discard)
 	runtime.ReadMemStats(&after)
 	if err != nil {
 		t.Fatalf("Download: %v", err)
@@ -160,7 +160,7 @@ func TestALargeBodyIsStreamedNotBuffered(t *testing.T) {
 func TestObjectStorageRefusingTheLinkIsNotReportedAsACatalogFailure(t *testing.T) {
 	origin := newOrigin(t, originConfig{storageStatus: http.StatusForbidden})
 
-	_, err := origin.client.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	_, err := origin.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 
 	var apiErr *Error
 	if !errors.As(err, &apiErr) {
@@ -184,7 +184,7 @@ func TestATransferThatDiesPartWayLeavesNothingAtTheDestination(t *testing.T) {
 	origin := newOrigin(t, originConfig{blobBytes: 4 << 20, dieAfterBytes: 1 << 20})
 	path := filepath.Join(t.TempDir(), "half-a-database.csv.gz")
 
-	_, err := origin.client.DownloadFile(t.Context(), "bogon_ip_v1", FormatCSVGZ, path)
+	_, err := origin.client.Database.DownloadFile(t.Context(), "bogon_ip_v1", FormatCSVGZ, path)
 
 	if err == nil {
 		t.Fatal("a transfer that lost its connection reported success")
@@ -207,7 +207,7 @@ func TestAFailedRefreshLeavesThePreviousCopyIntact(t *testing.T) {
 		t.Fatalf("seeding the previous copy: %v", err)
 	}
 
-	if _, err := origin.client.DownloadFile(
+	if _, err := origin.client.Database.DownloadFile(
 		t.Context(), "bogon_ip_v1", FormatCSVGZ, path); err == nil {
 		t.Fatal("a transfer that lost its connection reported success")
 	}

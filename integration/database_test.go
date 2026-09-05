@@ -47,7 +47,7 @@ var hexDigest = regexp.MustCompile(`^[0-9a-f]{64}$`)
 func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 	client, rec := clientFor(t)
 
-	databases, err := client.List(t.Context())
+	databases, err := client.Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
@@ -129,7 +129,7 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 func TestTheListingIsWhatTheServerSaidAndNothingElse(t *testing.T) {
 	client, rec := clientFor(t)
 
-	databases, err := client.List(t.Context())
+	databases, err := client.Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
@@ -158,7 +158,7 @@ func TestTheListingIsWhatTheServerSaidAndNothingElse(t *testing.T) {
 func TestADatabaseTheOrganizationDoesNotLicenseIsRefusedCleanly(t *testing.T) {
 	client, rec := clientFor(t)
 
-	_, err := client.DownloadURL(t.Context(), unlicensedID, format)
+	_, err := client.Database.DownloadURL(t.Context(), unlicensedID, format)
 
 	var apiErr *internetdata.Error
 	if !errors.As(err, &apiErr) {
@@ -190,7 +190,7 @@ func TestADatabaseTheOrganizationDoesNotLicenseIsRefusedCleanly(t *testing.T) {
 func TestDownloadURLHandsBackACredentialFreeLink(t *testing.T) {
 	client, rec := clientFor(t)
 
-	link, err := client.DownloadURL(t.Context(), databaseID, format)
+	link, err := client.Database.DownloadURL(t.Context(), databaseID, format)
 	if err != nil {
 		t.Fatalf("DownloadURL: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestDownloadBytesAgreesWithTheStreamedCopy(t *testing.T) {
 	dl := transferred(t)
 	client, _ := clientFor(t)
 
-	raw, err := client.DownloadBytes(t.Context(), databaseID, format)
+	raw, err := client.Database.DownloadBytes(t.Context(), databaseID, format)
 	if err != nil {
 		t.Fatalf("DownloadBytes: %v", err)
 	}
@@ -294,7 +294,7 @@ func TestDownloadBytesAgreesWithTheStreamedCopy(t *testing.T) {
 func TestTheOtherLicensedDatabaseIsAlsoReachable(t *testing.T) {
 	client, _ := clientFor(t)
 
-	meta, err := client.Metadata(t.Context(), otherID)
+	meta, err := client.Database.Metadata(t.Context(), otherID)
 	if err != nil {
 		t.Fatalf("Metadata(%s): %v", otherID, err)
 	}
@@ -303,7 +303,7 @@ func TestTheOtherLicensedDatabaseIsAlsoReachable(t *testing.T) {
 	}
 	size := publishedSize(t, meta, otherID)
 
-	raw, err := client.DownloadBytes(t.Context(), otherID, format)
+	raw, err := client.Database.DownloadBytes(t.Context(), otherID, format)
 	if err != nil {
 		t.Fatalf("DownloadBytes(%s): %v", otherID, err)
 	}
@@ -320,7 +320,7 @@ func TestTheOtherLicensedDatabaseIsAlsoReachable(t *testing.T) {
 func TestTheDownloadHistoryReadsBack(t *testing.T) {
 	client, _ := clientFor(t)
 
-	history, err := client.Downloads(t.Context(), 20)
+	history, err := client.Database.Downloads(t.Context(), 20)
 	if err != nil {
 		t.Fatalf("Downloads: %v", err)
 	}
@@ -369,7 +369,7 @@ func transferred(t *testing.T) *transfer {
 	}
 	client, rec := clientFor(t)
 
-	meta, err := client.Metadata(t.Context(), databaseID)
+	meta, err := client.Database.Metadata(t.Context(), databaseID)
 	if err != nil {
 		t.Fatalf("Metadata(%s): %v", databaseID, err)
 	}
@@ -379,13 +379,13 @@ func transferred(t *testing.T) *transfer {
 	size := publishedSize(t, meta, databaseID)
 
 	path := filepath.Join(tempDir(t), databaseID+".csv.gz")
-	written, err := client.DownloadFile(t.Context(), databaseID, format, path)
+	written, err := client.Database.DownloadFile(t.Context(), databaseID, format, path)
 	if err != nil {
 		t.Fatalf("DownloadFile(%s): %v", databaseID, err)
 	}
 	// Read after the transfer, so a rebuild between the two calls shows up as a
 	// digest mismatch rather than passing against a digest of nothing.
-	checksums, err := client.Checksums(t.Context(), databaseID, format)
+	checksums, err := client.Database.Checksums(t.Context(), databaseID, format)
 	if err != nil {
 		t.Fatalf("Checksums(%s): %v", databaseID, err)
 	}

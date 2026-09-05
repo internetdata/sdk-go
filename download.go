@@ -17,10 +17,10 @@ import (
 // gigabytes, hand it to a downloader, or pass it on without passing on the API
 // key. The link is presigned and so authorizes itself; it authorizes the START
 // of a transfer, so one already running is not interrupted when it lapses.
-func (c *Client) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
+func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
 	ctx = withoutRedirects(ctx)
-	return withRetry(ctx, c.retries, func() (string, error) {
-		res, err := c.api.DownloadDatabaseV2WithResponse(ctx, &api.DownloadDatabaseV2Params{
+	return withRetry(ctx, d.retries, func() (string, error) {
+		res, err := d.api.DownloadDatabaseV2WithResponse(ctx, &api.DownloadDatabaseV2Params{
 			ID:     id,
 			Format: api.DownloadDatabaseV2ParamsFormat(format),
 		})
@@ -51,10 +51,10 @@ func (c *Client) DownloadURL(ctx context.Context, id string, format Format) (str
 // A failure DURING the transfer is returned as it happened rather than wrapped
 // in an *Error: a reset socket and a full disk are different problems, and only
 // one of them is ours.
-func (c *Client) Download(
+func (d *DatabaseAPI) Download(
 	ctx context.Context, id string, format Format, dst io.Writer,
 ) (int64, error) {
-	res, err := c.fetchFile(ctx, id, format)
+	res, err := d.fetchFile(ctx, id, format)
 	if err != nil {
 		return 0, err
 	}
@@ -68,10 +68,10 @@ func (c *Client) Download(
 // a transfer that dies half way leaves no truncated file that reads as a whole
 // database, and a failed refresh cannot destroy the copy already there.
 // Otherwise identical to Download.
-func (c *Client) DownloadFile(
+func (d *DatabaseAPI) DownloadFile(
 	ctx context.Context, id string, format Format, path string,
 ) (int64, error) {
-	res, err := c.fetchFile(ctx, id, format)
+	res, err := d.fetchFile(ctx, id, format)
 	if err != nil {
 		return 0, err
 	}
@@ -102,8 +102,8 @@ func (c *Client) DownloadFile(
 // magnitude, from bogon_asn_v1 at a few hundred bytes to the largest IP feeds
 // at several gigabytes. Metadata publishes a Size per format; read it first, or
 // use Download or DownloadFile for anything you have not measured.
-func (c *Client) DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error) {
-	res, err := c.fetchFile(ctx, id, format)
+func (d *DatabaseAPI) DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error) {
+	res, err := d.fetchFile(ctx, id, format)
 	if err != nil {
 		return nil, err
 	}
@@ -126,19 +126,19 @@ func (c *Client) DownloadBytes(ctx context.Context, id string, format Format) ([
 // forwarding the API key would hand a credential to a host with no business
 // holding it. The key rides a request editor on the generated client, which
 // this request does not go through.
-func (c *Client) fetchFile(
+func (d *DatabaseAPI) fetchFile(
 	ctx context.Context, id string, format Format,
 ) (*http.Response, error) {
-	url, err := c.DownloadURL(ctx, id, format)
+	url, err := d.DownloadURL(ctx, id, format)
 	if err != nil {
 		return nil, err
 	}
-	return withRetry(ctx, c.retries, func() (*http.Response, error) {
+	return withRetry(ctx, d.retries, func() (*http.Response, error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
 			return nil, errorFromTransport(err)
 		}
-		res, err := c.transfer.Do(req)
+		res, err := d.transfer.Do(req)
 		if err != nil {
 			return nil, errorFromTransport(err)
 		}

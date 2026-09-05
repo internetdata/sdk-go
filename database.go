@@ -9,6 +9,18 @@ import (
 	"github.com/internetdata/sdk-go/internal/api"
 )
 
+// DatabaseAPI is the licensed database catalog and its downloads, reached
+// through Client.Database.
+//
+// Spelled DatabaseAPI rather than Database because Database is already this
+// API's own shape for one database family, and it is what the other
+// InternetData SDKs call this type.
+type DatabaseAPI struct {
+	api      *api.ClientWithResponses
+	transfer *http.Client
+	retries  int
+}
+
 // List is the published catalog, with your organization's licence beside each
 // family. A licence covers a family, while a download names one of its
 // versions, so the ids the download and checksum calls take come from
@@ -19,9 +31,9 @@ import (
 // organization rather than listed as unlicensed, so what you get back is not
 // necessarily what another key gets back, and neither the whole catalog nor
 // any part of it can be reconstructed from another source.
-func (c *Client) List(ctx context.Context) ([]Database, error) {
-	return withRetry(ctx, c.retries, func() ([]Database, error) {
-		res, err := c.api.ListDatabasesWithResponse(ctx)
+func (d *DatabaseAPI) List(ctx context.Context) ([]Database, error) {
+	return withRetry(ctx, d.retries, func() ([]Database, error) {
+		res, err := d.api.ListDatabasesWithResponse(ctx)
 		if err != nil {
 			return nil, errorFromTransport(err)
 		}
@@ -39,9 +51,9 @@ func (c *Client) List(ctx context.Context) ([]Database, error) {
 //
 // One document describes every format the database is built in, which is why
 // there is no format argument.
-func (c *Client) Metadata(ctx context.Context, id string) (*DatabaseMetadata, error) {
-	return withRetry(ctx, c.retries, func() (*DatabaseMetadata, error) {
-		res, err := c.api.DatabaseMetadataV2WithResponse(ctx, &api.DatabaseMetadataV2Params{ID: id})
+func (d *DatabaseAPI) Metadata(ctx context.Context, id string) (*DatabaseMetadata, error) {
+	return withRetry(ctx, d.retries, func() (*DatabaseMetadata, error) {
+		res, err := d.api.DatabaseMetadataV2WithResponse(ctx, &api.DatabaseMetadataV2Params{ID: id})
 		if err != nil {
 			return nil, errorFromTransport(err)
 		}
@@ -55,9 +67,9 @@ func (c *Client) Metadata(ctx context.Context, id string) (*DatabaseMetadata, er
 // Checksums are the digests of one published file, for verifying a download.
 // All four the exporter writes are returned, because which of them a caller
 // wants is not this library's decision.
-func (c *Client) Checksums(ctx context.Context, id string, format Format) (*Checksums, error) {
-	return withRetry(ctx, c.retries, func() (*Checksums, error) {
-		res, err := c.api.DatabaseChecksumV2WithResponse(ctx, &api.DatabaseChecksumV2Params{
+func (d *DatabaseAPI) Checksums(ctx context.Context, id string, format Format) (*Checksums, error) {
+	return withRetry(ctx, d.retries, func() (*Checksums, error) {
+		res, err := d.api.DatabaseChecksumV2WithResponse(ctx, &api.DatabaseChecksumV2Params{
 			ID:     id,
 			Format: api.DatabaseChecksumV2ParamsFormat(format),
 		})
@@ -82,13 +94,13 @@ func (c *Client) Checksums(ctx context.Context, id string, format Format) (*Chec
 //
 // Refusals are listed too: a denial is what answers "it stopped working", and
 // its absence answers nothing.
-func (c *Client) Downloads(ctx context.Context, limit int) ([]DownloadAttempt, error) {
-	return withRetry(ctx, c.retries, func() ([]DownloadAttempt, error) {
+func (d *DatabaseAPI) Downloads(ctx context.Context, limit int) ([]DownloadAttempt, error) {
+	return withRetry(ctx, d.retries, func() ([]DownloadAttempt, error) {
 		params := &api.ListDownloadsParams{}
 		if limit > 0 {
 			params.Limit = &limit
 		}
-		res, err := c.api.ListDownloadsWithResponse(ctx, params)
+		res, err := d.api.ListDownloadsWithResponse(ctx, params)
 		if err != nil {
 			return nil, errorFromTransport(err)
 		}

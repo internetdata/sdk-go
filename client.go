@@ -1,9 +1,9 @@
 // Package internetdata is the official Go client library for the InternetData
 // API: licensed IP and network datasets, downloaded as CSV.GZ or MMDB.
 //
-// Start with New and Client.List. Every endpoint needs an API key carrying the
-// db.download scope, which is why New takes one rather than offering it as an
-// option: there is no anonymous tier to fall back to.
+// Start with New and Client.Database.List. Every endpoint needs an API key
+// carrying the db.download scope, which is why New takes one rather than
+// offering it as an option: there is no anonymous tier to fall back to.
 package internetdata
 
 import (
@@ -34,9 +34,11 @@ const (
 // catalog is small enough that re-reading it costs less than being wrong about
 // whose it was.
 type Client struct {
-	api      *api.ClientWithResponses
-	transfer *http.Client
-	retries  int
+	// Database is the licensed database catalog and its downloads. Every call
+	// hangs off it rather than off the client, which is how the VPNDetection
+	// SDKs read too, so one program holding both clients spells the two the
+	// same way.
+	Database *DatabaseAPI
 }
 
 // New builds a client for one API key.
@@ -66,7 +68,11 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("internetdata: %w", err)
 	}
-	return &Client{api: inner, transfer: untimed(httpClient), retries: cfg.retries}, nil
+	return &Client{Database: &DatabaseAPI{
+		api:      inner,
+		transfer: untimed(httpClient),
+		retries:  cfg.retries,
+	}}, nil
 }
 
 // Option configures a Client.
@@ -103,7 +109,7 @@ func WithRetries(n int) Option {
 // proxy or timeout. Without it the SDK uses a client with a 30 second timeout.
 //
 // The client is copied rather than mutated, and the copy adds a CheckRedirect
-// that defers to yours (see Client.DownloadURL). A dataset transfer runs on a
+// that defers to yours (see DatabaseAPI.DownloadURL). A dataset transfer runs on a
 // second copy with Timeout cleared, and is bounded by its context instead.
 func WithHTTPClient(client *http.Client) Option {
 	return func(c *config) error {
@@ -128,7 +134,7 @@ func bearer(key string) api.RequestEditorFn {
 	}
 }
 
-// Client.DownloadURL wants the 302 itself rather than what it points at, and
+// DatabaseAPI.DownloadURL wants the 302 itself rather than what it points at, and
 // following that redirect would stream a multi-gigabyte dataset into memory.
 // Suppressing it per request through the context keeps a caller's own
 // CheckRedirect in force everywhere else.

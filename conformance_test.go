@@ -26,7 +26,7 @@ func TestARefusalIsClassifiedByStatusAndRetryAfterNotByItsCode(t *testing.T) {
 			// No retries, so a retryable failure surfaces rather than looping.
 			client := newTestClient(t, stub, WithRetries(0))
 
-			_, err := client.Metadata(t.Context(), "bogon_ip_v1")
+			_, err := client.Database.Metadata(t.Context(), "bogon_ip_v1")
 			var apiErr *Error
 			if !errors.As(err, &apiErr) {
 				t.Fatalf("error was %v, want an *internetdata.Error", err)
@@ -65,7 +65,7 @@ func TestOnlyTheRetryableRefusalsAreRetried(t *testing.T) {
 			})
 			client := newTestClient(t, stub, WithRetries(1))
 
-			if _, err := client.Metadata(t.Context(), "bogon_ip_v1"); err == nil {
+			if _, err := client.Database.Metadata(t.Context(), "bogon_ip_v1"); err == nil {
 				t.Fatal("Metadata should have failed")
 			}
 
@@ -144,7 +144,7 @@ func assertListingIsReturnedAsServed(t *testing.T) {
 	stub := newStub(map[string]stubRoute{pathList: {body: served}})
 	client := newTestClient(t, stub)
 
-	databases, err := client.List(t.Context())
+	databases, err := client.Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
@@ -164,7 +164,7 @@ func assertListingIsReturnedAsServed(t *testing.T) {
 // would filter out one it can.
 func assertNoCatalogIsCompiledIn(t *testing.T) {
 	empty := newStub(map[string]stubRoute{pathList: {body: map[string]any{"databases": []any{}}}})
-	if databases, err := newTestClient(t, empty).List(t.Context()); err != nil {
+	if databases, err := newTestClient(t, empty).Database.List(t.Context()); err != nil {
 		t.Fatalf("List: %v", err)
 	} else if len(databases) != 0 {
 		t.Errorf("an empty listing came back as %v", basesOf(databases))
@@ -173,7 +173,7 @@ func assertNoCatalogIsCompiledIn(t *testing.T) {
 	unknown := newStub(map[string]stubRoute{
 		pathList: {body: catalog("a_family_this_library_has_never_heard_of")},
 	})
-	databases, err := newTestClient(t, unknown).List(t.Context())
+	databases, err := newTestClient(t, unknown).Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
@@ -194,16 +194,16 @@ func assertAListingIsNeverReused(t *testing.T) {
 		"key-stranger":     {pathList: {body: catalog("bogon_ip")}},
 	}
 
-	theirs, err := newKeyedTestClient(t, stub, "key-commissioner").List(t.Context())
+	theirs, err := newKeyedTestClient(t, stub, "key-commissioner").Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
 	stranger := newKeyedTestClient(t, stub, "key-stranger")
-	others, err := stranger.List(t.Context())
+	others, err := stranger.Database.List(t.Context())
 	if err != nil {
 		t.Fatalf("List: %v", err)
 	}
-	if _, err := stranger.List(t.Context()); err != nil {
+	if _, err := stranger.Database.List(t.Context()); err != nil {
 		t.Fatalf("List: %v", err)
 	}
 
