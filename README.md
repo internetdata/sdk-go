@@ -1,4 +1,4 @@
-# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData Go Client Library
+# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" height="28"/>](https://internetdata.io/) InternetData Go Client Library
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/internetdata/sdk-go.svg)](https://pkg.go.dev/github.com/internetdata/sdk-go)
 [![license](https://img.shields.io/github/license/internetdata/sdk-go)](LICENSE)
