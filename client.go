@@ -1,9 +1,10 @@
 // Package internetdata is the official Go client library for the InternetData
 // API: licensed IP and network datasets, downloaded as CSV.GZ or MMDB.
 //
-// Start with New and Client.Database.List. Every endpoint needs an API key
-// carrying the db.download scope, which is why New takes one rather than
-// offering it as an option: there is no anonymous tier to fall back to.
+// Start with New and Client.Database.List. Every database published today is
+// licensed, so pass WithAPIKey a key carrying the db.download scope; the option
+// is optional because what this API serves without one is a product decision
+// rather than the client's to refuse.
 package internetdata
 
 import (
@@ -12,7 +13,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/internetdata/sdk-go/internal/api"
@@ -41,15 +41,9 @@ type Client struct {
 	Database *DatabaseAPI
 }
 
-// New builds a client for one API key.
-//
-// The key comes from the console and needs the db.download scope. Keys are
-// default-deny, so an existing key does not reach these endpoints until the
-// scope is added to it.
-func New(apiKey string, opts ...Option) (*Client, error) {
-	if strings.TrimSpace(apiKey) == "" {
-		return nil, errors.New("internetdata: an API key is required")
-	}
+// New builds a client. Without WithAPIKey it sends no Authorization header at
+// all, which every endpoint published today answers 401.
+func New(opts ...Option) (*Client, error) {
 	cfg := config{
 		baseURL:    DefaultBaseURL,
 		retries:    defaultRetries,
@@ -62,9 +56,11 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 	}
 
 	httpClient := redirectControlled(cfg.httpClient)
-	inner, err := api.NewClientWithResponses(cfg.baseURL,
-		api.WithHTTPClient(httpClient),
-		api.WithRequestEditorFn(bearer(apiKey)))
+	apiOpts := []api.ClientOption{api.WithHTTPClient(httpClient)}
+	if cfg.apiKey != "" {
+		apiOpts = append(apiOpts, api.WithRequestEditorFn(bearer(cfg.apiKey)))
+	}
+	inner, err := api.NewClientWithResponses(cfg.baseURL, apiOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("internetdata: %w", err)
 	}
@@ -77,6 +73,19 @@ func New(apiKey string, opts ...Option) (*Client, error) {
 
 // Option configures a Client.
 type Option func(*config) error
+
+// WithAPIKey authenticates as the key's organization, which is what decides
+// which databases are listed at all and which of them may be downloaded.
+//
+// The key comes from the console and needs the db.download scope. Keys are
+// default-deny, so an existing key does not reach these endpoints until the
+// scope is added to it.
+func WithAPIKey(key string) Option {
+	return func(c *config) error {
+		c.apiKey = key
+		return nil
+	}
+}
 
 // WithBaseURL points the client at a different deployment of the API.
 func WithBaseURL(rawURL string) Option {
@@ -122,6 +131,7 @@ func WithHTTPClient(client *http.Client) Option {
 }
 
 type config struct {
+	apiKey     string
 	baseURL    string
 	retries    int
 	httpClient *http.Client

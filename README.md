@@ -21,10 +21,10 @@ import internetdata "github.com/internetdata/sdk-go"
 
 ## Usage
 
-Every call needs an API key carrying the `db.download` scope. Create one in the [console](https://app.internetdata.io) and pass it to `New`:
+Every database published today is licensed, so start with an API key carrying the `db.download` scope. Create one in the [console](https://app.internetdata.io) and pass it to `New` as an option:
 
 ```go
-client, err := internetdata.New(os.Getenv("INTERNETDATA_API_KEY"))
+client, err := internetdata.New(internetdata.WithAPIKey(os.Getenv("INTERNETDATA_API_KEY")))
 if err != nil {
     log.Fatal(err)
 }

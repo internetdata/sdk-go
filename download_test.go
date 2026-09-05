@@ -251,7 +251,7 @@ func newOrigin(t *testing.T, cfg originConfig) *testOrigin {
 	}))
 	t.Cleanup(server.Close)
 
-	client, err := New(testKey, WithBaseURL(server.URL), WithRetries(0))
+	client, err := New(WithAPIKey(testKey), WithBaseURL(server.URL), WithRetries(0))
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}

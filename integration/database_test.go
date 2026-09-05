@@ -118,6 +118,24 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 			t.Errorf("this organization should license %s, and the catalog says %v", want, licensed)
 		}
 	}
+
+	// Everything above is vacuous unless the key reached the wire. The client
+	// builds happily without one and then sends no Authorization header at all,
+	// which is exactly what an unset CI secret produces, so the suite is what has
+	// to catch it.
+	api := 0
+	for _, f := range rec.seen() {
+		if f.origin != staging {
+			continue
+		}
+		api++
+		if !f.carriedKey {
+			t.Errorf("the request to %s carried no key", f.path)
+		}
+	}
+	if api == 0 {
+		t.Error("no request reached the staging API")
+	}
 }
 
 // A private family is one built for a single customer, and it is ABSENT from

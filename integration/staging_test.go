@@ -48,6 +48,11 @@ func stagingKey() string {
 }
 
 // A reason, or the empty string when the suite can run.
+//
+// Empty counts as absent, and the gate is the ONLY thing standing between an
+// unset secret and a green run: the client accepts a keyless build and sends no
+// Authorization header, so an ungated suite would collect 401s that every
+// assertion below reads as an ordinary refusal.
 func skipReason() string {
 	if stagingKey() != "" {
 		return ""
@@ -63,7 +68,8 @@ func clientFor(t *testing.T) (*internetdata.Client, *recorder) {
 		t.Skip(reason)
 	}
 	rec := &recorder{key: stagingKey(), bodies: map[string]json.RawMessage{}}
-	client, err := internetdata.New(rec.key,
+	client, err := internetdata.New(
+		internetdata.WithAPIKey(rec.key),
 		internetdata.WithBaseURL(staging),
 		internetdata.WithHTTPClient(&http.Client{Transport: rec}))
 	if err != nil {

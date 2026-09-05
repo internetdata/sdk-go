@@ -228,7 +228,8 @@ func newKeyedTestClient(
 	t *testing.T, stub *stubTransport, key string, opts ...Option,
 ) *Client {
 	t.Helper()
-	client, err := New(key, append([]Option{WithHTTPClient(stub.client())}, opts...)...)
+	client, err := New(
+		append([]Option{WithHTTPClient(stub.client()), WithAPIKey(key)}, opts...)...)
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}

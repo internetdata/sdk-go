@@ -36,6 +36,10 @@ type stubCall struct {
 	path  string
 	query string
 	key   string
+	// The Authorization header verbatim, empty when there was none. `key` alone
+	// cannot tell an absent header from "Bearer " with nothing after it, and
+	// those are the two outcomes a keyless client has to be held apart.
+	auth string
 }
 
 func newStub(routes map[string]stubRoute) *stubTransport {
@@ -47,8 +51,9 @@ func (s *stubTransport) client() *http.Client {
 }
 
 func (s *stubTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	key := strings.TrimPrefix(req.Header.Get("Authorization"), "Bearer ")
-	s.record(stubCall{path: req.URL.Path, query: req.URL.RawQuery, key: key})
+	auth := req.Header.Get("Authorization")
+	key := strings.TrimPrefix(auth, "Bearer ")
+	s.record(stubCall{path: req.URL.Path, query: req.URL.RawQuery, key: key, auth: auth})
 
 	if perKey, ok := s.byKey[key]; ok {
 		if route, ok := perKey[req.URL.Path]; ok {

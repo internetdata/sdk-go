@@ -12,11 +12,24 @@ import (
 	"time"
 )
 
-func TestNewRefusesAClientThatCouldOnlyEver401(t *testing.T) {
-	for _, key := range []string{"", "   ", "\t\n"} {
-		if _, err := New(key); err == nil {
-			t.Errorf("New(%q) built a client, and every endpoint needs a key", key)
-		}
+// The key is an option, not an argument, because what this API serves without a
+// licence is a product decision and a New that could not be called without one
+// would have to change shape to follow it. What must never go out is
+// "Authorization: Bearer " with nothing after it, which reads as a wrong key
+// rather than as none.
+func TestAClientBuildsWithNoKeyAndSendsNoAuthorizationHeader(t *testing.T) {
+	stub := newStub(map[string]stubRoute{pathList: {body: catalog("bogon_ip")}})
+	client, err := New(WithHTTPClient(stub.client()))
+	if err != nil {
+		t.Fatalf("New with no key: %v", err)
+	}
+
+	if _, err := client.Database.List(t.Context()); err != nil {
+		t.Fatalf("List: %v", err)
+	}
+
+	if got := stub.seen()[0].auth; got != "" {
+		t.Errorf("a keyless client sent Authorization: %q, want no header at all", got)
 	}
 }
 
@@ -33,7 +46,7 @@ func TestNewRejectsUnusableOptions(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if _, err := New("key", c.option); err == nil {
+			if _, err := New(WithAPIKey("key"), c.option); err == nil {
 				t.Error("New should have rejected the option")
 			}
 		})
