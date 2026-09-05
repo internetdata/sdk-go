@@ -17,24 +17,24 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for DatabaseRedistribution.
+// Defines values for DatabaseLicenseType.
 const (
-	Evaluation   DatabaseRedistribution = "evaluation"
-	Internal     DatabaseRedistribution = "internal"
-	LessThanNil  DatabaseRedistribution = "<nil>"
-	Redistribute DatabaseRedistribution = "redistribute"
+	Evaluation   DatabaseLicenseType = "evaluation"
+	LessThanNil  DatabaseLicenseType = "<nil>"
+	Redistribute DatabaseLicenseType = "redistribute"
+	Standard     DatabaseLicenseType = "standard"
 )
 
-// Valid indicates whether the value is a known member of the DatabaseRedistribution enum.
-func (e DatabaseRedistribution) Valid() bool {
+// Valid indicates whether the value is a known member of the DatabaseLicenseType enum.
+func (e DatabaseLicenseType) Valid() bool {
 	switch e {
 	case Evaluation:
-		return true
-	case Internal:
 		return true
 	case LessThanNil:
 		return true
 	case Redistribute:
+		return true
+	case Standard:
 		return true
 	default:
 		return false
@@ -194,12 +194,12 @@ type Database struct {
 	// Expires Null when the licence has no end date, or when there is none.
 	Expires *time.Time `json:"expires"`
 
+	// LicenseType What your licence permits you to do with the data. Null when there
+	// is no licence.
+	LicenseType *DatabaseLicenseType `json:"license_type"`
+
 	// Name Example: VPN IP
 	Name string `json:"name"`
-
-	// Redistribution What your licence permits you to do with the data. Null when there
-	// is no licence.
-	Redistribution *DatabaseRedistribution `json:"redistribution"`
 
 	// Standing `licensed` is a live grant, `expired` one whose term has ended, and
 	// `unlicensed` a database published but never bought.
@@ -214,9 +214,9 @@ type Database struct {
 	Versions []DatabaseVersion `json:"versions"`
 }
 
-// DatabaseRedistribution What your licence permits you to do with the data. Null when there
+// DatabaseLicenseType What your licence permits you to do with the data. Null when there
 // is no licence.
-type DatabaseRedistribution string
+type DatabaseLicenseType string
 
 // DatabaseStanding `licensed` is a live grant, `expired` one whose term has ended, and
 // `unlicensed` a database published but never bought.
@@ -447,12 +447,14 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 
-	// DatabaseChecksumV2 Checksums for one published file, to verify a download
+	// DatabaseChecksumV2 Checksums
+	//
+	// Checksums for one published file, so a download can be verified after it lands.
 	//
 	// Corresponds with GET /api/v2/database/checksum (the `DatabaseChecksumV2` operationId).
 	DatabaseChecksumV2(ctx context.Context, params *DatabaseChecksumV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DownloadDatabaseV2 Redirect to a time-limited download URL for one database
+	// DownloadDatabaseV2 Download
 	//
 	// Answers `302`; the bytes come straight from object storage rather than
 	// through this API. Follow the redirect.
@@ -460,7 +462,7 @@ type ClientInterface interface {
 	// Corresponds with GET /api/v2/database/download (the `DownloadDatabaseV2` operationId).
 	DownloadDatabaseV2(ctx context.Context, params *DownloadDatabaseV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListDownloads Your organization's recent download attempts, newest first
+	// ListDownloads History
 	//
 	// Refusals are listed too: a denial is what answers "it stopped working",
 	// and its absence answers nothing.
@@ -468,19 +470,16 @@ type ClientInterface interface {
 	// Corresponds with GET /api/v2/database/downloads (the `ListDownloads` operationId).
 	ListDownloads(ctx context.Context, params *ListDownloadsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListDatabases Every database your organization may see, and where each one stands
+	// ListDatabases List
 	//
 	// The whole published catalog, with your organization's licence beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
 	//
-	// Databases commissioned for a single customer are not listed to anyone
-	// else.
-	//
 	// Corresponds with GET /api/v2/database/list (the `ListDatabases` operationId).
 	ListDatabases(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DatabaseMetadataV2 What is inside one database - schema, sample rows, row count, sizes
+	// DatabaseMetadataV2 Metadata
 	//
 	// Poll this to decide whether today's build is worth fetching: it carries
 	// `updated` and `entries` without downloading anything.
@@ -492,7 +491,9 @@ type ClientInterface interface {
 	DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadataV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-// DatabaseChecksumV2 Checksums for one published file, to verify a download
+// DatabaseChecksumV2 Checksums
+//
+// Checksums for one published file, so a download can be verified after it lands.
 //
 // Corresponds with GET /api/v2/database/checksum (the `DatabaseChecksumV2` operationId).
 func (c *Client) DatabaseChecksumV2(ctx context.Context, params *DatabaseChecksumV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -507,7 +508,7 @@ func (c *Client) DatabaseChecksumV2(ctx context.Context, params *DatabaseChecksu
 	return c.Client.Do(req)
 }
 
-// DownloadDatabaseV2 Redirect to a time-limited download URL for one database
+// DownloadDatabaseV2 Download
 //
 // Answers `302`; the bytes come straight from object storage rather than
 // through this API. Follow the redirect.
@@ -525,7 +526,7 @@ func (c *Client) DownloadDatabaseV2(ctx context.Context, params *DownloadDatabas
 	return c.Client.Do(req)
 }
 
-// ListDownloads Your organization's recent download attempts, newest first
+// ListDownloads History
 //
 // Refusals are listed too: a denial is what answers "it stopped working",
 // and its absence answers nothing.
@@ -543,14 +544,11 @@ func (c *Client) ListDownloads(ctx context.Context, params *ListDownloadsParams,
 	return c.Client.Do(req)
 }
 
-// ListDatabases Every database your organization may see, and where each one stands
+// ListDatabases List
 //
 // The whole published catalog, with your organization's licence beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-//
-// Databases commissioned for a single customer are not listed to anyone
-// else.
 //
 // Corresponds with GET /api/v2/database/list (the `ListDatabases` operationId).
 func (c *Client) ListDatabases(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -565,7 +563,7 @@ func (c *Client) ListDatabases(ctx context.Context, reqEditors ...RequestEditorF
 	return c.Client.Do(req)
 }
 
-// DatabaseMetadataV2 What is inside one database - schema, sample rows, row count, sizes
+// DatabaseMetadataV2 Metadata
 //
 // Poll this to decide whether today's build is worth fetching: it carries
 // `updated` and `entries` without downloading anything.
@@ -877,14 +875,16 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 
-	// DatabaseChecksumV2WithResponse Checksums for one published file, to verify a download
+	// DatabaseChecksumV2WithResponse Checksums
+	//
+	// Checksums for one published file, so a download can be verified after it lands.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /api/v2/database/checksum (the `DatabaseChecksumV2` operationId).
 	DatabaseChecksumV2WithResponse(ctx context.Context, params *DatabaseChecksumV2Params, reqEditors ...RequestEditorFn) (*DatabaseChecksumV2Response, error)
 
-	// DownloadDatabaseV2WithResponse Redirect to a time-limited download URL for one database
+	// DownloadDatabaseV2WithResponse Download
 	//
 	// Answers `302`; the bytes come straight from object storage rather than
 	// through this API. Follow the redirect.
@@ -894,7 +894,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/v2/database/download (the `DownloadDatabaseV2` operationId).
 	DownloadDatabaseV2WithResponse(ctx context.Context, params *DownloadDatabaseV2Params, reqEditors ...RequestEditorFn) (*DownloadDatabaseV2Response, error)
 
-	// ListDownloadsWithResponse Your organization's recent download attempts, newest first
+	// ListDownloadsWithResponse History
 	//
 	// Refusals are listed too: a denial is what answers "it stopped working",
 	// and its absence answers nothing.
@@ -904,21 +904,18 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/v2/database/downloads (the `ListDownloads` operationId).
 	ListDownloadsWithResponse(ctx context.Context, params *ListDownloadsParams, reqEditors ...RequestEditorFn) (*ListDownloadsResponse, error)
 
-	// ListDatabasesWithResponse Every database your organization may see, and where each one stands
+	// ListDatabasesWithResponse List
 	//
 	// The whole published catalog, with your organization's licence beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-	//
-	// Databases commissioned for a single customer are not listed to anyone
-	// else.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /api/v2/database/list (the `ListDatabases` operationId).
 	ListDatabasesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDatabasesResponse, error)
 
-	// DatabaseMetadataV2WithResponse What is inside one database - schema, sample rows, row count, sizes
+	// DatabaseMetadataV2WithResponse Metadata
 	//
 	// Poll this to decide whether today's build is worth fetching: it carries
 	// `updated` and `entries` without downloading anything.
@@ -1265,7 +1262,9 @@ func (r DatabaseMetadataV2Response) ContentType() string {
 	return ""
 }
 
-// DatabaseChecksumV2WithResponse Checksums for one published file, to verify a download
+// DatabaseChecksumV2WithResponse Checksums
+//
+// Checksums for one published file, so a download can be verified after it lands.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -1278,7 +1277,7 @@ func (c *ClientWithResponses) DatabaseChecksumV2WithResponse(ctx context.Context
 	return ParseDatabaseChecksumV2Response(rsp)
 }
 
-// DownloadDatabaseV2WithResponse Redirect to a time-limited download URL for one database
+// DownloadDatabaseV2WithResponse Download
 //
 // Answers `302`; the bytes come straight from object storage rather than
 // through this API. Follow the redirect.
@@ -1294,7 +1293,7 @@ func (c *ClientWithResponses) DownloadDatabaseV2WithResponse(ctx context.Context
 	return ParseDownloadDatabaseV2Response(rsp)
 }
 
-// ListDownloadsWithResponse Your organization's recent download attempts, newest first
+// ListDownloadsWithResponse History
 //
 // Refusals are listed too: a denial is what answers "it stopped working",
 // and its absence answers nothing.
@@ -1310,14 +1309,11 @@ func (c *ClientWithResponses) ListDownloadsWithResponse(ctx context.Context, par
 	return ParseListDownloadsResponse(rsp)
 }
 
-// ListDatabasesWithResponse Every database your organization may see, and where each one stands
+// ListDatabasesWithResponse List
 //
 // The whole published catalog, with your organization's licence beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-//
-// Databases commissioned for a single customer are not listed to anyone
-// else.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -1330,7 +1326,7 @@ func (c *ClientWithResponses) ListDatabasesWithResponse(ctx context.Context, req
 	return ParseListDatabasesResponse(rsp)
 }
 
-// DatabaseMetadataV2WithResponse What is inside one database - schema, sample rows, row count, sizes
+// DatabaseMetadataV2WithResponse Metadata
 //
 // Poll this to decide whether today's build is worth fetching: it carries
 // `updated` and `entries` without downloading anything.

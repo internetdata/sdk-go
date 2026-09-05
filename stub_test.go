@@ -126,7 +126,7 @@ func catalog(bases ...string) map[string]any {
 	for _, base := range bases {
 		databases = append(databases, map[string]any{
 			"base": base, "name": base, "summary": "one line",
-			"standing": "licensed", "redistribution": "internal",
+			"standing": "licensed", "license_type": "standard",
 			"starts": nil, "expires": nil,
 			"versions": []map[string]any{{
 				"id": base + "_v1", "version": 1, "summary": "one line",

@@ -86,13 +86,13 @@ func TestTheStandingsAreExactlyWhatTheCorpusPins(t *testing.T) {
 	assertSameSet(t, "standings", got, corpus(t).Standings)
 }
 
-func TestTheRedistributionRightsAreExactlyWhatTheCorpusPins(t *testing.T) {
+func TestTheLicenseTypesAreExactlyWhatTheCorpusPins(t *testing.T) {
 	got := []string{
-		string(RedistributionEvaluation),
-		string(RedistributionInternal),
-		string(RedistributionRedistribute),
+		string(LicenseTypeEvaluation),
+		string(LicenseTypeStandard),
+		string(LicenseTypeRedistribute),
 	}
-	assertSameSet(t, "redistribution", got, corpus(t).Redistribution)
+	assertSameSet(t, "license_type", got, corpus(t).LicenseType)
 }
 
 func TestTheFormatsAreExactlyWhatTheCorpusPins(t *testing.T) {
@@ -279,7 +279,7 @@ type corpusData struct {
 		} `json:"expect"`
 	} `json:"errors"`
 	Standings      []string `json:"standings"`
-	Redistribution []string `json:"redistribution"`
+	LicenseType []string `json:"license_type"`
 	Formats        []string `json:"formats"`
 	Visibility     struct {
 		Why         string   `json:"why"`

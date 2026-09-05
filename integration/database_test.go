@@ -74,10 +74,10 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 		internetdata.StandingExpired,
 		internetdata.StandingUnlicensed,
 	}
-	rights := []internetdata.Redistribution{
-		internetdata.RedistributionEvaluation,
-		internetdata.RedistributionInternal,
-		internetdata.RedistributionRedistribute,
+	rights := []internetdata.LicenseType{
+		internetdata.LicenseTypeEvaluation,
+		internetdata.LicenseTypeStandard,
+		internetdata.LicenseTypeRedistribute,
 	}
 	var licensed []string
 	for _, d := range databases {
@@ -89,10 +89,10 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 		}
 		// Null when there is no licence at all, which is most of the catalog
 		// for this organization, so the pointer is read before the value.
-		if d.Redistribution != nil && !slices.Contains(rights, *d.Redistribution) {
-			t.Errorf("%s carries an undocumented right %q", d.Base, *d.Redistribution)
+		if d.LicenseType != nil && !slices.Contains(rights, *d.LicenseType) {
+			t.Errorf("%s carries an undocumented right %q", d.Base, *d.LicenseType)
 		}
-		if d.Standing == internetdata.StandingUnlicensed && d.Redistribution != nil {
+		if d.Standing == internetdata.StandingUnlicensed && d.LicenseType != nil {
 			t.Errorf("%s is unlicensed and still carries a right", d.Base)
 		}
 		// The point of the family shape: a licence covers the family, and these

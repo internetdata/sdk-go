@@ -138,7 +138,7 @@ const (
 // package.
 type (
 	// Database is one database FAMILY, with your organization's licence beside
-	// it. Redistribution, Starts and Expires are nil when there is no licence.
+	// it. LicenseType, Starts and Expires are nil when there is no licence.
 	Database = api.Database
 	// DatabaseVersion is one published version of a family. Its ID is what the
 	// download, checksum and metadata calls take. Old versions are frozen
@@ -156,8 +156,8 @@ type (
 	DownloadAttempt = api.Download
 	// DownloadOutcome is how one download attempt ended.
 	DownloadOutcome = api.DownloadOutcome
-	// Redistribution is what a licence permits you to do with the data.
-	Redistribution = api.DatabaseRedistribution
+	// LicenseType is what a licence permits you to do with the data.
+	LicenseType = api.DatabaseLicenseType
 	// Standing is where a licence stands: live, lapsed, or never bought.
 	Standing = api.DatabaseStanding
 	// Date is a calendar date with no time of day, as DatabaseMetadata.Updated
@@ -174,12 +174,12 @@ const (
 	StandingUnlicensed = api.DatabaseStandingUnlicensed
 )
 
-// Redistribution is nil rather than one of these when there is no licence at
+// LicenseType is nil rather than one of these when there is no licence at
 // all, so read the pointer before comparing it.
 const (
-	RedistributionEvaluation   = api.Evaluation
-	RedistributionInternal     = api.Internal
-	RedistributionRedistribute = api.Redistribute
+	LicenseTypeEvaluation   = api.Evaluation
+	LicenseTypeStandard     = api.Standard
+	LicenseTypeRedistribute = api.Redistribute
 )
 
 const (

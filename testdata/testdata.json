@@ -126,9 +126,9 @@
     "expired",
     "unlicensed"
   ],
-  "redistribution": [
+  "license_type": [
     "evaluation",
-    "internal",
+    "standard",
     "redistribute"
   ],
   "formats": [

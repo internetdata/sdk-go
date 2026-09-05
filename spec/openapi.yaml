@@ -8,7 +8,7 @@ info:
     email: dev@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms-of-service/
-  version: 2026.09.04
+  version: 2026.09.05
 servers:
   - url: https://internetdata.io
 security:
@@ -19,7 +19,10 @@ tags:
   - name: Database v2
     description: |
       The current database API. Authenticate with an API key carrying the
-      `db.download` scope, as `Authorization: Bearer <key>`.
+      `db.download` scope, presented any of three ways: `Authorization: Bearer
+      <key>`, `X-Api-Key: <key>`, or `?apikey=<key>`. They are the same key;
+      the query parameter is there for curl and the browser, which is how a
+      database is usually fetched.
 
       Access is granted by CONTRACT, one dataset family at a time: there is no
       self-service purchase and no subscription behind it.
@@ -34,15 +37,14 @@ paths:
       tags:
         - Database v2
       operationId: listDatabases
-      summary: Every database your organization may see, and where each one stands
+      summary: List
       description: |
         The whole published catalog, with your organization's licence beside
         each entry, so `standing` says whether a database is yours today
         (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-
-        Databases commissioned for a single customer are not listed to anyone
-        else.
       security:
+        - ApiKeyQueryAuth: []
+        - ApiKeyHeaderAuth: []
         - BearerAuth: []
       responses:
         '200':
@@ -65,11 +67,13 @@ paths:
       tags:
         - Database v2
       operationId: downloadDatabaseV2
-      summary: Redirect to a time-limited download URL for one database
+      summary: Download
       description: |
         Answers `302`; the bytes come straight from object storage rather than
         through this API. Follow the redirect.
       security:
+        - ApiKeyQueryAuth: []
+        - ApiKeyHeaderAuth: []
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/DbId'
@@ -100,7 +104,7 @@ paths:
       tags:
         - Database v2
       operationId: databaseMetadataV2
-      summary: What is inside one database - schema, sample rows, row count, sizes
+      summary: Metadata
       description: |
         Poll this to decide whether today's build is worth fetching: it carries
         `updated` and `entries` without downloading anything.
@@ -108,6 +112,8 @@ paths:
         No `format` parameter - one document describes every format the database
         is built in.
       security:
+        - ApiKeyQueryAuth: []
+        - ApiKeyHeaderAuth: []
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/DbId'
@@ -131,8 +137,12 @@ paths:
       tags:
         - Database v2
       operationId: databaseChecksumV2
-      summary: Checksums for one published file, to verify a download
+      summary: Checksums
+      description: |
+        Checksums for one published file, so a download can be verified after it lands.
       security:
+        - ApiKeyQueryAuth: []
+        - ApiKeyHeaderAuth: []
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/DbId'
@@ -177,11 +187,13 @@ paths:
       tags:
         - Database v2
       operationId: listDownloads
-      summary: Your organization's recent download attempts, newest first
+      summary: History
       description: |
         Refusals are listed too: a denial is what answers "it stopped working",
         and its absence answers nothing.
       security:
+        - ApiKeyQueryAuth: []
+        - ApiKeyHeaderAuth: []
         - BearerAuth: []
       parameters:
         - name: limit
@@ -214,7 +226,7 @@ paths:
       tags:
         - Database
       operationId: databaseDownload
-      summary: Download a database file
+      summary: Download
       description: |
         Returns the requested database file as a binary download.
         The response's `Content-Type` depends on `format`:
@@ -252,7 +264,7 @@ paths:
       tags:
         - Database
       operationId: databaseChecksum
-      summary: Get checksums for a database file
+      summary: Checksums
       description: |
         Returns MD5, SHA-1, SHA-256, and SHA-512 checksums for the currently
         published version of the requested database.
@@ -279,7 +291,7 @@ paths:
       tags:
         - Database
       operationId: databaseMetadata
-      summary: Get metadata for a database
+      summary: Metadata
       description: |
         Returns publish freshness information for the currently published version
         of the requested database: when it was last updated, how many entries
@@ -319,9 +331,21 @@ components:
         `Authorization: Bearer <key>`, with a key from the console carrying the
         `db.download` scope. Keys are default-deny, so an existing key does not
         gain database access until the scope is added to it.
+    ApiKeyHeaderAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: '`X-Api-Key: <key>`. The same v2 key, for clients that do not set a bearer.'
+    ApiKeyQueryAuth:
+      type: apiKey
+      in: query
+      name: apikey
+      description: |
+        `?apikey=<key>`. Convenient in a browser or a curl one-liner, which is
+        how a database is usually fetched; prefer a header elsewhere.
 
-        A v1 `?apikey=` credential is not accepted here, and a v2 key is not
-        accepted on the v1 endpoints: they are separate vocabularies.
+        This is the same v2 key as the other two schemes. A v1 credential is a
+        different vocabulary and fails validation here, as it would anywhere.
   parameters:
     DbId:
       name: id
@@ -365,7 +389,7 @@ components:
         - name
         - summary
         - standing
-        - redistribution
+        - license_type
         - starts
         - expires
         - versions
@@ -389,12 +413,12 @@ components:
           description: |
             `licensed` is a live grant, `expired` one whose term has ended, and
             `unlicensed` a database published but never bought.
-        redistribution:
+        license_type:
           type: string
           nullable: true
           enum:
             - evaluation
-            - internal
+            - standard
             - redistribute
             - null
           description: |
