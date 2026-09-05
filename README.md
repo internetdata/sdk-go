@@ -1,4 +1,4 @@
-# [<img src="https://docs.internetdata.io/logo.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData Go Client Library
+# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData Go Client Library
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/internetdata/sdk-go.svg)](https://pkg.go.dev/github.com/internetdata/sdk-go)
 [![license](https://img.shields.io/github/license/internetdata/sdk-go)](LICENSE)
@@ -143,7 +143,7 @@ There are official InternetData client libraries available for many languages in
 
 IP, ASN and Domain data to reveal unique insights about the internet. APIs, Databases and Live Feeds available.
 
-[<img src="https://docs.internetdata.io/logo.svg" alt="InternetData" width="96"/>](https://internetdata.io/)
+[<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="96"/>](https://internetdata.io/)
 
 ## License
 
