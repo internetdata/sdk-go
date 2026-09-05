@@ -52,7 +52,7 @@ for _, db := range databases {
 }
 ```
 
-`Standing` is `licensed`, `expired` or `unlicensed`, and `LicenseType` is what your licence permits: `evaluation`, `internal`, `redistribute`, or `nil` when there is no licence at all. Old versions are frozen rather than migrated, so both stay downloadable.
+`Standing` is `licensed`, `expired` or `unlicensed`, and `LicenseType` is what your licence permits: `evaluation`, `standard`, `redistribute`, or `nil` when there is no licence at all. Old versions are frozen rather than migrated, so both stay downloadable.
 
 ### What is inside one, before you fetch it
 
