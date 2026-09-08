@@ -278,10 +278,10 @@ type corpusData struct {
 			RetryAfterSeconds *int   `json:"retryAfterSeconds"`
 		} `json:"expect"`
 	} `json:"errors"`
-	Standings      []string `json:"standings"`
+	Standings   []string `json:"standings"`
 	LicenseType []string `json:"license_type"`
-	Formats        []string `json:"formats"`
-	Visibility     struct {
+	Formats     []string `json:"formats"`
+	Visibility  struct {
 		Why         string   `json:"why"`
 		ClientRules []string `json:"clientRules"`
 	} `json:"visibility"`
