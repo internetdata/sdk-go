@@ -392,6 +392,8 @@ components:
         - license_type
         - starts
         - expires
+        - renews_at
+        - notice_due_at
         - versions
       properties:
         base:
