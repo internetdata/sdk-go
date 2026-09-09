@@ -191,7 +191,7 @@ type Database struct {
 	// Example: vpn_ip
 	Base string `json:"base"`
 
-	// Expires Null when the licence has no end date, or when there is none.
+	// Expires A hard stop. Null when the licence has no end date, which is the normal case for a rolling agreement, and when there is no licence. A rolling licence reports its turnover date in renews_at instead.
 	Expires *time.Time `json:"expires"`
 
 	// LicenseType What your licence permits you to do with the data. Null when there
@@ -200,6 +200,12 @@ type Database struct {
 
 	// Name Example: VPN IP
 	Name string `json:"name"`
+
+	// NoticeDueAt The last day notice of non-renewal can be given for the term ending at renews_at. Null whenever renews_at is, and when the agreement records no notice period.
+	NoticeDueAt *time.Time `json:"notice_due_at"`
+
+	// RenewsAt When a rolling licence next renews. Null when the licence has no defined term, when expires sets a hard stop instead, and when there is no licence.
+	RenewsAt *time.Time `json:"renews_at"`
 
 	// Standing `licensed` is a live grant, `expired` one whose term has ended, and
 	// `unlicensed` a database published but never bought.
