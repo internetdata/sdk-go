@@ -8,7 +8,7 @@ info:
     email: dev@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms-of-service/
-  version: 2026.09.05
+  version: 2026.09.09
 servers:
   - url: https://internetdata.io
 security:
@@ -432,7 +432,24 @@ components:
           type: string
           format: date-time
           nullable: true
-          description: Null when the licence has no end date, or when there is none.
+          description: >-
+            A hard stop. Null when the licence has no end date, which is the normal case for a
+            rolling agreement, and when there is no licence. A rolling licence reports its turnover
+            date in renews_at instead.
+        renews_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            When a rolling licence next renews. Null when the licence has no defined term, when
+            expires sets a hard stop instead, and when there is no licence.
+        notice_due_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            The last day notice of non-renewal can be given for the term ending at renews_at. Null
+            whenever renews_at is, and when the agreement records no notice period.
         versions:
           type: array
           description: |
