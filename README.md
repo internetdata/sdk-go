@@ -1,6 +1,6 @@
 # [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" height="28"/>](https://internetdata.io/) InternetData Go Client Library
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/internetdata/sdk-go.svg)](https://pkg.go.dev/github.com/internetdata/sdk-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/internetdata/sdk-go/v2.svg)](https://pkg.go.dev/github.com/internetdata/sdk-go/v2)
 [![license](https://img.shields.io/github/license/internetdata/sdk-go)](LICENSE)
 
 The official Go client library for the [InternetData](https://internetdata.io) API.
@@ -10,13 +10,13 @@ The library downloads the IP and network databases your organization is licensed
 ## Getting Started
 
 ```bash
-go get github.com/internetdata/sdk-go
+go get github.com/internetdata/sdk-go/v2
 ```
 
 Requires Go 1.24 or newer. The module path ends in `sdk-go`, but the package it declares is `internetdata`:
 
 ```go
-import internetdata "github.com/internetdata/sdk-go"
+import internetdata "github.com/internetdata/sdk-go/v2"
 ```
 
 ## Usage

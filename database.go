@@ -6,7 +6,7 @@ import (
 
 	"github.com/oapi-codegen/runtime/types"
 
-	"github.com/internetdata/sdk-go/internal/api"
+	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
 // DatabaseAPI is the licensed database catalog and its downloads, reached

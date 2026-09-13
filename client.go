@@ -15,7 +15,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/internetdata/sdk-go/internal/api"
+	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
 // DefaultBaseURL is the production API. Override it with WithBaseURL.

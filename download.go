@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/internetdata/sdk-go/internal/api"
+	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
 // DownloadURL is the time-limited URL for one database file.

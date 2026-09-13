@@ -16,7 +16,7 @@ import (
 	"sync"
 	"testing"
 
-	internetdata "github.com/internetdata/sdk-go"
+	internetdata "github.com/internetdata/sdk-go/v2"
 )
 
 const (

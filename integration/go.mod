@@ -4,11 +4,11 @@
 //
 // scripts/run.sh moves the requirement to the newest published tag for the run
 // and puts this file back afterwards.
-module github.com/internetdata/sdk-go/integration
+module github.com/internetdata/sdk-go/v2/integration
 
 go 1.24.0
 
-require github.com/internetdata/sdk-go v1.0.0
+require github.com/internetdata/sdk-go/v2 v2.0.1
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
