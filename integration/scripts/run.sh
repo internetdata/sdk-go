@@ -22,8 +22,18 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-MODULE="github.com/internetdata/sdk-go"
+# Read from the requirement rather than written here, because a MAJOR bump
+# changes the path: from v2 onwards Go requires it to end in /vN. Hardcoding it
+# meant a v2 release resolved the bare path, found only the v1 tags, and failed
+# with "not a known dependency" - which reads like a proxy problem rather than
+# like this file being out of date.
+MODULE="$(awk '$1 == "require" && $2 ~ /^github\.com\// {print $2; exit}' go.mod)"
 goModBackup=""
+
+if [ -z "$MODULE" ] ; then
+    echo "==> FAILED: no github.com requirement in integration/go.mod to test against" >&2
+    exit 1
+fi
 
 function main() {
     local floor published latest
