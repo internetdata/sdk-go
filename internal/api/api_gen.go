@@ -17,63 +17,18 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for DatabaseLicenseType.
+// Defines values for DatabaseFormat.
 const (
-	Evaluation   DatabaseLicenseType = "evaluation"
-	LessThanNil  DatabaseLicenseType = "<nil>"
-	Redistribute DatabaseLicenseType = "redistribute"
-	Standard     DatabaseLicenseType = "standard"
+	Csvgz DatabaseFormat = "csvgz"
+	Mmdb  DatabaseFormat = "mmdb"
 )
 
-// Valid indicates whether the value is a known member of the DatabaseLicenseType enum.
-func (e DatabaseLicenseType) Valid() bool {
+// Valid indicates whether the value is a known member of the DatabaseFormat enum.
+func (e DatabaseFormat) Valid() bool {
 	switch e {
-	case Evaluation:
+	case Csvgz:
 		return true
-	case LessThanNil:
-		return true
-	case Redistribute:
-		return true
-	case Standard:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for DatabaseStanding.
-const (
-	DatabaseStandingExpired    DatabaseStanding = "expired"
-	DatabaseStandingLicensed   DatabaseStanding = "licensed"
-	DatabaseStandingUnlicensed DatabaseStanding = "unlicensed"
-)
-
-// Valid indicates whether the value is a known member of the DatabaseStanding enum.
-func (e DatabaseStanding) Valid() bool {
-	switch e {
-	case DatabaseStandingExpired:
-		return true
-	case DatabaseStandingLicensed:
-		return true
-	case DatabaseStandingUnlicensed:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for DatabaseVersionFormats.
-const (
-	DatabaseVersionFormatsCsvgz DatabaseVersionFormats = "csvgz"
-	DatabaseVersionFormatsMmdb  DatabaseVersionFormats = "mmdb"
-)
-
-// Valid indicates whether the value is a known member of the DatabaseVersionFormats enum.
-func (e DatabaseVersionFormats) Valid() bool {
-	switch e {
-	case DatabaseVersionFormatsCsvgz:
-		return true
-	case DatabaseVersionFormatsMmdb:
+	case Mmdb:
 		return true
 	default:
 		return false
@@ -110,72 +65,45 @@ func (e DownloadOutcome) Valid() bool {
 	}
 }
 
-// Defines values for DBFormat.
+// Defines values for LicenseType.
 const (
-	DBFormatCsvgz DBFormat = "csvgz"
-	DBFormatMmdb  DBFormat = "mmdb"
+	Evaluation   LicenseType = "evaluation"
+	LessThanNil  LicenseType = "<nil>"
+	Redistribute LicenseType = "redistribute"
+	Standard     LicenseType = "standard"
 )
 
-// Valid indicates whether the value is a known member of the DBFormat enum.
-func (e DBFormat) Valid() bool {
+// Valid indicates whether the value is a known member of the LicenseType enum.
+func (e LicenseType) Valid() bool {
 	switch e {
-	case DBFormatCsvgz:
+	case Evaluation:
 		return true
-	case DBFormatMmdb:
+	case LessThanNil:
+		return true
+	case Redistribute:
+		return true
+	case Standard:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for DatabaseChecksumV2ParamsFormat.
+// Defines values for Standing.
 const (
-	DatabaseChecksumV2ParamsFormatCsvgz DatabaseChecksumV2ParamsFormat = "csvgz"
-	DatabaseChecksumV2ParamsFormatMmdb  DatabaseChecksumV2ParamsFormat = "mmdb"
+	StandingExpired    Standing = "expired"
+	StandingLicensed   Standing = "licensed"
+	StandingUnlicensed Standing = "unlicensed"
 )
 
-// Valid indicates whether the value is a known member of the DatabaseChecksumV2ParamsFormat enum.
-func (e DatabaseChecksumV2ParamsFormat) Valid() bool {
+// Valid indicates whether the value is a known member of the Standing enum.
+func (e Standing) Valid() bool {
 	switch e {
-	case DatabaseChecksumV2ParamsFormatCsvgz:
+	case StandingExpired:
 		return true
-	case DatabaseChecksumV2ParamsFormatMmdb:
+	case StandingLicensed:
 		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for DatabaseChecksumV2200JSONResponseBodyFormat.
-const (
-	DatabaseChecksumV2200JSONResponseBodyFormatCsvgz DatabaseChecksumV2200JSONResponseBodyFormat = "csvgz"
-	DatabaseChecksumV2200JSONResponseBodyFormatMmdb  DatabaseChecksumV2200JSONResponseBodyFormat = "mmdb"
-)
-
-// Valid indicates whether the value is a known member of the DatabaseChecksumV2200JSONResponseBodyFormat enum.
-func (e DatabaseChecksumV2200JSONResponseBodyFormat) Valid() bool {
-	switch e {
-	case DatabaseChecksumV2200JSONResponseBodyFormatCsvgz:
-		return true
-	case DatabaseChecksumV2200JSONResponseBodyFormatMmdb:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for DownloadDatabaseV2ParamsFormat.
-const (
-	DownloadDatabaseV2ParamsFormatCsvgz DownloadDatabaseV2ParamsFormat = "csvgz"
-	DownloadDatabaseV2ParamsFormatMmdb  DownloadDatabaseV2ParamsFormat = "mmdb"
-)
-
-// Valid indicates whether the value is a known member of the DownloadDatabaseV2ParamsFormat enum.
-func (e DownloadDatabaseV2ParamsFormat) Valid() bool {
-	switch e {
-	case DownloadDatabaseV2ParamsFormatCsvgz:
-		return true
-	case DownloadDatabaseV2ParamsFormatMmdb:
+	case StandingUnlicensed:
 		return true
 	default:
 		return false
@@ -194,9 +122,9 @@ type Database struct {
 	// Expires A hard stop. Null when the licence has no end date, which is the normal case for a rolling agreement, and when there is no licence. A rolling licence reports its turnover date in renews_at instead.
 	Expires *time.Time `json:"expires"`
 
-	// LicenseType What your licence permits you to do with the data. Null when there
-	// is no licence.
-	LicenseType *DatabaseLicenseType `json:"license_type"`
+	// LicenseType What your licence permits you to do with the data. Null when there is
+	// no licence, which is every family with standing `unlicensed`.
+	LicenseType *LicenseType `json:"license_type"`
 
 	// Name Example: VPN IP
 	Name string `json:"name"`
@@ -207,10 +135,11 @@ type Database struct {
 	// RenewsAt When a rolling licence next renews. Null when the licence has no defined term, when expires sets a hard stop instead, and when there is no licence.
 	RenewsAt *time.Time `json:"renews_at"`
 
-	// Standing `licensed` is a live grant, `expired` one whose term has ended, and
-	// `unlicensed` a database published but never bought.
-	Standing DatabaseStanding `json:"standing"`
-	Starts   *time.Time       `json:"starts"`
+	// Standing Where your licence for a database family stands today. `licensed` is a
+	// live grant, `expired` one whose term has ended, and `unlicensed` a
+	// database published but never bought.
+	Standing Standing   `json:"standing"`
+	Starts   *time.Time `json:"starts"`
 
 	// Summary One line on what the newest version contains.
 	Summary string `json:"summary"`
@@ -220,13 +149,10 @@ type Database struct {
 	Versions []DatabaseVersion `json:"versions"`
 }
 
-// DatabaseLicenseType What your licence permits you to do with the data. Null when there
-// is no licence.
-type DatabaseLicenseType string
-
-// DatabaseStanding `licensed` is a live grant, `expired` one whose term has ended, and
-// `unlicensed` a database published but never bought.
-type DatabaseStanding string
+// DatabaseFormat A file format a database version is published in.
+//
+// Example: mmdb
+type DatabaseFormat string
 
 // DatabaseMetadata The build document written by the exporter, served through unchanged.
 type DatabaseMetadata struct {
@@ -264,7 +190,7 @@ type DatabaseVersion struct {
 	// Formats The formats this version is BUILT in. Asking for another is a 400,
 	// not a gap - the `_provider` catalogs are keyed by provider id, so no
 	// MMDB exists for them.
-	Formats []DatabaseVersionFormats `json:"formats"`
+	Formats []DatabaseFormat `json:"formats"`
 
 	// ID The versioned id. Pass this to `download`, `checksum` and `metadata`.
 	//
@@ -275,9 +201,6 @@ type DatabaseVersion struct {
 	// Version Example: 1
 	Version int `json:"version"`
 }
-
-// DatabaseVersionFormats defines model for DatabaseVersion.Formats.
-type DatabaseVersionFormats string
 
 // DBChecksums defines model for DbChecksums.
 type DBChecksums struct {
@@ -322,8 +245,19 @@ type Error struct {
 	Rc string `json:"rc"`
 }
 
-// DBFormat Example: mmdb
-type DBFormat string
+// LicenseType What your licence permits you to do with the data. Null when there is
+// no licence, which is every family with standing `unlicensed`.
+type LicenseType string
+
+// Standing Where your licence for a database family stands today. `licensed` is a
+// live grant, `expired` one whose term has ended, and `unlicensed` a
+// database published but never bought.
+type Standing string
+
+// DBFormat A file format a database version is published in.
+//
+// Example: mmdb
+type DBFormat = DatabaseFormat
 
 // DBID Example: vpn_ip_v1
 type DBID = string
@@ -346,14 +280,8 @@ type DatabaseChecksumV2Params struct {
 	ID DBID `form:"id" json:"id"`
 
 	// Format Database file format.
-	Format DatabaseChecksumV2ParamsFormat `form:"format" json:"format"`
+	Format DBFormat `form:"format" json:"format"`
 }
-
-// DatabaseChecksumV2ParamsFormat defines parameters for DatabaseChecksumV2.
-type DatabaseChecksumV2ParamsFormat string
-
-// DatabaseChecksumV2200JSONResponseBodyFormat defines parameters for DatabaseChecksumV2.
-type DatabaseChecksumV2200JSONResponseBodyFormat string
 
 // DownloadDatabaseV2Params defines parameters for DownloadDatabaseV2.
 type DownloadDatabaseV2Params struct {
@@ -361,11 +289,8 @@ type DownloadDatabaseV2Params struct {
 	ID DBID `form:"id" json:"id"`
 
 	// Format Database file format.
-	Format DownloadDatabaseV2ParamsFormat `form:"format" json:"format"`
+	Format DBFormat `form:"format" json:"format"`
 }
-
-// DownloadDatabaseV2ParamsFormat defines parameters for DownloadDatabaseV2.
-type DownloadDatabaseV2ParamsFormat string
 
 // ListDownloadsParams defines parameters for ListDownloads.
 type ListDownloadsParams struct {
@@ -940,9 +865,13 @@ type DatabaseChecksumV2Response struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		Checksums DBChecksums                                 `json:"checksums"`
-		Format    DatabaseChecksumV2200JSONResponseBodyFormat `json:"format"`
-		ID        string                                      `json:"id"`
+		Checksums DBChecksums `json:"checksums"`
+
+		// Format A file format a database version is published in.
+		//
+		// Example: mmdb
+		Format DatabaseFormat `json:"format"`
+		ID     string         `json:"id"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *Error
@@ -958,9 +887,13 @@ type DatabaseChecksumV2Response struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r DatabaseChecksumV2Response) GetJSON200() *struct {
-	Checksums DBChecksums                                 `json:"checksums"`
-	Format    DatabaseChecksumV2200JSONResponseBodyFormat `json:"format"`
-	ID        string                                      `json:"id"`
+	Checksums DBChecksums `json:"checksums"`
+
+	// Format A file format a database version is published in.
+	//
+	// Example: mmdb
+	Format DatabaseFormat `json:"format"`
+	ID     string         `json:"id"`
 } {
 	return r.JSON200
 }
@@ -1367,9 +1300,13 @@ func ParseDatabaseChecksumV2Response(rsp *http.Response) (*DatabaseChecksumV2Res
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Checksums DBChecksums                                 `json:"checksums"`
-			Format    DatabaseChecksumV2200JSONResponseBodyFormat `json:"format"`
-			ID        string                                      `json:"id"`
+			Checksums DBChecksums `json:"checksums"`
+
+			// Format A file format a database version is published in.
+			//
+			// Example: mmdb
+			Format DatabaseFormat `json:"format"`
+			ID     string         `json:"id"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

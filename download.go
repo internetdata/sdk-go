@@ -22,7 +22,7 @@ func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format)
 	return withRetry(ctx, d.retries, func() (string, error) {
 		res, err := d.api.DownloadDatabaseV2WithResponse(ctx, &api.DownloadDatabaseV2Params{
 			ID:     id,
-			Format: api.DownloadDatabaseV2ParamsFormat(format),
+			Format: api.DatabaseFormat(format),
 		})
 		if err != nil {
 			return "", errorFromTransport(err)

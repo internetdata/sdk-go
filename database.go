@@ -71,7 +71,7 @@ func (d *DatabaseAPI) Checksums(ctx context.Context, id string, format Format) (
 	return withRetry(ctx, d.retries, func() (*Checksums, error) {
 		res, err := d.api.DatabaseChecksumV2WithResponse(ctx, &api.DatabaseChecksumV2Params{
 			ID:     id,
-			Format: api.DatabaseChecksumV2ParamsFormat(format),
+			Format: api.DatabaseFormat(format),
 		})
 		if err != nil {
 			return nil, errorFromTransport(err)
@@ -157,9 +157,9 @@ type (
 	// DownloadOutcome is how one download attempt ended.
 	DownloadOutcome = api.DownloadOutcome
 	// LicenseType is what a licence permits you to do with the data.
-	LicenseType = api.DatabaseLicenseType
+	LicenseType = api.LicenseType
 	// Standing is where a licence stands: live, lapsed, or never bought.
-	Standing = api.DatabaseStanding
+	Standing = api.Standing
 	// Date is a calendar date with no time of day, as DatabaseMetadata.Updated
 	// carries.
 	Date = types.Date
@@ -169,9 +169,9 @@ type (
 // database does not exist: a family built for one customer is simply absent
 // from another organization's listing.
 const (
-	StandingLicensed   = api.DatabaseStandingLicensed
-	StandingExpired    = api.DatabaseStandingExpired
-	StandingUnlicensed = api.DatabaseStandingUnlicensed
+	StandingLicensed   = api.StandingLicensed
+	StandingExpired    = api.StandingExpired
+	StandingUnlicensed = api.StandingUnlicensed
 )
 
 // LicenseType is nil rather than one of these when there is no licence at
