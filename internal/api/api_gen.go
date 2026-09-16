@@ -17,6 +17,30 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for DatabaseLicenseType.
+const (
+	Evaluation   DatabaseLicenseType = "evaluation"
+	LessThanNil  DatabaseLicenseType = "<nil>"
+	Redistribute DatabaseLicenseType = "redistribute"
+	Standard     DatabaseLicenseType = "standard"
+)
+
+// Valid indicates whether the value is a known member of the DatabaseLicenseType enum.
+func (e DatabaseLicenseType) Valid() bool {
+	switch e {
+	case Evaluation:
+		return true
+	case LessThanNil:
+		return true
+	case Redistribute:
+		return true
+	case Standard:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DatabaseFormat.
 const (
 	Csvgz DatabaseFormat = "csvgz"
@@ -65,30 +89,6 @@ func (e DownloadOutcome) Valid() bool {
 	}
 }
 
-// Defines values for LicenseType.
-const (
-	Evaluation   LicenseType = "evaluation"
-	LessThanNil  LicenseType = "<nil>"
-	Redistribute LicenseType = "redistribute"
-	Standard     LicenseType = "standard"
-)
-
-// Valid indicates whether the value is a known member of the LicenseType enum.
-func (e LicenseType) Valid() bool {
-	switch e {
-	case Evaluation:
-		return true
-	case LessThanNil:
-		return true
-	case Redistribute:
-		return true
-	case Standard:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for Standing.
 const (
 	StandingExpired    Standing = "expired"
@@ -122,9 +122,9 @@ type Database struct {
 	// Expires A hard stop. Null when the licence has no end date, which is the normal case for a rolling agreement, and when there is no licence. A rolling licence reports its turnover date in renews_at instead.
 	Expires *time.Time `json:"expires"`
 
-	// LicenseType What your licence permits you to do with the data. Null when there is
-	// no licence, which is every family with standing `unlicensed`.
-	LicenseType *LicenseType `json:"license_type"`
+	// LicenseType What your licence permits you to do with the data. Null when there
+	// is no licence, which is every family with standing `unlicensed`.
+	LicenseType *DatabaseLicenseType `json:"license_type"`
 
 	// Name Example: VPN IP
 	Name string `json:"name"`
@@ -148,6 +148,10 @@ type Database struct {
 	// are frozen rather than migrated, so both stay downloadable.
 	Versions []DatabaseVersion `json:"versions"`
 }
+
+// DatabaseLicenseType What your licence permits you to do with the data. Null when there
+// is no licence, which is every family with standing `unlicensed`.
+type DatabaseLicenseType string
 
 // DatabaseFormat A file format a database version is published in.
 //
@@ -244,10 +248,6 @@ type Error struct {
 	// added later must stay parseable by a client generated today.
 	Rc string `json:"rc"`
 }
-
-// LicenseType What your licence permits you to do with the data. Null when there is
-// no licence, which is every family with standing `unlicensed`.
-type LicenseType string
 
 // Standing Where your licence for a database family stands today. `licensed` is a
 // live grant, `expired` one whose term has ended, and `unlicensed` a

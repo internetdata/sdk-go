@@ -18,6 +18,9 @@ import (
 // key. The link is presigned and so authorizes itself; it authorizes the START
 // of a transfer, so one already running is not interrupted when it lapses.
 func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
+	if err := checkFormat(format); err != nil {
+		return "", err
+	}
 	ctx = withoutRedirects(ctx)
 	return withRetry(ctx, d.retries, func() (string, error) {
 		res, err := d.api.DownloadDatabaseV2WithResponse(ctx, &api.DownloadDatabaseV2Params{

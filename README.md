@@ -87,6 +87,14 @@ raw, err := client.Database.DownloadBytes(ctx, "bogon_ip_v1", internetdata.Forma
 
 `DownloadBytes` holds the whole file in memory, and the catalog spans five orders of magnitude, so use `DownloadFile` for anything you have not measured against `Metadata`'s `Size`.
 
+`Format` is a defined string type, so `Format("zip")` compiles. Anything the API does not publish is refused before the request leaves, as a `bad_request` naming what is allowed; `Valid` is the same check for a format you take from a flag or a config file:
+
+```go
+if !internetdata.Format(fromFlag).Valid() {
+    // csvgz or mmdb
+}
+```
+
 ### Downloading it yourself
 
 The API answers a download with a redirect to a time-limited URL on object storage. `DownloadURL` hands you that URL rather than following it, so you can pass it to a downloader, a job queue or another machine:

@@ -388,17 +388,6 @@ components:
         - licensed
         - expired
         - unlicensed
-    LicenseType:
-      type: string
-      nullable: true
-      enum:
-        - evaluation
-        - standard
-        - redistribute
-        - null
-      description: |
-        What your licence permits you to do with the data. Null when there is
-        no licence, which is every family with standing `unlicensed`.
     Database:
       type: object
       description: |
@@ -430,7 +419,16 @@ components:
         standing:
           $ref: '#/components/schemas/Standing'
         license_type:
-          $ref: '#/components/schemas/LicenseType'
+          type: string
+          nullable: true
+          enum:
+            - evaluation
+            - standard
+            - redistribute
+            - null
+          description: |
+            What your licence permits you to do with the data. Null when there
+            is no licence, which is every family with standing `unlicensed`.
         starts:
           type: string
           format: date-time

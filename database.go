@@ -2,6 +2,7 @@ package internetdata
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/oapi-codegen/runtime/types"
@@ -68,6 +69,9 @@ func (d *DatabaseAPI) Metadata(ctx context.Context, id string) (*DatabaseMetadat
 // All four the exporter writes are returned, because which of them a caller
 // wants is not this library's decision.
 func (d *DatabaseAPI) Checksums(ctx context.Context, id string, format Format) (*Checksums, error) {
+	if err := checkFormat(format); err != nil {
+		return nil, err
+	}
 	return withRetry(ctx, d.retries, func() (*Checksums, error) {
 		res, err := d.api.DatabaseChecksumV2WithResponse(ctx, &api.DatabaseChecksumV2Params{
 			ID:     id,
@@ -134,6 +138,31 @@ const (
 	FormatMMDB  Format = "mmdb"
 )
 
+// Valid reports whether f is a format the API publishes.
+//
+// Format is a defined string type, so Format("zip") compiles: the constants
+// above document the vocabulary without closing it. Callers taking a format
+// from a flag, a config file or a model should check it here.
+func (f Format) Valid() bool {
+	return f == FormatCSVGZ || f == FormatMMDB
+}
+
+// Rejects a format the API does not publish before the network sees it.
+//
+// Without this the call costs a round trip and returns a 400 whose message
+// names nothing the caller can act on. Ruby, PHP, Python, Java and Perl all
+// reject locally; this is Go catching up.
+func checkFormat(f Format) error {
+	if f.Valid() {
+		return nil
+	}
+	return &Error{
+		Kind: KindBadRequest,
+		Message: fmt.Sprintf("invalid format %q; must be one of %q, %q",
+			string(f), string(FormatCSVGZ), string(FormatMMDB)),
+	}
+}
+
 // The wire shapes, re-exported so a consumer never has to name an internal
 // package.
 type (
@@ -157,7 +186,7 @@ type (
 	// DownloadOutcome is how one download attempt ended.
 	DownloadOutcome = api.DownloadOutcome
 	// LicenseType is what a licence permits you to do with the data.
-	LicenseType = api.LicenseType
+	LicenseType = api.DatabaseLicenseType
 	// Standing is where a licence stands: live, lapsed, or never bought.
 	Standing = api.Standing
 	// Date is a calendar date with no time of day, as DatabaseMetadata.Updated
