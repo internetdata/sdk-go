@@ -221,12 +221,62 @@ func TestAFailedRefreshLeavesThePreviousCopyIntact(t *testing.T) {
 	}
 }
 
+// Only the response HEAD of a transfer is retried. A 5xx there has written
+// nothing, so it is as transient as the API's; a body that dies part way is
+// never fetched again, or the second copy would append to the bytes already
+// written. Each half pins the other, so neither passes vacuously.
+func TestAStorage5xxBeforeTheBodyIsRetried(t *testing.T) {
+	origin := newOrigin(t, originConfig{storageRefusals: 1, retries: 2})
+
+	got, err := origin.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+
+	if n := origin.blobRequests(); n != 2 {
+		t.Fatalf("object storage was asked %d time(s), want 2: the 503 and its retry", n)
+	}
+	if err != nil {
+		t.Fatalf("DownloadBytes: %v", err)
+	}
+	if !bytes.Equal(got, small) {
+		t.Errorf("got %q, want %q", got, small)
+	}
+}
+
+func TestATransferThatDiesPartWayIsNotFetchedAgain(t *testing.T) {
+	for name, download := range map[string]func(*testOrigin) error{
+		"DownloadFile": func(o *testOrigin) error {
+			path := filepath.Join(t.TempDir(), "bogon_ip_v1.csv.gz")
+			_, err := o.client.Database.DownloadFile(t.Context(), "bogon_ip_v1", FormatCSVGZ, path)
+			return err
+		},
+		"DownloadBytes": func(o *testOrigin) error {
+			_, err := o.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+			return err
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			origin := newOrigin(t, originConfig{blobBytes: 4 << 20, dieAfterBytes: 1 << 20, retries: 2})
+
+			err := download(origin)
+
+			if n := origin.blobRequests(); n != 1 {
+				t.Fatalf("object storage was asked %d time(s), want 1: a dead body is never fetched again", n)
+			}
+			if err == nil {
+				t.Fatal("a transfer that lost its connection reported success")
+			}
+		})
+	}
+}
+
 const testKey = "secret-key"
 
 type originConfig struct {
 	blobBytes     int
 	storageStatus int
 	dieAfterBytes int
+	// How many storage requests are answered 503 before the file is served.
+	storageRefusals int
+	retries         int
 }
 
 // Serves the API's 302 and the object storage it points at, on one origin, and
@@ -251,7 +301,7 @@ func newOrigin(t *testing.T, cfg originConfig) *testOrigin {
 	}))
 	t.Cleanup(server.Close)
 
-	client, err := New(WithAPIKey(testKey), WithBaseURL(server.URL), WithRetries(0))
+	client, err := New(WithAPIKey(testKey), WithBaseURL(server.URL), WithRetries(cfg.retries))
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -267,6 +317,10 @@ func (o *testOrigin) serve(w http.ResponseWriter, r *http.Request, blobURL strin
 	if r.URL.Path != "/blob" {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, `{"rc":"UNKNOWN_DATASET"}`)
+		return
+	}
+	if o.blobRequests() <= cfg.storageRefusals {
+		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
 	if cfg.storageStatus != 0 && cfg.storageStatus != http.StatusOK {
@@ -293,6 +347,16 @@ func (o *testOrigin) record(r *http.Request) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	o.seen = append(o.seen, r.Clone(r.Context()))
+}
+
+func (o *testOrigin) blobRequests() int {
+	n := 0
+	for _, path := range o.paths() {
+		if path == "/blob" {
+			n++
+		}
+	}
+	return n
 }
 
 func (o *testOrigin) paths() []string {
