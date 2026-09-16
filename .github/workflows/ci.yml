@@ -16,7 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.24', '1.25']
+        # The numbered legs prove the floor go.mod declares still builds. stable
+        # is the newest release and the only leg govulncheck runs on: it judges
+        # the standard library by the Go running the scan, so an older line
+        # reports fixes it never received, which nothing in this module can change.
+        go: ['1.24', '1.25', 'stable']
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -32,3 +36,10 @@ jobs:
           fi
       - run: go vet ./...
       - run: go test -race ./...
+      # GOTOOLCHAIN=auto for the install alone: setup-go exports local, and
+      # govulncheck may need a newer Go to build than the one it scans with.
+      - name: govulncheck
+        if: matrix.go == 'stable'
+        run: |
+          GOTOOLCHAIN=auto go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
