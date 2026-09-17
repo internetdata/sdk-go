@@ -13,7 +13,7 @@ import (
 )
 
 // The key is an option, not an argument, because what this API serves without a
-// licence is a product decision and a New that could not be called without one
+// license is a product decision and a New that could not be called without one
 // would have to change shape to follow it. What must never go out is
 // "Authorization: Bearer " with nothing after it, which reads as a wrong key
 // rather than as none.
@@ -54,7 +54,7 @@ func TestNewRejectsUnusableOptions(t *testing.T) {
 }
 
 // The key is the whole identity here, so a client that quietly stopped sending
-// it would fail every call with a refusal that reads like a licence problem.
+// it would fail every call with a refusal that reads like a license problem.
 func TestTheKeyIsSentAsABearerTokenOnEveryEndpoint(t *testing.T) {
 	stub := newStub(map[string]stubRoute{
 		pathList:      {body: catalog("bogon_ip")},

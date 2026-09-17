@@ -37,7 +37,7 @@ const (
 	// published catalog reaches 5.34 GiB, and this is the only thing standing
 	// between a typo and pulling one of those.
 	ceiling = 8 << 20
-	// A real, public catalog id this organization holds no licence for. Repoint
+	// A real, public catalog id this organization holds no license for. Repoint
 	// it if that ever changes; the refusal is the assertion, not the id.
 	unlicensedID = "hosting_ip_v1"
 )
@@ -87,7 +87,7 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 		if !slices.Contains(standings, d.Standing) {
 			t.Errorf("%s carries an undocumented standing %q", d.Base, d.Standing)
 		}
-		// Null when there is no licence at all, which is most of the catalog
+		// Null when there is no license at all, which is most of the catalog
 		// for this organization, so the pointer is read before the value.
 		if d.LicenseType != nil && !slices.Contains(rights, *d.LicenseType) {
 			t.Errorf("%s carries an undocumented right %q", d.Base, *d.LicenseType)
@@ -95,7 +95,7 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 		if d.Standing == internetdata.StandingUnlicensed && d.LicenseType != nil {
 			t.Errorf("%s is unlicensed and still carries a right", d.Base)
 		}
-		// The point of the family shape: a licence covers the family, and these
+		// The point of the family shape: a license covers the family, and these
 		// are the ids the download, checksum and metadata calls take.
 		if len(d.Versions) == 0 {
 			t.Errorf("%s carries no versions", d.Base)
@@ -190,7 +190,7 @@ func TestADatabaseTheOrganizationDoesNotLicenseIsRefusedCleanly(t *testing.T) {
 		t.Errorf("StatusCode = %d, want 403", apiErr.StatusCode)
 	}
 	if apiErr.Retryable() {
-		t.Error("a licence refusal is not worth retrying")
+		t.Error("a license refusal is not worth retrying")
 	}
 	// The API says WHICH refusal this is (`{"rc":"NOT_LICENSED"}`), and that is
 	// the difference between "buy it" and "renew it". Falling back to the status
@@ -332,7 +332,7 @@ func TestTheOtherLicensedDatabaseIsAlsoReachable(t *testing.T) {
 		otherID, format, len(raw), meta.Entries, meta.Updated.Format("2006-01-02"))
 }
 
-// Refusals are listed too, so the denial the licence test just earned is what
+// Refusals are listed too, so the denial the license test just earned is what
 // answers "it stopped working". The write is fire and forget on the server, so
 // what is asserted is the shape rather than the presence of one specific row.
 func TestTheDownloadHistoryReadsBack(t *testing.T) {

@@ -22,8 +22,8 @@ type DatabaseAPI struct {
 	retries  int
 }
 
-// List is the published catalog, with your organization's licence beside each
-// family. A licence covers a family, while a download names one of its
+// List is the published catalog, with your organization's license beside each
+// family. A license covers a family, while a download names one of its
 // versions, so the ids the download and checksum calls take come from
 // Database.Versions.
 //
@@ -166,8 +166,8 @@ func checkFormat(f Format) error {
 // The wire shapes, re-exported so a consumer never has to name an internal
 // package.
 type (
-	// Database is one database FAMILY, with your organization's licence beside
-	// it. LicenseType, Starts and Expires are nil when there is no licence.
+	// Database is one database FAMILY, with your organization's license beside
+	// it. LicenseType, Starts and Expires are nil when there is no license.
 	Database = api.Database
 	// DatabaseVersion is one published version of a family. Its ID is what the
 	// download, checksum and metadata calls take. Old versions are frozen
@@ -185,9 +185,9 @@ type (
 	DownloadAttempt = api.Download
 	// DownloadOutcome is how one download attempt ended.
 	DownloadOutcome = api.DownloadOutcome
-	// LicenseType is what a licence permits you to do with the data.
+	// LicenseType is what a license permits you to do with the data.
 	LicenseType = api.DatabaseLicenseType
-	// Standing is where a licence stands: live, lapsed, or never bought.
+	// Standing is where a license stands: live, lapsed, or never bought.
 	Standing = api.Standing
 	// Date is a calendar date with no time of day, as DatabaseMetadata.Updated
 	// carries.
@@ -203,7 +203,7 @@ const (
 	StandingUnlicensed = api.StandingUnlicensed
 )
 
-// LicenseType is nil rather than one of these when there is no licence at
+// LicenseType is nil rather than one of these when there is no license at
 // all, so read the pointer before comparing it.
 const (
 	LicenseTypeEvaluation   = api.Evaluation

@@ -184,7 +184,7 @@ func assertNoCatalogIsCompiledIn(t *testing.T) {
 
 // Two keys, two answers, and a repeat is a new request. A listing cached
 // against one key and handed to another is exactly how a private family leaks
-// without anyone editing a listing at all, and licences start and end, so a
+// without anyone editing a listing at all, and licenses start and end, so a
 // catalog has no shelf life this library could assume.
 func assertAListingIsNeverReused(t *testing.T) {
 	const private = "a_family_built_for_one_customer"

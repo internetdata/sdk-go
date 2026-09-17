@@ -39,7 +39,7 @@ Every call hangs off `client.Database`, which is the whole of this API and is wh
 
 ### The catalog
 
-`List` returns one entry per database FAMILY, with your licence beside it. A licence covers the family, while a download names one of its versions, so the ids you pass to everything else come from `Versions`:
+`List` returns one entry per database FAMILY, with your license beside it. A license covers the family, while a download names one of its versions, so the ids you pass to everything else come from `Versions`:
 
 ```go
 for _, db := range databases {
@@ -52,7 +52,7 @@ for _, db := range databases {
 }
 ```
 
-`Standing` is `licensed`, `expired` or `unlicensed`, and `LicenseType` is what your licence permits: `evaluation`, `standard`, `redistribute`, or `nil` when there is no licence at all. Old versions are frozen rather than migrated, so both stay downloadable.
+`Standing` is `licensed`, `expired` or `unlicensed`, and `LicenseType` is what your license permits: `evaluation`, `standard`, `redistribute`, or `nil` when there is no license at all. Old versions are frozen rather than migrated, so both stay downloadable.
 
 ### What is inside one, before you fetch it
 
