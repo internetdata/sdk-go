@@ -27,7 +27,7 @@
       }
     },
     {
-      "name": "licence-lapsed",
+      "name": "license-lapsed",
       "status": 403,
       "headers": {},
       "body": {
@@ -76,6 +76,20 @@
         "kind": "bad_request",
         "retryable": false,
         "message": "INVALID_FORMAT"
+      }
+    },
+    {
+      "name": "unlisted-4xx-is-not-retryable",
+      "why": "The RANGE is the rule, not a list of statuses. An SDK that enumerated 400 and 404 passed every other case here while a 422 fell through to the retryable server_error default.",
+      "status": 422,
+      "headers": {},
+      "body": {
+        "rc": "INVALID_REQUEST"
+      },
+      "expect": {
+        "kind": "bad_request",
+        "retryable": false,
+        "message": "INVALID_REQUEST"
       }
     },
     {
