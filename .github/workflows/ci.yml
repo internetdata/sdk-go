@@ -20,7 +20,7 @@ jobs:
         # is the newest release and the only leg govulncheck runs on: it judges
         # the standard library by the Go running the scan, so an older line
         # reports fixes it never received, which nothing in this module can change.
-        go: ['1.24', '1.25', 'stable']
+        go: ['1.26', '1.27', 'stable']
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7

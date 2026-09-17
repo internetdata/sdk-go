@@ -13,7 +13,7 @@ The library downloads the IP and network databases your organization is licensed
 go get github.com/internetdata/sdk-go/v2
 ```
 
-Requires Go 1.24 or newer. The module path ends in `sdk-go`, but the package it declares is `internetdata`:
+Requires Go 1.26 or newer. The module path ends in `sdk-go`, but the package it declares is `internetdata`:
 
 ```go
 import internetdata "github.com/internetdata/sdk-go/v2"

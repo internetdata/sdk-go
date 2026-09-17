@@ -6,7 +6,7 @@
 // and puts this file back afterwards.
 module github.com/internetdata/sdk-go/v2/integration
 
-go 1.24.0
+go 1.26.0
 
 require github.com/internetdata/sdk-go/v2 v2.0.1
 
