@@ -110,20 +110,20 @@ func (e Standing) Valid() bool {
 	}
 }
 
-// Database One database FAMILY, with your organization's licence beside it. A
-// licence covers the family, while a download names a specific version,
+// Database One database FAMILY, with your organization's license beside it. A
+// license covers the family, while a download names a specific version,
 // so the ids passed to `download` and `checksum` come from `versions`.
 type Database struct {
-	// Base The family, e.g. `vpn_ip`. What a licence is held against.
+	// Base The family, e.g. `vpn_ip`. What a license is held against.
 	//
 	// Example: vpn_ip
 	Base string `json:"base"`
 
-	// Expires A hard stop. Null when the licence has no end date, which is the normal case for a rolling agreement, and when there is no licence. A rolling licence reports its turnover date in renews_at instead.
+	// Expires A hard stop. Null when the license has no end date, which is the normal case for a rolling agreement, and when there is no license. A rolling license reports its turnover date in renews_at instead.
 	Expires *time.Time `json:"expires"`
 
-	// LicenseType What your licence permits you to do with the data. Null when there
-	// is no licence, which is every family with standing `unlicensed`.
+	// LicenseType What your license permits you to do with the data. Null when there
+	// is no license, which is every family with standing `unlicensed`.
 	LicenseType *DatabaseLicenseType `json:"license_type"`
 
 	// Name Example: VPN IP
@@ -132,10 +132,10 @@ type Database struct {
 	// NoticeDueAt The last day notice of non-renewal can be given for the term ending at renews_at. Null whenever renews_at is, and when the agreement records no notice period.
 	NoticeDueAt *time.Time `json:"notice_due_at"`
 
-	// RenewsAt When a rolling licence next renews. Null when the licence has no defined term, when expires sets a hard stop instead, and when there is no licence.
+	// RenewsAt When a rolling license next renews. Null when the license has no defined term, when expires sets a hard stop instead, and when there is no license.
 	RenewsAt *time.Time `json:"renews_at"`
 
-	// Standing Where your licence for a database family stands today. `licensed` is a
+	// Standing Where your license for a database family stands today. `licensed` is a
 	// live grant, `expired` one whose term has ended, and `unlicensed` a
 	// database published but never bought.
 	Standing Standing   `json:"standing"`
@@ -149,8 +149,8 @@ type Database struct {
 	Versions []DatabaseVersion `json:"versions"`
 }
 
-// DatabaseLicenseType What your licence permits you to do with the data. Null when there
-// is no licence, which is every family with standing `unlicensed`.
+// DatabaseLicenseType What your license permits you to do with the data. Null when there
+// is no license, which is every family with standing `unlicensed`.
 type DatabaseLicenseType string
 
 // DatabaseFormat A file format a database version is published in.
@@ -249,7 +249,7 @@ type Error struct {
 	Rc string `json:"rc"`
 }
 
-// Standing Where your licence for a database family stands today. `licensed` is a
+// Standing Where your license for a database family stands today. `licensed` is a
 // live grant, `expired` one whose term has ended, and `unlicensed` a
 // database published but never bought.
 type Standing string
@@ -403,7 +403,7 @@ type ClientInterface interface {
 
 	// ListDatabases List
 	//
-	// The whole published catalog, with your organization's licence beside
+	// The whole published catalog, with your organization's license beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
 	//
@@ -477,7 +477,7 @@ func (c *Client) ListDownloads(ctx context.Context, params *ListDownloadsParams,
 
 // ListDatabases List
 //
-// The whole published catalog, with your organization's licence beside
+// The whole published catalog, with your organization's license beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
 //
@@ -837,7 +837,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListDatabasesWithResponse List
 	//
-	// The whole published catalog, with your organization's licence beside
+	// The whole published catalog, with your organization's license beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
 	//
@@ -1250,7 +1250,7 @@ func (c *ClientWithResponses) ListDownloadsWithResponse(ctx context.Context, par
 
 // ListDatabasesWithResponse List
 //
-// The whole published catalog, with your organization's licence beside
+// The whole published catalog, with your organization's license beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
 //

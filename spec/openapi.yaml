@@ -8,7 +8,7 @@ info:
     email: dev@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms-of-service/
-  version: 2026.09.13
+  version: 2026.09.18
 servers:
   - url: https://internetdata.io
 security:
@@ -39,7 +39,7 @@ paths:
       operationId: listDatabases
       summary: List
       description: |
-        The whole published catalog, with your organization's licence beside
+        The whole published catalog, with your organization's license beside
         each entry, so `standing` says whether a database is yours today
         (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
       security:
@@ -381,7 +381,7 @@ components:
     Standing:
       type: string
       description: |
-        Where your licence for a database family stands today. `licensed` is a
+        Where your license for a database family stands today. `licensed` is a
         live grant, `expired` one whose term has ended, and `unlicensed` a
         database published but never bought.
       enum:
@@ -391,8 +391,8 @@ components:
     Database:
       type: object
       description: |
-        One database FAMILY, with your organization's licence beside it. A
-        licence covers the family, while a download names a specific version,
+        One database FAMILY, with your organization's license beside it. A
+        license covers the family, while a download names a specific version,
         so the ids passed to `download` and `checksum` come from `versions`.
       required:
         - base
@@ -408,7 +408,7 @@ components:
       properties:
         base:
           type: string
-          description: The family, e.g. `vpn_ip`. What a licence is held against.
+          description: The family, e.g. `vpn_ip`. What a license is held against.
           example: vpn_ip
         name:
           type: string
@@ -427,8 +427,8 @@ components:
             - redistribute
             - null
           description: |
-            What your licence permits you to do with the data. Null when there
-            is no licence, which is every family with standing `unlicensed`.
+            What your license permits you to do with the data. Null when there
+            is no license, which is every family with standing `unlicensed`.
         starts:
           type: string
           format: date-time
@@ -438,16 +438,16 @@ components:
           format: date-time
           nullable: true
           description: >-
-            A hard stop. Null when the licence has no end date, which is the normal case for a
-            rolling agreement, and when there is no licence. A rolling licence reports its turnover
+            A hard stop. Null when the license has no end date, which is the normal case for a
+            rolling agreement, and when there is no license. A rolling license reports its turnover
             date in renews_at instead.
         renews_at:
           type: string
           format: date-time
           nullable: true
           description: >-
-            When a rolling licence next renews. Null when the licence has no defined term, when
-            expires sets a hard stop instead, and when there is no licence.
+            When a rolling license next renews. Null when the license has no defined term, when
+            expires sets a hard stop instead, and when there is no license.
         notice_due_at:
           type: string
           format: date-time
@@ -731,7 +731,7 @@ components:
             $ref: '#/components/schemas/Error'
     V2NotLicensed:
       description: |
-        Your organization holds no licence for this database, or its term has
+        Your organization holds no license for this database, or its term has
         ended.
         `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`.
       content:
