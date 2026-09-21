@@ -34,15 +34,18 @@ const (
 // catalog is small enough that re-reading it costs less than being wrong about
 // whose it was.
 type Client struct {
-	// Database is the licensed database catalog and its downloads. Every call
-	// hangs off it rather than off the client, which is how the VPNDetection
-	// SDKs read too, so one program holding both clients spells the two the
-	// same way.
+	// Database is the licensed database catalog and its downloads. Every
+	// database call hangs off it rather than off the client, which is how the
+	// VPNDetection SDKs read too, so one program holding both clients spells the
+	// two the same way.
 	Database *DatabaseAPI
+	// Oauth is the device sign-in, which hands a program one of a person's API
+	// keys. Its requests never carry this client's key.
+	Oauth *OauthAPI
 }
 
 // New builds a client. Without WithAPIKey it sends no Authorization header at
-// all, which every endpoint published today answers 401.
+// all, which every database endpoint published today answers 401.
 func New(opts ...Option) (*Client, error) {
 	cfg := config{
 		baseURL:    DefaultBaseURL,
@@ -64,11 +67,15 @@ func New(opts ...Option) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("internetdata: %w", err)
 	}
-	return &Client{Database: &DatabaseAPI{
-		api:      inner,
-		transfer: untimed(httpClient),
-		retries:  cfg.retries,
-	}}, nil
+	// The same transport without the key's request editor, which is client-wide.
+	keyless, err := api.NewClientWithResponses(cfg.baseURL, apiOpts[0])
+	if err != nil {
+		return nil, fmt.Errorf("internetdata: %w", err)
+	}
+	return &Client{
+		Database: &DatabaseAPI{api: inner, transfer: untimed(httpClient), retries: cfg.retries},
+		Oauth:    &OauthAPI{api: keyless, retries: cfg.retries, sleep: sleep, now: time.Now},
+	}, nil
 }
 
 // Option configures a Client.

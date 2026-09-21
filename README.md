@@ -35,7 +35,7 @@ for _, db := range databases {
 }
 ```
 
-Every call hangs off `client.Database`, which is the whole of this API and is where the sibling VPNDetection library keeps the same seven calls.
+Every database call hangs off `client.Database`, which is where the sibling VPNDetection library keeps the same seven calls.
 
 ### The catalog
 
@@ -141,7 +141,24 @@ if errors.As(err, &apiErr) {
 
 Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit is when the API faces extreme traffic bursts and so retrying later works; but a spent quota needs your allowance raised or the window to roll over. The library retries rate limits for you, but not if your quota is exceeded.
 
-### Your catalog is yours
+### Sign in with OAuth (device flow)
+
+A program running on the person's own machine can let them sign in with a browser and pick one of their API keys, instead of asking them to paste it:
+
+```go
+client, err := internetdata.New()
+device, err := client.Oauth.DeviceAuthorization(ctx, "your-client-id",
+    internetdata.DeviceAuthorizationOptions{Scope: "account.read apikeys.read apikeys.reveal"})
+fmt.Printf("Open %s and enter %s\n", device.VerificationURI, device.UserCode)
+
+token, err := client.Oauth.PollDeviceToken(ctx, "your-client-id", device)
+if token.Apikey == nil {
+    log.Fatal("no API key came back: none was picked, or it cannot be revealed")
+}
+keyed, err := internetdata.New(internetdata.WithAPIKey(*token.Apikey))
+```
+
+A denied sign-in satisfies `errors.Is(err, internetdata.ErrOauthAccessDenied)` and a code that ran out `errors.Is(err, internetdata.ErrOauthExpiredToken)`, and client IDs are issued on request from support@internetdata.io. `client.Oauth.Revoke(ctx, "your-client-id", *token.RefreshToken)` signs the machine out again.
 
 ## Other Libraries
 
