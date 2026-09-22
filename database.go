@@ -27,11 +27,8 @@ type DatabaseAPI struct {
 // versions, so the ids the download and checksum calls take come from
 // Database.Versions.
 //
-// The listing is the SERVER's answer about YOUR key and nothing else assembles
-// it. A database commissioned for a single customer is absent for every other
-// organization rather than listed as unlicensed, so what you get back is not
-// necessarily what another key gets back, and neither the whole catalog nor
-// any part of it can be reconstructed from another source.
+// This is the server's answer for this key, so a listing held from one key is
+// not an answer for another.
 func (d *DatabaseAPI) List(ctx context.Context) ([]Database, error) {
 	return withRetry(ctx, d.retries, func() ([]Database, error) {
 		res, err := d.api.ListDatabasesWithResponse(ctx)
@@ -194,9 +191,8 @@ type (
 	Date = types.Date
 )
 
-// Standing tells you whether a database is yours today. It never says a
-// database does not exist: a family built for one customer is simply absent
-// from another organization's listing.
+// Standing tells you whether a database is yours today, was, or has never been
+// bought.
 const (
 	StandingLicensed   = api.StandingLicensed
 	StandingExpired    = api.StandingExpired
