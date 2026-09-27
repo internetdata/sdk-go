@@ -3,6 +3,7 @@ package internetdata
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -125,9 +126,14 @@ func parseRetryAfter(value string) time.Duration {
 	if value == "" {
 		return 0
 	}
-	if seconds, err := strconv.Atoi(value); err == nil {
+	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil {
 		if seconds < 0 {
 			return 0
+		}
+		// Saturated rather than wrapped: 2^63 - 1 seconds multiplied out
+		// wrapped to -1s, a spent quota, and 18446744074 to 290ms.
+		if seconds > math.MaxInt64/int64(time.Second) {
+			return math.MaxInt64
 		}
 		return time.Duration(seconds) * time.Second
 	}

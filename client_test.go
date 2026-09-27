@@ -261,6 +261,79 @@ func TestRetryAfterIsReadAsSecondsOrAsAnHTTPDate(t *testing.T) {
 	}
 }
 
+// A Retry-After past 2^31 - 1 ms is still a throttle, but the server's word is
+// not held to: the call waits the client's own backoff and stays rate_limited.
+// Through v2.3.1 2147484 held a call ~24.8 days and a year-9999 date for good,
+// 2^63 - 1 seconds multiplied out wrapped to -1s, a spent quota, and
+// 18446744074 to a 290ms wait.
+func TestARetryAfterTooLongToHoldWaitsTheBackoff(t *testing.T) {
+	for _, header := range []string{
+		"2147484", "9223372036", "9223372036854775807", "18446744074", "Fri, 31 Dec 9999 23:59:59 GMT",
+	} {
+		t.Run(header, func(t *testing.T) {
+			stub := newStub(map[string]stubRoute{
+				pathList: {
+					status:  http.StatusTooManyRequests,
+					body:    map[string]string{"rc": "RATE_LIMITED"},
+					headers: map[string]string{"Retry-After": header},
+				},
+			})
+			client := newTestClient(t, stub, WithRetries(1))
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+			defer cancel()
+
+			_, err := client.Database.List(ctx)
+
+			var apiErr *Error
+			if !errors.As(err, &apiErr) || apiErr.Kind != KindRateLimited {
+				t.Fatalf("error was %v, want rate_limited after one retry", err)
+			}
+			if stub.count() != 2 {
+				t.Errorf("issued %d request(s), want 2", stub.count())
+			}
+		})
+	}
+}
+
+// Every path the client appends starts with a slash, so one left on the base
+// URL doubled into //api/v2/..., which the API answers with a redirect this
+// client never follows: through v2.3.1 two or three trailing slashes failed
+// every call, the database and OAuth alike.
+func TestEveryTrailingSlashOnTheBaseURLIsDropped(t *testing.T) {
+	for _, suffix := range []string{"/", "//", "///"} {
+		t.Run(suffix, func(t *testing.T) {
+			stub := newStub(map[string]stubRoute{
+				pathList: {body: catalog("bogon_ip")},
+				pathDownload: {
+					status:  http.StatusFound,
+					headers: map[string]string{"Location": "https://s3.example.test/x?X-Amz-Signature=abc"},
+				},
+				"/.well-known/oauth-authorization-server": {body: map[string]string{
+					"issuer":                 "https://api.example.test",
+					"authorization_endpoint": "https://api.example.test/oauth/authorize",
+					"token_endpoint":         "https://api.example.test/oauth/token",
+				}},
+			})
+			client := newTestClient(t, stub, WithBaseURL("https://api.example.test"+suffix), WithRetries(0))
+
+			if _, err := client.Database.List(t.Context()); err != nil {
+				t.Errorf("List: %v", err)
+			}
+			if _, err := client.Database.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ); err != nil {
+				t.Errorf("DownloadURL: %v", err)
+			}
+			if _, err := client.Oauth.Metadata(t.Context()); err != nil {
+				t.Errorf("Oauth.Metadata: %v", err)
+			}
+			for _, call := range stub.seen() {
+				if strings.HasPrefix(call.path, "//") {
+					t.Errorf("sent %s", call.path)
+				}
+			}
+		})
+	}
+}
+
 // A refusal with no readable body still has to say something useful. The
 // fallback is the status, and it must not be an empty message.
 func TestARefusalWithNoEnvelopeStillCarriesAMessage(t *testing.T) {

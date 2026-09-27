@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/internetdata/sdk-go/v2/internal/api"
@@ -25,6 +26,11 @@ const (
 	defaultRetries = 2
 	defaultTimeout = 30 * time.Second
 	retryBaseDelay = 250 * time.Millisecond
+	// The longest Retry-After waited out as given, 2^31 - 1 ms (about 24.8
+	// days). A longer one is still a throttle, but it is the server's word, so
+	// the wait falls back to the client's own backoff rather than holding the
+	// call for years.
+	maxRetryAfter = (1<<31 - 1) * time.Millisecond
 )
 
 // Client is a client for the InternetData API. It is safe for concurrent use.
@@ -104,7 +110,9 @@ func WithBaseURL(rawURL string) Option {
 		if parsed.Scheme == "" || parsed.Host == "" {
 			return fmt.Errorf("base url %q needs a scheme and a host", rawURL)
 		}
-		c.baseURL = rawURL
+		// Every path appended starts with a slash, and a second one is another
+		// path, which the API answers with a redirect this client never follows.
+		c.baseURL = strings.TrimRight(rawURL, "/")
 		return nil
 	}
 }
@@ -204,7 +212,7 @@ func withRetry[T any](ctx context.Context, retries int, attempt func() (T, error
 			return zero, err
 		}
 		wait := delay
-		if apiErr.RetryAfter > 0 {
+		if apiErr.RetryAfter > 0 && apiErr.RetryAfter <= maxRetryAfter {
 			wait = apiErr.RetryAfter
 		}
 		if err := sleep(ctx, wait); err != nil {
