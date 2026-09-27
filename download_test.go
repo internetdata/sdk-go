@@ -6,6 +6,7 @@ package internetdata
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 var small = []byte("start_ip,end_ip\n10.0.0.0,10.255.255.255\n")
@@ -197,6 +199,42 @@ func TestATransferThatDiesPartWayLeavesNothingAtTheDestination(t *testing.T) {
 	}
 }
 
+// The declared length is the server's word, so it sizes nothing unchecked:
+// make([]byte, 1<<62) panicked with "makeslice: len out of range" in the
+// caller's goroutine. The call fails instead. At least a buffer's worth is
+// written before the abort, or the head never leaves the server and this
+// measures a retried header failure instead.
+func TestDownloadBytesFailsALengthNoProcessCanHold(t *testing.T) {
+	origin := newOrigin(t, originConfig{blobBytes: 1 << 62, dieAfterBytes: 1 << 20})
+
+	got, err := origin.client.Database.DownloadBytes(t.Context(), "bogon_ip_v1", FormatCSVGZ)
+	if err == nil {
+		t.Fatalf("a 4 EiB promise came back as %d byte(s)", len(got))
+	}
+	if n := origin.blobRequests(); n != 1 {
+		t.Errorf("object storage was asked %d time(s), want 1", n)
+	}
+}
+
+// Object storage's Retry-After is the server's word too: past 2^31 - 1 ms the
+// transfer waits the client's own backoff rather than ~24.8 days.
+func TestAStorageRetryAfterTooLongToHoldWaitsTheBackoff(t *testing.T) {
+	origin := newOrigin(t, originConfig{storageRefusals: 1, storageRetryAfter: "2147484", retries: 1})
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	got, err := origin.client.Database.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ)
+	if err != nil {
+		t.Fatalf("DownloadBytes: %v", err)
+	}
+	if !bytes.Equal(got, small) {
+		t.Errorf("got %d byte(s), want the %d-byte file", len(got), len(small))
+	}
+	if n := origin.blobRequests(); n != 2 {
+		t.Errorf("object storage was asked %d time(s), want 2", n)
+	}
+}
+
 // The half of the .part guard a cleanup step cannot fake: a destination opened
 // directly is truncated before the first byte arrives, so yesterday's good copy
 // is gone whether or not the refresh then succeeds.
@@ -274,9 +312,11 @@ type originConfig struct {
 	blobBytes     int
 	storageStatus int
 	dieAfterBytes int
-	// How many storage requests are answered 503 before the file is served.
-	storageRefusals int
-	retries         int
+	// How many storage requests are answered 503 before the file is served, or
+	// 429 with storageRetryAfter where one is set.
+	storageRefusals   int
+	storageRetryAfter string
+	retries           int
 }
 
 // Serves the API's 302 and the object storage it points at, on one origin, and
@@ -320,6 +360,11 @@ func (o *testOrigin) serve(w http.ResponseWriter, r *http.Request, blobURL strin
 		return
 	}
 	if o.blobRequests() <= cfg.storageRefusals {
+		if cfg.storageRetryAfter != "" {
+			w.Header().Set("Retry-After", cfg.storageRetryAfter)
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}

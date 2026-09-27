@@ -1,6 +1,7 @@
 package internetdata
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -114,15 +115,26 @@ func (d *DatabaseAPI) DownloadBytes(ctx context.Context, id string, format Forma
 	if res.ContentLength < 0 {
 		return io.ReadAll(res.Body)
 	}
-	// Allocated once from the declared length. io.ReadAll grows by doubling, so
-	// on a large file the final grow alone costs twice the payload. ReadFull
-	// also turns the length into a check: short means the transfer was cut off.
-	buf := make([]byte, res.ContentLength)
-	if _, err := io.ReadFull(res.Body, buf); err != nil {
+	// Allocated once from the declared length, up to maxPrealloc: io.ReadAll
+	// grows by doubling, so on a large file the final grow alone costs twice
+	// the payload. Past it the buffer grows as bytes arrive, because the length
+	// is the server's word: make([]byte, 1<<62) panicked with "makeslice: len
+	// out of range" in the caller's goroutine, and a length the machine cannot
+	// hold is a fatal out of memory, which nothing recovers from. Fewer bytes
+	// than declared means the transfer was cut off.
+	buf := bytes.NewBuffer(make([]byte, 0, min(res.ContentLength, maxPrealloc)))
+	n, err := buf.ReadFrom(res.Body)
+	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	if n != res.ContentLength {
+		return nil, io.ErrUnexpectedEOF
+	}
+	return buf.Bytes(), nil
 }
+
+// The most DownloadBytes allocates up front from a declared Content-Length.
+const maxPrealloc = 64 << 20
 
 // The 302 is followed as a SECOND, unauthenticated request rather than by
 // loosening the redirect guard: the presigned URL authorizes itself, so
