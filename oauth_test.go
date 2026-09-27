@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"maps"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -291,6 +292,79 @@ func TestPollDeviceToken(t *testing.T) {
 			want := pc.Expect.oauthExpect
 			want.Type = pc.Expect.Outcome
 			assertOauthOutcome(t, err, want)
+		})
+	}
+}
+
+// The corpus replaces the sleep, so it cannot see the REAL one drop the
+// fraction of a second left before the deadline: a poll that did would ask
+// again at once. The deadline here falls mid-second after the first answer, and
+// only a second poll would be approved.
+func TestPollDeviceTokenSleepsTheRealFractionToTheDeadline(t *testing.T) {
+	stub := &oauthStub{replies: []oauthReply{
+		{Status: 400, Body: json.RawMessage(`{"error":"authorization_pending"}`)},
+		{Status: 200, Body: json.RawMessage(`{"access_token":"mo_at_x","token_type":"Bearer","expires_in":3600}`)},
+	}}
+	client := newOauthClient(t, stub)
+
+	_, err := client.Oauth.PollDeviceToken(t.Context(), "internetdata-cli",
+		&DeviceAuthorization{DeviceCode: "mo_dc_x", ExpiresIn: 2, Interval: 1})
+
+	if !errors.Is(err, ErrOauthExpiredToken) {
+		t.Errorf("error was %v, want the local expiry", err)
+	}
+	if len(stub.requests) != 1 {
+		t.Errorf("sent %d request(s), want 1", len(stub.requests))
+	}
+}
+
+// A server's interval and expiry near the top of int saturate rather than wrap:
+// multiplied out as seconds, math.MaxInt wrapped to -1s, and a slow_down
+// widening past the top of a Duration to a negative sleep.
+func TestPollDeviceTokenSaturatesAServersValues(t *testing.T) {
+	cases := []struct {
+		name     string
+		device   DeviceAuthorization
+		reply    string
+		requests int
+	}{
+		{"interval and expiry at math.MaxInt", DeviceAuthorization{ExpiresIn: math.MaxInt, Interval: math.MaxInt},
+			`{"error":"authorization_pending"}`, 0},
+		{"slow_down at the top of a Duration", DeviceAuthorization{ExpiresIn: 9223372036, Interval: 9223372034},
+			`{"error":"slow_down"}`, 1},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			stub := &oauthStub{replies: []oauthReply{{Status: 400, Body: json.RawMessage(c.reply)}}}
+			client := newOauthClient(t, stub)
+			var waits []time.Duration
+			start := time.Now()
+			elapsed := time.Duration(0)
+			client.Oauth.now = func() time.Time { return start.Add(elapsed) }
+			client.Oauth.sleep = func(_ context.Context, d time.Duration) error {
+				if len(waits) == oauthLoopBound {
+					t.Fatalf("waited %d times: the poll does not end", len(waits))
+				}
+				waits = append(waits, d)
+				elapsed += d
+				return nil
+			}
+			c.device.DeviceCode = "mo_dc_x"
+
+			_, err := client.Oauth.PollDeviceToken(t.Context(), "internetdata-cli", &c.device)
+
+			if !errors.Is(err, ErrOauthExpiredToken) {
+				t.Errorf("error was %v, want the local expiry", err)
+			}
+			if len(stub.requests) != c.requests {
+				t.Errorf("sent %d request(s), want %d", len(stub.requests), c.requests)
+			}
+			for _, wait := range waits {
+				if wait < 0 {
+					t.Errorf("waited %v: a negative sleep is no sleep", waits)
+					break
+				}
+			}
 		})
 	}
 }

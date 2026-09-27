@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"strings"
@@ -113,24 +114,28 @@ func (o *OauthAPI) Revoke(ctx context.Context, clientID, token string) error {
 //
 // It waits device.Interval seconds (5 when that is below 1) before EVERY
 // request, the first included, and adds 5 more for the rest of the call each
-// time the server answers slow_down. It stops at the first answer that is
-// neither pending nor slow_down: a denial satisfies errors.Is(err,
-// ErrOauthAccessDenied), an expired code errors.Is(err, ErrOauthExpiredToken),
-// and so does running out of device.ExpiresIn, counted from this call, with a
-// StatusCode of 0. Canceling ctx stops the wait and any request in flight.
+// time the server answers slow_down. No wait runs past device.ExpiresIn,
+// counted from this call: one that would ends at it, with no request after.
+// It stops at the first answer that is neither pending nor slow_down: a denial
+// satisfies errors.Is(err, ErrOauthAccessDenied), an expired code
+// errors.Is(err, ErrOauthExpiredToken), and so does running out of
+// device.ExpiresIn, with a StatusCode of 0. Canceling ctx stops the wait and
+// any request in flight.
 func (o *OauthAPI) PollDeviceToken(
 	ctx context.Context, clientID string, device *DeviceAuthorization,
 ) (*TokenResponse, error) {
 	if device == nil {
 		return nil, &Error{Kind: KindBadRequest, Message: "a device authorization is required"}
 	}
-	interval := time.Duration(device.Interval) * time.Second
+	interval := seconds(device.Interval)
 	if device.Interval < 1 {
 		interval = 5 * time.Second
 	}
-	deadline := o.now().Add(time.Duration(device.ExpiresIn) * time.Second)
+	deadline := o.now().Add(seconds(device.ExpiresIn))
 	for {
-		if err := o.sleep(ctx, interval); err != nil {
+		// Only to the deadline: past it the outcome is the local expiry anyway,
+		// and the interval is the server's word, whatever it says.
+		if err := o.sleep(ctx, min(interval, max(deadline.Sub(o.now()), 0))); err != nil {
 			return nil, err
 		}
 		if !o.now().Before(deadline) {
@@ -144,11 +149,20 @@ func (o *OauthAPI) PollDeviceToken(
 		switch refused.ErrorCode {
 		case "authorization_pending":
 		case "slow_down":
-			interval += 5 * time.Second
+			interval = min(interval, math.MaxInt64-5*time.Second) + 5*time.Second
 		default:
 			return nil, err
 		}
 	}
+}
+
+// seconds converts a server's count of seconds, saturating where a Duration
+// runs out (about 292 years) rather than wrapping around.
+func seconds(n int) time.Duration {
+	if n > math.MaxInt64/int(time.Second) {
+		return math.MaxInt64
+	}
+	return time.Duration(n) * time.Second
 }
 
 func (o *OauthAPI) exchange(ctx context.Context, form url.Values) (*TokenResponse, error) {
