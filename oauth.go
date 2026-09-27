@@ -180,6 +180,7 @@ type OauthMetadata struct {
 	CodeChallengeMethodsSupported              *[]string `json:"code_challenge_methods_supported,omitempty"`
 	TokenEndpointAuthMethodsSupported          *[]string `json:"token_endpoint_auth_methods_supported,omitempty"`
 	AuthorizationResponseIssParameterSupported *bool     `json:"authorization_response_iss_parameter_supported,omitempty"`
+	ClientIDMetadataDocumentSupported          *bool     `json:"client_id_metadata_document_supported,omitempty"`
 	ServiceDocumentation                       *string   `json:"service_documentation,omitempty"`
 }
 

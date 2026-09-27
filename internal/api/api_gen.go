@@ -283,6 +283,12 @@ type DatabaseMetadata struct {
 	// Sample A few real rows, keyed by format.
 	Sample *map[string][]map[string]interface{} `json:"sample,omitempty"`
 
+	// SampleEntries Row count in the evaluation sample.
+	SampleEntries *int `json:"sample_entries,omitempty"`
+
+	// SampleSize Bytes per format of the evaluation sample, where one is published.
+	SampleSize *map[string]int64 `json:"sample_size,omitempty"`
+
 	// Schema Columns, keyed by format.
 	Schema map[string][]DatabaseMetadataColumn `json:"schema"`
 
@@ -315,8 +321,11 @@ type DatabaseVersion struct {
 	// ID The versioned id. Pass this to `download`, `checksum` and `metadata`.
 	//
 	// Example: vpn_ip_v1
-	ID      string `json:"id"`
-	Summary string `json:"summary"`
+	ID string `json:"id"`
+
+	// SampleFormats The formats an evaluation sample is published in, if any.
+	SampleFormats *[]DatabaseFormat `json:"sample_formats,omitempty"`
+	Summary       string            `json:"summary"`
 
 	// Version Example: 1
 	Version int `json:"version"`
@@ -382,7 +391,10 @@ type Download struct {
 	Format     string          `json:"format"`
 	HTTPStatus *int            `json:"http_status"`
 	Outcome    DownloadOutcome `json:"outcome"`
-	UserAgent  *string         `json:"user_agent"`
+
+	// Sample The evaluation sample rather than the database itself.
+	Sample    bool    `json:"sample"`
+	UserAgent *string `json:"user_agent"`
 }
 
 // DownloadOutcome defines model for Download.Outcome.
@@ -416,16 +428,19 @@ type OauthMetadata struct {
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 
 	// AuthorizationResponseIssParameterSupported RFC 9207. A redirect back from the authorization endpoint carries `iss`.
-	AuthorizationResponseIssParameterSupported *bool     `json:"authorization_response_iss_parameter_supported,omitempty"`
-	CodeChallengeMethodsSupported              *[]string `json:"code_challenge_methods_supported,omitempty"`
-	DeviceAuthorizationEndpoint                *string   `json:"device_authorization_endpoint,omitempty"`
-	GrantTypesSupported                        *[]string `json:"grant_types_supported,omitempty"`
-	Issuer                                     string    `json:"issuer"`
-	ResponseTypesSupported                     *[]string `json:"response_types_supported,omitempty"`
-	RevocationEndpoint                         *string   `json:"revocation_endpoint,omitempty"`
-	ScopesSupported                            *[]string `json:"scopes_supported,omitempty"`
-	ServiceDocumentation                       *string   `json:"service_documentation,omitempty"`
-	TokenEndpoint                              string    `json:"token_endpoint"`
+	AuthorizationResponseIssParameterSupported *bool `json:"authorization_response_iss_parameter_supported,omitempty"`
+
+	// ClientIDMetadataDocumentSupported Any client may sign in with an https `client_id` serving its own metadata.
+	ClientIDMetadataDocumentSupported *bool     `json:"client_id_metadata_document_supported,omitempty"`
+	CodeChallengeMethodsSupported     *[]string `json:"code_challenge_methods_supported,omitempty"`
+	DeviceAuthorizationEndpoint       *string   `json:"device_authorization_endpoint,omitempty"`
+	GrantTypesSupported               *[]string `json:"grant_types_supported,omitempty"`
+	Issuer                            string    `json:"issuer"`
+	ResponseTypesSupported            *[]string `json:"response_types_supported,omitempty"`
+	RevocationEndpoint                *string   `json:"revocation_endpoint,omitempty"`
+	ScopesSupported                   *[]string `json:"scopes_supported,omitempty"`
+	ServiceDocumentation              *string   `json:"service_documentation,omitempty"`
+	TokenEndpoint                     string    `json:"token_endpoint"`
 
 	// TokenEndpointAuthMethodsSupported Always `none`. Every client is public and has no secret.
 	TokenEndpointAuthMethodsSupported *[]string `json:"token_endpoint_auth_methods_supported,omitempty"`
@@ -461,11 +476,14 @@ type TokenRequest struct {
 	// GrantType `urn:ietf:params:oauth:grant-type:device_code`, `authorization_code` or `refresh_token`.
 	GrantType string `json:"grant_type"`
 
-	// RedirectURI Authorization code grant: the `redirect_uri` the code was issued against, exactly.
+	// RedirectURI Required by the authorization code grant: the `redirect_uri` the code was issued against, exactly.
 	RedirectURI *string `json:"redirect_uri,omitempty"`
 
 	// RefreshToken Required by the refresh token grant.
 	RefreshToken *string `json:"refresh_token,omitempty"`
+
+	// Resource Authorization code grant, optional: RFC 8707, and it must name what was authorized.
+	Resource *string `json:"resource,omitempty"`
 }
 
 // TokenResponse defines model for TokenResponse.
@@ -475,18 +493,21 @@ type TokenResponse struct {
 	// ExpiresIn Seconds until the access token expires.
 	ExpiresIn int `json:"expires_in"`
 
-	// MslmApikey Not part of OAuth. The API key itself, so a device ends up holding an
-	// ordinary key. Returned by the device code and authorization code
-	// grants only, never by a refresh, and only alongside
+	// MslmApikey Not part of OAuth, and only for our own clients: a client that signed
+	// in with a Client ID Metadata Document never receives a key. The API
+	// key itself, so a device ends up holding an ordinary key. Returned by
+	// the device code and authorization code grants only, never by a
+	// refresh, and only alongside
 	// `mslm:apikey_id`. Absent when that key's secret cannot be read back,
 	// which is the case for a key created before keys could be shown again
 	// in the console; a rotated key can be.
 	MslmApikey *string `json:"mslm:apikey,omitempty"`
 
-	// MslmApikeyID Not part of OAuth. The ID of the API key the person picked when they
-	// approved, returned by every grant while this authorization may still
-	// read that key back. Absent when no key was picked, or when the
-	// person's role no longer allows reading keys back.
+	// MslmApikeyID Not part of OAuth, and only for our own clients. The ID of the API
+	// key the person picked when they approved, returned by every grant
+	// while this authorization may still read that key back. Absent when
+	// no key was picked, or when the person's role no longer allows
+	// reading keys back.
 	MslmApikeyID *string `json:"mslm:apikey_id,omitempty"`
 
 	// RefreshToken Always returned. A refresh consumes the token it presents, so keep this one.
@@ -571,14 +592,17 @@ type OauthAuthorizeParams struct {
 	ResponseType  OauthAuthorizeParamsResponseType `form:"response_type" json:"response_type"`
 	CodeChallenge string                           `form:"code_challenge" json:"code_challenge"`
 
-	// CodeChallengeMethod S256 only. `plain` is refused rather than downgraded.
-	CodeChallengeMethod *OauthAuthorizeParamsCodeChallengeMethod `form:"code_challenge_method,omitempty" json:"code_challenge_method,omitempty"`
-	Scope               *string                                  `form:"scope,omitempty" json:"scope,omitempty"`
+	// CodeChallengeMethod S256, named explicitly. `plain`, or no method at all, is refused rather than downgraded.
+	CodeChallengeMethod OauthAuthorizeParamsCodeChallengeMethod `form:"code_challenge_method" json:"code_challenge_method"`
+	Scope               *string                                 `form:"scope,omitempty" json:"scope,omitempty"`
 
 	// State Returned unchanged. Use it to bind the response to your request.
 	State *string `form:"state,omitempty" json:"state,omitempty"`
 
-	// Resource RFC 8707. What the token is FOR, so it cannot be replayed elsewhere.
+	// Resource RFC 8707. What the token is FOR, so it cannot be replayed elsewhere:
+	// this brand's MCP server, the only resource it issues tokens for.
+	// Anything else answers `invalid_target`. A client that names none is
+	// given that server.
 	Resource *string `form:"resource,omitempty" json:"resource,omitempty"`
 }
 
@@ -843,6 +867,14 @@ type ClientInterface interface {
 	// The browser entry point for the authorization-code flow. This is a
 	// redirect target, not something to call from code.
 	//
+	// Any client may sign in without registering first by using a Client ID
+	// Metadata Document: make `client_id` an https URL that serves your
+	// client's metadata as JSON, naming that same URL as its `client_id`,
+	// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
+	// https redirect URI must be on the same origin as the `client_id`; a
+	// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
+	// matches on any port. Such a client is granted `apikeys.use` at most.
+	//
 	// An unknown `client_id` or an unregistered `redirect_uri` is shown to the
 	// USER and never redirected, because sending an error to an address we
 	// have not verified belongs to you is how an open redirector works.
@@ -916,10 +948,14 @@ type ClientInterface interface {
 	// `slow_down`, which means widen your interval and keep it widened.
 	//
 	// `authorization_code` exchanges a code from `/oauth/authorize`, with the
-	// `code_verifier` matching the challenge you sent.
+	// `code_verifier` matching the challenge you sent and the same
+	// `redirect_uri`. A code works once: presenting it again also revokes
+	// what the first exchange issued.
 	//
 	// `refresh_token` exchanges a refresh token. The presented token is
 	// consumed whatever happens next, so store the new one before using it.
+	// Presenting a consumed refresh token again ends the whole authorization,
+	// since it means the token was copied.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -936,10 +972,14 @@ type ClientInterface interface {
 	// `slow_down`, which means widen your interval and keep it widened.
 	//
 	// `authorization_code` exchanges a code from `/oauth/authorize`, with the
-	// `code_verifier` matching the challenge you sent.
+	// `code_verifier` matching the challenge you sent and the same
+	// `redirect_uri`. A code works once: presenting it again also revokes
+	// what the first exchange issued.
 	//
 	// `refresh_token` exchanges a refresh token. The presented token is
 	// consumed whatever happens next, so store the new one before using it.
+	// Presenting a consumed refresh token again ends the whole authorization,
+	// since it means the token was copied.
 	//
 	// Takes a body of the `application/x-www-form-urlencoded` content type.
 	//
@@ -1266,6 +1306,14 @@ func (c *Client) DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadat
 // The browser entry point for the authorization-code flow. This is a
 // redirect target, not something to call from code.
 //
+// Any client may sign in without registering first by using a Client ID
+// Metadata Document: make `client_id` an https URL that serves your
+// client's metadata as JSON, naming that same URL as its `client_id`,
+// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
+// https redirect URI must be on the same origin as the `client_id`; a
+// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
+// matches on any port. Such a client is granted `apikeys.use` at most.
+//
 // An unknown `client_id` or an unregistered `redirect_uri` is shown to the
 // USER and never redirected, because sending an error to an address we
 // have not verified belongs to you is how an open redirector works.
@@ -1389,10 +1437,14 @@ func (c *Client) OauthRevokeWithFormdataBody(ctx context.Context, body OauthRevo
 // `slow_down`, which means widen your interval and keep it widened.
 //
 // `authorization_code` exchanges a code from `/oauth/authorize`, with the
-// `code_verifier` matching the challenge you sent.
+// `code_verifier` matching the challenge you sent and the same
+// `redirect_uri`. A code works once: presenting it again also revokes
+// what the first exchange issued.
 //
 // `refresh_token` exchanges a refresh token. The presented token is
 // consumed whatever happens next, so store the new one before using it.
+// Presenting a consumed refresh token again ends the whole authorization,
+// since it means the token was copied.
 //
 // Takes any type of body and a specified content type.
 //
@@ -1419,10 +1471,14 @@ func (c *Client) OauthTokenWithBody(ctx context.Context, contentType string, bod
 // `slow_down`, which means widen your interval and keep it widened.
 //
 // `authorization_code` exchanges a code from `/oauth/authorize`, with the
-// `code_verifier` matching the challenge you sent.
+// `code_verifier` matching the challenge you sent and the same
+// `redirect_uri`. A code works once: presenting it again also revokes
+// what the first exchange issued.
 //
 // `refresh_token` exchanges a refresh token. The presented token is
 // consumed whatever happens next, so store the new one before using it.
+// Presenting a consumed refresh token again ends the whole authorization,
+// since it means the token was copied.
 //
 // Takes a body of the `application/x-www-form-urlencoded` content type.
 //
@@ -2023,16 +2079,12 @@ func NewOauthAuthorizeRequest(server string, params *OauthAuthorizeParams) (*htt
 			}
 		}
 
-		if params.CodeChallengeMethod != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "code_challenge_method", *params.CodeChallengeMethod, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "code_challenge_method", params.CodeChallengeMethod, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
 			}
-
 		}
 
 		if params.Scope != nil {
@@ -2444,6 +2496,14 @@ type ClientWithResponsesInterface interface {
 	// The browser entry point for the authorization-code flow. This is a
 	// redirect target, not something to call from code.
 	//
+	// Any client may sign in without registering first by using a Client ID
+	// Metadata Document: make `client_id` an https URL that serves your
+	// client's metadata as JSON, naming that same URL as its `client_id`,
+	// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
+	// https redirect URI must be on the same origin as the `client_id`; a
+	// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
+	// matches on any port. Such a client is granted `apikeys.use` at most.
+	//
 	// An unknown `client_id` or an unregistered `redirect_uri` is shown to the
 	// USER and never redirected, because sending an error to an address we
 	// have not verified belongs to you is how an open redirector works.
@@ -2519,10 +2579,14 @@ type ClientWithResponsesInterface interface {
 	// `slow_down`, which means widen your interval and keep it widened.
 	//
 	// `authorization_code` exchanges a code from `/oauth/authorize`, with the
-	// `code_verifier` matching the challenge you sent.
+	// `code_verifier` matching the challenge you sent and the same
+	// `redirect_uri`. A code works once: presenting it again also revokes
+	// what the first exchange issued.
 	//
 	// `refresh_token` exchanges a refresh token. The presented token is
 	// consumed whatever happens next, so store the new one before using it.
+	// Presenting a consumed refresh token again ends the whole authorization,
+	// since it means the token was copied.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -2539,10 +2603,14 @@ type ClientWithResponsesInterface interface {
 	// `slow_down`, which means widen your interval and keep it widened.
 	//
 	// `authorization_code` exchanges a code from `/oauth/authorize`, with the
-	// `code_verifier` matching the challenge you sent.
+	// `code_verifier` matching the challenge you sent and the same
+	// `redirect_uri`. A code works once: presenting it again also revokes
+	// what the first exchange issued.
 	//
 	// `refresh_token` exchanges a refresh token. The presented token is
 	// consumed whatever happens next, so store the new one before using it.
+	// Presenting a consumed refresh token again ends the whole authorization,
+	// since it means the token was copied.
 	//
 	// Takes a body of the `application/x-www-form-urlencoded` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -3870,6 +3938,14 @@ func (c *ClientWithResponses) DatabaseMetadataV2WithResponse(ctx context.Context
 // The browser entry point for the authorization-code flow. This is a
 // redirect target, not something to call from code.
 //
+// Any client may sign in without registering first by using a Client ID
+// Metadata Document: make `client_id` an https URL that serves your
+// client's metadata as JSON, naming that same URL as its `client_id`,
+// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
+// https redirect URI must be on the same origin as the `client_id`; a
+// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
+// matches on any port. Such a client is granted `apikeys.use` at most.
+//
 // An unknown `client_id` or an unregistered `redirect_uri` is shown to the
 // USER and never redirected, because sending an error to an address we
 // have not verified belongs to you is how an open redirector works.
@@ -3975,10 +4051,14 @@ func (c *ClientWithResponses) OauthRevokeWithFormdataBodyWithResponse(ctx contex
 // `slow_down`, which means widen your interval and keep it widened.
 //
 // `authorization_code` exchanges a code from `/oauth/authorize`, with the
-// `code_verifier` matching the challenge you sent.
+// `code_verifier` matching the challenge you sent and the same
+// `redirect_uri`. A code works once: presenting it again also revokes
+// what the first exchange issued.
 //
 // `refresh_token` exchanges a refresh token. The presented token is
 // consumed whatever happens next, so store the new one before using it.
+// Presenting a consumed refresh token again ends the whole authorization,
+// since it means the token was copied.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -4001,10 +4081,14 @@ func (c *ClientWithResponses) OauthTokenWithBodyWithResponse(ctx context.Context
 // `slow_down`, which means widen your interval and keep it widened.
 //
 // `authorization_code` exchanges a code from `/oauth/authorize`, with the
-// `code_verifier` matching the challenge you sent.
+// `code_verifier` matching the challenge you sent and the same
+// `redirect_uri`. A code works once: presenting it again also revokes
+// what the first exchange issued.
 //
 // `refresh_token` exchanges a refresh token. The presented token is
 // consumed whatever happens next, so store the new one before using it.
+// Presenting a consumed refresh token again ends the whole authorization,
+// since it means the token was copied.
 //
 // Takes a body of the `application/x-www-form-urlencoded` content type, and returns a wrapper object for the known response body format(s).
 //
