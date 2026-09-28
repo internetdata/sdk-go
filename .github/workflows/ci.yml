@@ -43,3 +43,17 @@ jobs:
         run: |
           GOTOOLCHAIN=auto go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
+
+  # int is 32 bits on 386 and arm, where a constant past 2^31 in an int does not
+  # compile, and nothing above builds for either: 2.4.0 went out green that way.
+  # 386 runs natively on this runner, without the race detector, which it lacks.
+  test-32bit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - run: GOARCH=386 go vet ./...
+      - run: GOARCH=386 go test ./...
+      - run: GOARCH=arm go build ./...
