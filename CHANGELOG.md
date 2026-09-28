@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.4.1 - 2026-09-28
+
+### Fixes
+
+- Compile on 32-bit platforms again ([`a20cc44`](https://github.com/internetdata/sdk-go/commit/a20cc440bdb835c21da6f65466819415b34c3d6c))
+
 ## 2.4.0 - 2026-09-27
 
 ### Features
