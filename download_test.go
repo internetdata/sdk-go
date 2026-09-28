@@ -134,7 +134,7 @@ func TestTheAPIKeyReachesTheAPIAndNeverObjectStorage(t *testing.T) {
 // move through the process without ever being resident. The threshold is an
 // eighth of the payload, so a buffering implementation cannot slip under it.
 func TestALargeBodyIsStreamedNotBuffered(t *testing.T) {
-	const size = 2 << 30
+	const size int64 = 2 << 30
 	const ceiling = size / 8
 	origin := newOrigin(t, originConfig{blobBytes: size})
 
@@ -309,7 +309,7 @@ func TestATransferThatDiesPartWayIsNotFetchedAgain(t *testing.T) {
 const testKey = "secret-key"
 
 type originConfig struct {
-	blobBytes     int
+	blobBytes     int64
 	storageStatus int
 	dieAfterBytes int
 	// How many storage requests are answered 503 before the file is served, or
@@ -385,7 +385,7 @@ func (o *testOrigin) serve(w http.ResponseWriter, r *http.Request, blobURL strin
 		io.CopyN(w, filler{}, int64(cfg.dieAfterBytes))
 		panic(http.ErrAbortHandler)
 	}
-	io.CopyN(w, filler{}, int64(cfg.blobBytes))
+	io.CopyN(w, filler{}, cfg.blobBytes)
 }
 
 func (o *testOrigin) record(r *http.Request) {

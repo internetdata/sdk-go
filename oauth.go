@@ -157,9 +157,11 @@ func (o *OauthAPI) PollDeviceToken(
 }
 
 // seconds converts a server's count of seconds, saturating where a Duration
-// runs out (about 292 years) rather than wrapping around.
+// runs out (about 292 years) rather than wrapping around. Compared as int64,
+// since where int is 32 bits that bound does not fit in one, and n never
+// reaches it.
 func seconds(n int) time.Duration {
-	if n > math.MaxInt64/int(time.Second) {
+	if int64(n) > math.MaxInt64/int64(time.Second) {
 		return math.MaxInt64
 	}
 	return time.Duration(n) * time.Second

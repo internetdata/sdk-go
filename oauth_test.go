@@ -322,6 +322,9 @@ func TestPollDeviceTokenSleepsTheRealFractionToTheDeadline(t *testing.T) {
 // multiplied out as seconds, math.MaxInt wrapped to -1s, and a slow_down
 // widening past the top of a Duration to a negative sleep.
 func TestPollDeviceTokenSaturatesAServersValues(t *testing.T) {
+	// Seconds at the top of a Duration, or at the top of int where that is
+	// lower, as it is where int has 32 bits.
+	const top = min(math.MaxInt, 9223372036)
 	cases := []struct {
 		name     string
 		device   DeviceAuthorization
@@ -330,7 +333,7 @@ func TestPollDeviceTokenSaturatesAServersValues(t *testing.T) {
 	}{
 		{"interval and expiry at math.MaxInt", DeviceAuthorization{ExpiresIn: math.MaxInt, Interval: math.MaxInt},
 			`{"error":"authorization_pending"}`, 0},
-		{"slow_down at the top of a Duration", DeviceAuthorization{ExpiresIn: 9223372036, Interval: 9223372034},
+		{"slow_down at the top of a Duration", DeviceAuthorization{ExpiresIn: top, Interval: top - 2},
 			`{"error":"slow_down"}`, 1},
 	}
 	for _, c := range cases {
