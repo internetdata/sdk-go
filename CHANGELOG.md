@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.5.0 - 2026-09-29
+
+### Features
+
+- Add the authorization code sign-in, with PKCE ([`948f6e3`](https://github.com/internetdata/sdk-go/commit/948f6e315d5858f3b51de553c56b0da931f4e6d4))
+
 ## 2.4.1 - 2026-09-28
 
 ### Fixes
