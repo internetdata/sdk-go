@@ -160,6 +160,23 @@ keyed, err := internetdata.New(internetdata.WithAPIKey(*token.Apikey))
 
 A denied sign-in satisfies `errors.Is(err, internetdata.ErrOauthAccessDenied)` and a code that ran out `errors.Is(err, internetdata.ErrOauthExpiredToken)`, and client IDs are issued on request from support@internetdata.io. `client.Oauth.Revoke(ctx, "your-client-id", *token.RefreshToken)` signs the machine out again.
 
+### Sign in with OAuth (authorization code)
+
+An app that can take a browser redirect signs the person in there instead, with a PKCE pair made for that one sign-in:
+
+```go
+client, err := internetdata.New()
+redirectURI := "http://127.0.0.1:8765/callback"
+pkce := client.Oauth.CreatePkce()
+
+authURL, err := client.Oauth.AuthorizationURL("your-client-id", redirectURI, pkce.Challenge,
+    internetdata.AuthorizationURLOptions{Scope: "apikeys.use", State: "your-state"})
+// Open authURL in the browser. Its redirect to redirectURI carries code and state.
+token, err := client.Oauth.ExchangeAuthorizationCode(ctx, "your-client-id", code, pkce.Verifier, redirectURI)
+```
+
+Check that `state` came back as you sent it before you exchange `code`, which works once. The client ID can also be the https URL of a client metadata document your app serves, and such an app is never handed a key, so `token.Apikey` stays nil.
+
 ## Other Libraries
 
 There are official InternetData client libraries available for many languages including PHP, Python, Go, Java, Ruby, and many popular frameworks such as Django, Rails, and Laravel. See our GitHub at https://github.com/internetdata for more.

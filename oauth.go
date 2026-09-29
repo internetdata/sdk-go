@@ -2,6 +2,9 @@ package internetdata
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -10,13 +13,15 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
 // OauthAPI signs a person in on their own machine with the OAuth device flow,
 // so a program can be handed one of their API keys instead of asking them to
-// paste it. Reached through Client.Oauth.
+// paste it, or through a browser redirect with the authorization code flow.
+// Reached through Client.Oauth.
 //
 // Every call takes a client ID, which is issued on request from
 // support@internetdata.io. None of these requests carries the client's API
@@ -24,6 +29,7 @@ import (
 type OauthAPI struct {
 	// A second generated client, built without the API key's request editor.
 	api     *api.ClientWithResponses
+	baseURL string
 	retries int
 	// Seams for the poll's wait and its deadline, replaced together in tests.
 	sleep func(context.Context, time.Duration) error
@@ -85,6 +91,75 @@ func (o *OauthAPI) ExchangeRefreshToken(
 		"refresh_token": {refreshToken},
 		"client_id":     {clientID},
 	})
+}
+
+// ExchangeAuthorizationCode trades the code a sign-in's redirect brought back
+// for tokens. codeVerifier is the PKCE verifier whose challenge went into the
+// authorization URL, and redirectURI that URL's, exactly.
+//
+// Never retried: the server spends the code on first read, before it checks
+// the verifier, so a retry could only be refused.
+func (o *OauthAPI) ExchangeAuthorizationCode(
+	ctx context.Context, clientID, code, codeVerifier, redirectURI string,
+) (*TokenResponse, error) {
+	return o.exchange(ctx, url.Values{
+		"grant_type":    {"authorization_code"},
+		"code":          {code},
+		"redirect_uri":  {redirectURI},
+		"client_id":     {clientID},
+		"code_verifier": {codeVerifier},
+	})
+}
+
+// AuthorizationURL is the URL to open in the person's browser for the
+// authorization code flow. It makes no request. Once they decide, the server
+// redirects to redirectURI with a code for ExchangeAuthorizationCode (and the
+// state, when one was given), or with an error.
+//
+// A required value that is empty or not UTF-8 is refused with a bad_request
+// *Error.
+func (o *OauthAPI) AuthorizationURL(
+	clientID, redirectURI, codeChallenge string, opts AuthorizationURLOptions,
+) (string, error) {
+	params := [][2]string{
+		{"response_type", "code"},
+		{"client_id", clientID},
+		{"redirect_uri", redirectURI},
+		{"code_challenge", codeChallenge},
+		{"code_challenge_method", "S256"},
+		{"scope", opts.Scope},
+		{"state", opts.State},
+		{"resource", opts.Resource},
+	}
+	var query []string
+	for i, p := range params {
+		name, value := p[0], p[1]
+		if value == "" && i > 4 {
+			continue
+		}
+		if value == "" || !utf8.ValidString(value) {
+			return "", &Error{Kind: KindBadRequest, Message: name + " must be a non-empty UTF-8 string"}
+		}
+		query = append(query, name+"="+percentEncode(value))
+	}
+	return o.baseURL + "/oauth/authorize?" + strings.Join(query, "&"), nil
+}
+
+// CreatePkce makes a fresh PKCE pair for one sign-in, from 32 bytes of the
+// system's secure random source.
+func (o *OauthAPI) CreatePkce() Pkce {
+	raw := make([]byte, 32)
+	// Never fails from Go 1.24: a broken random source crashes the program.
+	_, _ = rand.Read(raw)
+	verifier := base64.RawURLEncoding.EncodeToString(raw)
+	return Pkce{Verifier: verifier, Challenge: o.PkceChallenge(verifier), Method: "S256"}
+}
+
+// PkceChallenge is the S256 challenge for a PKCE verifier: its SHA-256, as
+// unpadded base64url.
+func (o *OauthAPI) PkceChallenge(verifier string) string {
+	sum := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
 
 // Revoke ends a token. A refresh token ends the whole sign-in and every token
@@ -180,6 +255,30 @@ type DeviceAuthorizationOptions struct {
 	Scope string
 	// Resource is the API the tokens are meant for.
 	Resource string
+}
+
+// AuthorizationURLOptions is what an authorization URL asks for beyond what
+// every one carries. An empty field is left out of the URL.
+type AuthorizationURLOptions struct {
+	// Scope is one space-delimited string, sent as given. The server narrows it
+	// to what the client may ask for.
+	Scope string
+	// State comes back on the redirect unchanged, so the caller can tell the
+	// answer is to its own request.
+	State string
+	// Resource is the API the tokens are meant for.
+	Resource string
+}
+
+// Pkce is one sign-in's PKCE pair: Challenge goes in the authorization URL,
+// Verifier to ExchangeAuthorizationCode.
+type Pkce struct {
+	// Verifier is 32 random bytes as 43 characters of unpadded base64url.
+	Verifier string
+	// Challenge is the verifier's SHA-256, as unpadded base64url.
+	Challenge string
+	// Method is always S256, the only method the server accepts.
+	Method string
 }
 
 // OauthMetadata is the authorization server's discovery document. An optional
@@ -280,6 +379,12 @@ func (e *OauthError) Unwrap() error {
 }
 
 const formContentType = "application/x-www-form-urlencoded"
+
+// Every byte but A-Z a-z 0-9 - . _ ~ as %XX. QueryEscape alone sends a space
+// as +, and escapes a literal + as %2B, so every + it leaves is a space.
+func percentEncode(value string) string {
+	return strings.ReplaceAll(url.QueryEscape(value), "+", "%20")
+}
 
 // url.Values.Encode sends a + in a value as %2B, which the server must receive
 // as a +, and a space as +.

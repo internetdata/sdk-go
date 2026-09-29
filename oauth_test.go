@@ -1,5 +1,5 @@
-// The OAuth accessor against the shared corpus's oauth section. Nothing here
-// reads oauth.deferred: those operations are not in this release.
+// The OAuth accessor against the shared corpus's oauth section, the
+// authorization code flow's vectors under oauth.deferred included.
 
 package internetdata
 
@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -42,6 +43,10 @@ func TestOauthRequestsCarryNoCredential(t *testing.T) {
 	if _, err := client.Oauth.ExchangeRefreshToken(ctx, "internetdata-cli", "mo_rt_x"); err != nil {
 		t.Fatalf("ExchangeRefreshToken: %v", err)
 	}
+	verifier := strings.Repeat("v", 43)
+	if _, err := client.Oauth.ExchangeAuthorizationCode(ctx, "internetdata-cli", "mo_ac_x", verifier, "http://127.0.0.1/cb"); err != nil {
+		t.Fatalf("ExchangeAuthorizationCode: %v", err)
+	}
 	if err := client.Oauth.Revoke(ctx, "internetdata-cli", "mo_rt_x"); err != nil {
 		t.Fatalf("Revoke: %v", err)
 	}
@@ -49,8 +54,12 @@ func TestOauthRequestsCarryNoCredential(t *testing.T) {
 		t.Fatalf("PollDeviceToken: %v", err)
 	}
 
-	if len(stub.requests) != 6 {
-		t.Fatalf("saw %d request(s), want 6", len(stub.requests))
+	if len(stub.requests) != 7 {
+		t.Fatalf("saw %d request(s), want 7", len(stub.requests))
+	}
+	authURL, err := client.Oauth.AuthorizationURL("internetdata-cli", "http://127.0.0.1/cb", strings.Repeat("c", 43), AuthorizationURLOptions{})
+	if err != nil || strings.Contains(authURL, key) {
+		t.Errorf("AuthorizationURL = %q, %v; it must not carry the API key", authURL, err)
 	}
 	for _, req := range stub.requests {
 		for _, name := range c.NoCredential.ForbiddenHeaders {
@@ -83,7 +92,7 @@ func TestOauthFormBodiesAndEndpoints(t *testing.T) {
 	}
 	assertEndpoint(t, metadataStub.requests[0], c.Endpoints["metadata"])
 
-	for _, fc := range c.Forms.Cases {
+	for _, fc := range append(c.Forms.Cases, c.Deferred.Forms...) {
 		t.Run(fc.Name, func(t *testing.T) {
 			stub := &oauthStub{replies: []oauthReply{{Status: 200, Body: json.RawMessage(everyRequiredMember)}}}
 			if err := callOauth(t.Context(), newOauthClient(t, stub), fc.Operation, fc.Args); err != nil {
@@ -209,8 +218,60 @@ func TestOauthErrorsAreClassified(t *testing.T) {
 	}
 }
 
+func TestOauthAuthorizationURL(t *testing.T) {
+	c := oauthCorpusData(t).Deferred
+	for _, uc := range c.AuthorizationURL {
+		t.Run(uc.Name, func(t *testing.T) {
+			stub := &oauthStub{replies: []oauthReply{{Status: 200, Body: json.RawMessage(everyRequiredMember)}}}
+			client := newOauthClient(t, stub, WithBaseURL(uc.BaseURL))
+			got, err := client.Oauth.AuthorizationURL(uc.ClientID, uc.RedirectURI, uc.CodeChallenge,
+				AuthorizationURLOptions{Scope: uc.Scope, State: uc.State, Resource: uc.Resource})
+			if err != nil || got != uc.Expect {
+				t.Errorf("AuthorizationURL = %q, %v\nwant %q", got, err, uc.Expect)
+			}
+			if len(stub.requests) != 0 {
+				t.Errorf("sent %d request(s), want none", len(stub.requests))
+			}
+		})
+	}
+	t.Run("a required value empty or not UTF-8 is refused", func(t *testing.T) {
+		uc := c.AuthorizationURL[0]
+		client := newOauthClient(t, &oauthStub{})
+		for _, args := range [][3]string{
+			{"", uc.RedirectURI, uc.CodeChallenge},
+			{uc.ClientID, "", uc.CodeChallenge},
+			{uc.ClientID, uc.RedirectURI, "\xff"},
+		} {
+			_, err := client.Oauth.AuthorizationURL(args[0], args[1], args[2], AuthorizationURLOptions{})
+			var e *Error
+			if !errors.As(err, &e) || e.Kind != KindBadRequest {
+				t.Errorf("AuthorizationURL(%q) = %v, want a bad_request *Error", args, err)
+			}
+		}
+	})
+}
+
+func TestOauthPkce(t *testing.T) {
+	c := oauthCorpusData(t).Deferred.Pkce
+	oauth := newOauthClient(t, &oauthStub{}).Oauth
+	if got := oauth.PkceChallenge(c.Verifier); got != c.Challenge {
+		t.Errorf("PkceChallenge = %q, want %q", got, c.Challenge)
+	}
+	first := oauth.CreatePkce()
+	if !regexp.MustCompile(c.GeneratedVerifierPattern).MatchString(first.Verifier) {
+		t.Errorf("verifier %q does not match %s", first.Verifier, c.GeneratedVerifierPattern)
+	}
+	if first.Challenge != oauth.PkceChallenge(first.Verifier) || first.Method != c.Method {
+		t.Errorf("CreatePkce = %+v, want its verifier's %s challenge", first, c.Method)
+	}
+	if oauth.CreatePkce().Verifier == first.Verifier {
+		t.Error("two pairs share a verifier")
+	}
+}
+
 func TestOauthRetries(t *testing.T) {
-	for _, rc := range oauthCorpusData(t).Retries.Cases {
+	c := oauthCorpusData(t)
+	for _, rc := range append(c.Retries.Cases, c.Deferred.Retries...) {
 		t.Run(rc.Name, func(t *testing.T) {
 			stub := &oauthStub{replies: rc.Responses}
 			err := callOauth(t.Context(), newOauthClient(t, stub), rc.Operation, rc.Args)
@@ -469,6 +530,8 @@ func callOauth(ctx context.Context, client *Client, operation string, args oauth
 		_, err = client.Oauth.ExchangeDeviceCode(ctx, args.ClientID, args.DeviceCode)
 	case "exchangeRefreshToken":
 		_, err = client.Oauth.ExchangeRefreshToken(ctx, args.ClientID, args.RefreshToken)
+	case "exchangeAuthorizationCode":
+		_, err = client.Oauth.ExchangeAuthorizationCode(ctx, args.ClientID, args.Code, args.CodeVerifier, args.RedirectURI)
 	case "revoke":
 		err = client.Oauth.Revoke(ctx, args.ClientID, args.Token)
 	default:
@@ -589,14 +652,8 @@ type oauthCorpus struct {
 		ForbiddenQuery   []string `json:"forbiddenQuery"`
 	} `json:"noCredential"`
 	Forms struct {
-		ContentType string `json:"contentType"`
-		Cases       []struct {
-			Name      string            `json:"name"`
-			Operation string            `json:"operation"`
-			Endpoint  string            `json:"endpoint"`
-			Args      oauthArgs         `json:"args"`
-			Fields    map[string]string `json:"fields"`
-		} `json:"cases"`
+		ContentType string          `json:"contentType"`
+		Cases       []oauthFormCase `json:"cases"`
 	} `json:"forms"`
 	Responses map[string]json.RawMessage `json:"responses"`
 	Errors    struct {
@@ -607,18 +664,29 @@ type oauthCorpus struct {
 		} `json:"cases"`
 	} `json:"errors"`
 	Retries struct {
-		Cases []struct {
-			Name      string       `json:"name"`
-			Operation string       `json:"operation"`
-			Args      oauthArgs    `json:"args"`
-			Responses []oauthReply `json:"responses"`
-			Expect    struct {
-				Requests int    `json:"requests"`
-				Outcome  string `json:"outcome"`
-				oauthExpect
-			} `json:"expect"`
-		} `json:"cases"`
+		Cases []oauthRetryCase `json:"cases"`
 	} `json:"retries"`
+	Deferred struct {
+		Pkce struct {
+			Verifier                 string `json:"verifier"`
+			Challenge                string `json:"challenge"`
+			Method                   string `json:"method"`
+			GeneratedVerifierPattern string `json:"generatedVerifierPattern"`
+		} `json:"pkce"`
+		AuthorizationURL []struct {
+			Name          string `json:"name"`
+			BaseURL       string `json:"baseUrl"`
+			ClientID      string `json:"clientId"`
+			RedirectURI   string `json:"redirectUri"`
+			CodeChallenge string `json:"codeChallenge"`
+			Scope         string `json:"scope"`
+			State         string `json:"state"`
+			Resource      string `json:"resource"`
+			Expect        string `json:"expect"`
+		} `json:"authorizationUrl"`
+		Forms   []oauthFormCase  `json:"forms"`
+		Retries []oauthRetryCase `json:"retries"`
+	} `json:"deferred"`
 	Poll struct {
 		Cases []struct {
 			Name      string              `json:"name"`
@@ -641,6 +709,26 @@ type oauthEndpoint struct {
 	Path   string `json:"path"`
 }
 
+type oauthFormCase struct {
+	Name      string            `json:"name"`
+	Operation string            `json:"operation"`
+	Endpoint  string            `json:"endpoint"`
+	Args      oauthArgs         `json:"args"`
+	Fields    map[string]string `json:"fields"`
+}
+
+type oauthRetryCase struct {
+	Name      string       `json:"name"`
+	Operation string       `json:"operation"`
+	Args      oauthArgs    `json:"args"`
+	Responses []oauthReply `json:"responses"`
+	Expect    struct {
+		Requests int    `json:"requests"`
+		Outcome  string `json:"outcome"`
+		oauthExpect
+	} `json:"expect"`
+}
+
 type oauthArgs struct {
 	ClientID     string `json:"clientId"`
 	Scope        string `json:"scope"`
@@ -648,6 +736,9 @@ type oauthArgs struct {
 	DeviceCode   string `json:"deviceCode"`
 	RefreshToken string `json:"refreshToken"`
 	Token        string `json:"token"`
+	Code         string `json:"code"`
+	CodeVerifier string `json:"codeVerifier"`
+	RedirectURI  string `json:"redirectUri"`
 }
 
 type oauthReply struct {
