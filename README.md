@@ -179,7 +179,7 @@ Check that `state` came back as you sent it before you exchange `code`, which wo
 
 ## Other Libraries
 
-There are official InternetData client libraries available for many languages including PHP, Python, Go, Java, Ruby, and many popular frameworks such as Django, Rails, and Laravel. See our GitHub at https://github.com/internetdata for more.
+There are official InternetData client libraries available for many languages including PHP, Python, Go, Java, and Ruby. See our GitHub at https://github.com/internetdata for more.
 
 ## About InternetData
 
