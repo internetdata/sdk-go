@@ -857,7 +857,8 @@ type ClientInterface interface {
 	// `updated` and `entries` without downloading anything.
 	//
 	// No `format` parameter - one document describes every format the database
-	// is built in.
+	// is built in. Needs no license: it answers for every database `list`
+	// returns, whatever its `standing`.
 	//
 	// Corresponds with GET /api/v2/database/metadata (the `DatabaseMetadataV2` operationId).
 	DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadataV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1286,7 +1287,8 @@ func (c *Client) ListDatabases(ctx context.Context, reqEditors ...RequestEditorF
 // `updated` and `entries` without downloading anything.
 //
 // No `format` parameter - one document describes every format the database
-// is built in.
+// is built in. Needs no license: it answers for every database `list`
+// returns, whatever its `standing`.
 //
 // Corresponds with GET /api/v2/database/metadata (the `DatabaseMetadataV2` operationId).
 func (c *Client) DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadataV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2484,7 +2486,8 @@ type ClientWithResponsesInterface interface {
 	// `updated` and `entries` without downloading anything.
 	//
 	// No `format` parameter - one document describes every format the database
-	// is built in.
+	// is built in. Needs no license: it answers for every database `list`
+	// returns, whatever its `standing`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -3406,8 +3409,6 @@ type DatabaseMetadataV2Response struct {
 	JSON200 *DatabaseMetadata
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *V2NotLicensed
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *V2UnknownDatabase
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3422,11 +3423,6 @@ func (r DatabaseMetadataV2Response) GetJSON200() *DatabaseMetadata {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r DatabaseMetadataV2Response) GetJSON401() *V2Unauthorized {
 	return r.JSON401
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r DatabaseMetadataV2Response) GetJSON403() *V2NotLicensed {
-	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -3920,7 +3916,8 @@ func (c *ClientWithResponses) ListDatabasesWithResponse(ctx context.Context, req
 // `updated` and `entries` without downloading anything.
 //
 // No `format` parameter - one document describes every format the database
-// is built in.
+// is built in. Needs no license: it answers for every database `list`
+// returns, whatever its `standing`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -4711,13 +4708,6 @@ func ParseDatabaseMetadataV2Response(rsp *http.Response) (*DatabaseMetadataV2Res
 			return nil, err
 		}
 		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest V2NotLicensed
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest V2UnknownDatabase

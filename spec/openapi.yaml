@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.09.26
+  version: 2026.10.03
 servers:
   - url: https://internetdata.io
 tags:
@@ -126,7 +126,8 @@ paths:
         `updated` and `entries` without downloading anything.
 
         No `format` parameter - one document describes every format the database
-        is built in.
+        is built in. Needs no license: it answers for every database `list`
+        returns, whatever its `standing`.
       security:
         - ApiKeyQueryAuth: []
         - ApiKeyHeaderAuth: []
@@ -142,8 +143,6 @@ paths:
                 $ref: '#/components/schemas/DatabaseMetadata'
         '401':
           $ref: '#/components/responses/V2Unauthorized'
-        '403':
-          $ref: '#/components/responses/V2NotLicensed'
         '404':
           $ref: '#/components/responses/V2UnknownDatabase'
         '503':
@@ -1641,7 +1640,7 @@ components:
             $ref: '#/components/schemas/Error'
     V2NotAvailable:
       description: |
-        Licensed, but the current build has not been published yet.
+        The current build has not been published yet.
         `rc`: `NOT_AVAILABLE`.
       content:
         application/json:
