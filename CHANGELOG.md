@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.6.0 - 2026-10-09
+
+### Features
+
+- Re-pin the spec to 2026.10.08, adding the Open databases' open flag ([`bb04173`](https://github.com/internetdata/sdk-go/commit/bb0417333177fbffa5e73dc42e29f345c8d58496))
+
 ## 2.5.1 - 2026-10-04
 
 ### Fixes
