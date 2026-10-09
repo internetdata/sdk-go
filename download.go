@@ -24,24 +24,30 @@ func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format)
 	}
 	ctx = withoutRedirects(ctx)
 	return withRetry(ctx, d.retries, func() (string, error) {
-		res, err := d.api.DownloadDatabaseV2WithResponse(ctx, &api.DownloadDatabaseV2Params{
+		res, err := d.api.DownloadDatabaseV2(ctx, &api.DownloadDatabaseV2Params{
 			ID:     id,
 			Format: api.DatabaseFormat(format),
 		})
 		if err != nil {
 			return "", errorFromTransport(err)
 		}
-		if res.StatusCode() != http.StatusFound {
-			return "", errorFromResponse(res.StatusCode(), res.HTTPResponse.Header, res.Body)
+		body, err := readBody(res)
+		if err != nil {
+			return "", err
 		}
-		if res.Headers302 == nil || res.Headers302.Location == nil {
-			return "", &Error{
-				Kind:       KindServerError,
-				Message:    "redirect carried no Location header",
-				StatusCode: res.StatusCode(),
+		switch {
+		case res.StatusCode == http.StatusFound:
+			if location := res.Header.Get("Location"); location != "" {
+				return location, nil
 			}
+			return "", unreadable(res.StatusCode, "redirect carried no Location header")
+		// The link answering in place of its redirect is something in the way,
+		// not the caller's mistake, so it is retried; through v2.6.0 it was a
+		// bad_request sent once.
+		case res.StatusCode >= 200 && res.StatusCode <= 299:
+			return "", unreadable(res.StatusCode, "expected a redirect to object storage")
 		}
-		return *res.Headers302.Location, nil
+		return "", errorFromResponse(res.StatusCode, res.Header, body)
 	})
 }
 

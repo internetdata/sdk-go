@@ -155,6 +155,68 @@ func openOf(databases []Database) []bool {
 	return open
 }
 
+// A 2xx a call cannot read as its answer is the server's fault: a retried
+// server_error carrying the status, never a raw decode error and never an empty
+// answer. Through v2.6.0 an HTML page was a bad_request sent once, a cut-off body
+// a network error with no status, and `{}` an empty catalog.
+func TestAnAnswerACallCannotReadIsARetriedServerError(t *testing.T) {
+	type call struct {
+		path, wrongType, entry string
+		do                     func(*Client) error
+	}
+	calls := map[string]call{
+		"List": {pathList, `{"databases":"x"}`, `{"databases":[{}]}`, func(c *Client) error {
+			_, err := c.Database.List(context.Background())
+			return err
+		}},
+		"Metadata": {pathMetadata, `{"id":"a_v1","updated":"2026-10-08","entries":"x","schema":{},"size":{}}`,
+			`{"id":"a_v1"}`, func(c *Client) error {
+				_, err := c.Database.Metadata(context.Background(), "a_v1")
+				return err
+			}},
+		"Checksums": {pathChecksum, `{"id":"a_v1","format":"csvgz","checksums":"x"}`,
+			`{"id":"a_v1","format":"csvgz","checksums":{}}`, func(c *Client) error {
+				_, err := c.Database.Checksums(context.Background(), "a_v1", FormatCSVGZ)
+				return err
+			}},
+		"Downloads": {pathDownloads, `{"downloads":"x"}`, `{"downloads":[{}]}`, func(c *Client) error {
+			_, err := c.Database.Downloads(context.Background(), 0)
+			return err
+		}},
+		// The link answering in place of its redirect, whatever the body.
+		"DownloadURL": {pathDownload, `{"url":1}`, `{"url":"https://storage.example.test/x"}`,
+			func(c *Client) error {
+				_, err := c.Database.DownloadURL(context.Background(), "a_v1", FormatCSVGZ)
+				return err
+			}},
+	}
+	for name, c := range calls {
+		bodies := map[string]string{
+			"html": "<html>gateway</html>", "cut off": `{"databases":[`, "empty": "", "array": "[]",
+			"string": `"x"`, "null": "null", "object": "{}", "wrong type": c.wrongType, "entry": c.entry,
+		}
+		for kind, body := range bodies {
+			t.Run(name+"/"+kind, func(t *testing.T) {
+				t.Parallel()
+				route := stubRoute{body: []byte(body)}
+				if kind == "html" {
+					route.headers = map[string]string{"Content-Type": "text/html"}
+				}
+				stub := newStub(map[string]stubRoute{c.path: route})
+				err := c.do(newTestClient(t, stub, WithRetries(1)))
+
+				if n := stub.count(); n != 2 {
+					t.Errorf("sent %d request(s), want 2: an unreadable answer is retried", n)
+				}
+				var apiErr *Error
+				if !errors.As(err, &apiErr) || apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
+					t.Errorf("error was %v, want a server_error carrying 200", err)
+				}
+			})
+		}
+	}
+}
+
 // Zero means "the API's own default", which is what a caller who does not care
 // passes. Sending limit=0 would be rejected by the schema's minimum of 1.
 func TestDownloadsOmitsALimitItWasNotGiven(t *testing.T) {

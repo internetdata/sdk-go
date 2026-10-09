@@ -87,7 +87,9 @@ func (s *stubTransport) seen() []stubCall {
 
 func (s *stubTransport) respond(req *http.Request, route stubRoute) *http.Response {
 	var body []byte
-	if route.body != nil {
+	if raw, ok := route.body.([]byte); ok {
+		body = raw
+	} else if route.body != nil {
 		encoded, err := json.Marshal(route.body)
 		if err != nil {
 			encoded = []byte(`{"rc":"STUB_COULD_NOT_ENCODE"}`)

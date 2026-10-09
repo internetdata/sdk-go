@@ -2,8 +2,11 @@ package internetdata
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/oapi-codegen/runtime/types"
 
@@ -31,14 +34,11 @@ type DatabaseAPI struct {
 // not an answer for another.
 func (d *DatabaseAPI) List(ctx context.Context) ([]Database, error) {
 	return withRetry(ctx, d.retries, func() ([]Database, error) {
-		res, err := d.api.ListDatabasesWithResponse(ctx)
+		answer, err := decodeAnswer[databaseList](d.api.ListDatabases(ctx))
 		if err != nil {
-			return nil, errorFromTransport(err)
+			return nil, err
 		}
-		if res.StatusCode() != http.StatusOK || res.JSON200 == nil {
-			return nil, errorFromResponse(res.StatusCode(), res.HTTPResponse.Header, res.Body)
-		}
-		return res.JSON200.Databases, nil
+		return answer.Databases, nil
 	})
 }
 
@@ -51,14 +51,7 @@ func (d *DatabaseAPI) List(ctx context.Context) ([]Database, error) {
 // there is no format argument.
 func (d *DatabaseAPI) Metadata(ctx context.Context, id string) (*DatabaseMetadata, error) {
 	return withRetry(ctx, d.retries, func() (*DatabaseMetadata, error) {
-		res, err := d.api.DatabaseMetadataV2WithResponse(ctx, &api.DatabaseMetadataV2Params{ID: id})
-		if err != nil {
-			return nil, errorFromTransport(err)
-		}
-		if res.StatusCode() != http.StatusOK || res.JSON200 == nil {
-			return nil, errorFromResponse(res.StatusCode(), res.HTTPResponse.Header, res.Body)
-		}
-		return res.JSON200, nil
+		return decodeAnswer[DatabaseMetadata](d.api.DatabaseMetadataV2(ctx, &api.DatabaseMetadataV2Params{ID: id}))
 	})
 }
 
@@ -70,19 +63,16 @@ func (d *DatabaseAPI) Checksums(ctx context.Context, id string, format Format) (
 		return nil, err
 	}
 	return withRetry(ctx, d.retries, func() (*Checksums, error) {
-		res, err := d.api.DatabaseChecksumV2WithResponse(ctx, &api.DatabaseChecksumV2Params{
+		answer, err := decodeAnswer[checksumsAnswer](d.api.DatabaseChecksumV2(ctx, &api.DatabaseChecksumV2Params{
 			ID:     id,
 			Format: api.DatabaseFormat(format),
-		})
+		}))
 		if err != nil {
-			return nil, errorFromTransport(err)
-		}
-		if res.StatusCode() != http.StatusOK || res.JSON200 == nil {
-			return nil, errorFromResponse(res.StatusCode(), res.HTTPResponse.Header, res.Body)
+			return nil, err
 		}
 		// The digests hang under a `checksums` key rather than sitting at the
 		// top level beside `id` and `format`.
-		sums := res.JSON200.Checksums
+		sums := answer.Checksums
 		return &Checksums{
 			MD5: sums.Md5, SHA1: sums.Sha1, SHA256: sums.Sha256, SHA512: sums.Sha512,
 		}, nil
@@ -101,15 +91,112 @@ func (d *DatabaseAPI) Downloads(ctx context.Context, limit int) ([]DownloadAttem
 		if limit > 0 {
 			params.Limit = &limit
 		}
-		res, err := d.api.ListDownloadsWithResponse(ctx, params)
+		answer, err := decodeAnswer[downloadList](d.api.ListDownloads(ctx, params))
 		if err != nil {
-			return nil, errorFromTransport(err)
+			return nil, err
 		}
-		if res.StatusCode() != http.StatusOK || res.JSON200 == nil {
-			return nil, errorFromResponse(res.StatusCode(), res.HTTPResponse.Header, res.Body)
-		}
-		return res.JSON200.Downloads, nil
+		return answer.Downloads, nil
 	})
+}
+
+// The envelopes three answers arrive in, as the generated client declares them.
+type (
+	databaseList struct {
+		Databases []Database `json:"databases"`
+	}
+	downloadList struct {
+		Downloads []DownloadAttempt `json:"downloads"`
+	}
+	checksumsAnswer struct {
+		Checksums api.DBChecksums    `json:"checksums"`
+		Format    api.DatabaseFormat `json:"format"`
+		ID        string             `json:"id"`
+	}
+)
+
+// Reads the JSON answer a database call returns. Anything but a 2xx is
+// classified by its status, and a 2xx that is not the answer - a proxy's HTML
+// page, a cut-off or empty body, or one without a member the answer requires -
+// is a server error carrying that status, retried like a 5xx. Through v2.6.0 an
+// HTML page was a bad_request sent once, a cut-off body a network error with
+// no status, and `{}` an empty catalog handed back as the answer.
+func decodeAnswer[T any](res *http.Response, err error) (*T, error) {
+	if err != nil {
+		return nil, errorFromTransport(err)
+	}
+	body, err := readBody(res)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, errorFromResponse(res.StatusCode, res.Header, body)
+	}
+	var answer T
+	var raw any
+	if json.Unmarshal(body, &answer) != nil || json.Unmarshal(body, &raw) != nil ||
+		!complete(reflect.TypeFor[T](), raw) {
+		return nil, unreadable(res.StatusCode, "the response was not the answer this call returns")
+	}
+	return &answer, nil
+}
+
+var unmarshaler = reflect.TypeFor[json.Unmarshaler]()
+
+// Reports whether raw, a decoded JSON value, carries every member t requires,
+// at every depth. The generated types spell a member the spec requires and does
+// not allow to be null as neither a pointer nor omitempty, so that is the rule:
+// present, and not null. json.Unmarshal checks neither, and reads a missing or
+// null member as its zero value.
+func complete(t reflect.Type, raw any) bool {
+	if raw == nil {
+		return t.Kind() == reflect.Pointer || t.Kind() == reflect.Interface
+	}
+	if t.Kind() == reflect.Pointer {
+		return complete(t.Elem(), raw)
+	}
+	if reflect.PointerTo(t).Implements(unmarshaler) {
+		return true
+	}
+	switch t.Kind() {
+	case reflect.Struct:
+		object, ok := raw.(map[string]any)
+		if !ok {
+			return false
+		}
+		for i := range t.NumField() {
+			field := t.Field(i)
+			name, options, _ := strings.Cut(field.Tag.Get("json"), ",")
+			if !field.IsExported() || name == "" || name == "-" {
+				continue
+			}
+			value, present := object[name]
+			required := field.Type.Kind() != reflect.Pointer && !strings.Contains(options, "omitempty")
+			if (required && !present) || (present && !complete(field.Type, value)) {
+				return false
+			}
+		}
+	case reflect.Slice:
+		items, ok := raw.([]any)
+		if !ok {
+			return false
+		}
+		for _, item := range items {
+			if !complete(t.Elem(), item) {
+				return false
+			}
+		}
+	case reflect.Map:
+		entries, ok := raw.(map[string]any)
+		if !ok {
+			return false
+		}
+		for _, entry := range entries {
+			if !complete(t.Elem(), entry) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // Checksums are the digests of one published file.

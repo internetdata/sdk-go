@@ -205,6 +205,25 @@ func TestOauthAnAnswerMissingARequiredMemberFails(t *testing.T) {
 	}
 }
 
+// A 2xx that is not a JSON object, or whose members do not decode, is the
+// server's fault too. Through v2.6.0 it was a network error with no status.
+func TestOauthAnAnswerThatDoesNotDecodeIsAServerError(t *testing.T) {
+	for name, body := range map[string]string{
+		"html": "<html>gateway</html>", "cut off": `{"issuer":`, "array": "[]",
+		"wrong type": strings.Replace(everyRequiredMember, `"interval":1`, `"interval":"1"`, 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			stub := &oauthStub{replies: []oauthReply{{Status: 200, RawBody: &body}}}
+			client := newOauthClient(t, stub, WithRetries(0))
+			_, err := client.Oauth.DeviceAuthorization(t.Context(), "internetdata-cli", DeviceAuthorizationOptions{})
+			var apiErr *Error
+			if !errors.As(err, &apiErr) || apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
+				t.Errorf("error was %v, want a server_error carrying 200", err)
+			}
+		})
+	}
+}
+
 func TestOauthErrorsAreClassified(t *testing.T) {
 	for _, ec := range oauthCorpusData(t).Errors.Cases {
 		t.Run(ec.Name, func(t *testing.T) {

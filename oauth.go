@@ -405,18 +405,16 @@ func decodeOauth[T any](res *http.Response, err error, required ...string) (*T, 
 	}
 	var members map[string]json.RawMessage
 	if err := json.Unmarshal(body, &members); err != nil {
-		return nil, errorFromTransport(err)
+		return nil, unreadable(res.StatusCode, "the answer was not a JSON object")
 	}
 	for _, name := range required {
 		if _, ok := members[name]; !ok {
-			return nil, &Error{
-				Kind: KindServerError, Message: "the answer carried no " + name, StatusCode: res.StatusCode,
-			}
+			return nil, unreadable(res.StatusCode, "the answer carried no "+name)
 		}
 	}
 	var out T
 	if err := json.Unmarshal(body, &out); err != nil {
-		return nil, errorFromTransport(err)
+		return nil, unreadable(res.StatusCode, "the answer did not decode: "+err.Error())
 	}
 	return &out, nil
 }

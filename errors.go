@@ -101,6 +101,12 @@ func errorFromResponse(status int, header http.Header, body []byte) *Error {
 	return &Error{Kind: KindServerError, Message: message, StatusCode: status}
 }
 
+// A 2xx the call cannot read as its answer. It is the server's fault rather than
+// the caller's, so it is retried like any 5xx, and it carries the status.
+func unreadable(status int, message string) *Error {
+	return &Error{Kind: KindServerError, Message: message, StatusCode: status}
+}
+
 // A failure with no response of its own: a refused connection, a timeout, a
 // canceled context, or a body the client could not decode. All are worth
 // another attempt, and the cause is kept so errors.Is still sees it.
