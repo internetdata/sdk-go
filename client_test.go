@@ -108,6 +108,53 @@ func TestChecksumsUnwrapsPastTheEnvelopeAndKeepsAllFour(t *testing.T) {
 	}
 }
 
+// `open` says a family downloads with no license, whatever its standing, and
+// that an attempt was taken under that Open license rather than one of yours.
+func TestOpenIsReadFromTheListingAndTheDownloadHistory(t *testing.T) {
+	listing := catalog("asn", "vpn_ip")
+	families := listing["databases"].([]map[string]any)
+	families[0]["open"], families[0]["standing"], families[0]["license_type"] = true, "unlicensed", nil
+	stub := newStub(map[string]stubRoute{
+		pathList: {body: listing},
+		pathDownloads: {body: map[string]any{"downloads": []any{
+			map[string]any{"dataset_id": "asn_v1", "format": "csvgz", "outcome": "ok", "sample": false,
+				"open": true, "bytes": 760, "http_status": 302, "apikey_id": "ak_1", "client_ip": nil,
+				"user_agent": nil, "created": "2026-10-08T10:00:00Z"},
+			map[string]any{"dataset_id": "vpn_ip_v1", "format": "mmdb", "outcome": "ok", "sample": false,
+				"open": false, "bytes": 760, "http_status": 302, "apikey_id": "ak_1", "client_ip": nil,
+				"user_agent": nil, "created": "2026-10-08T09:00:00Z"},
+		}}},
+	})
+	client := newTestClient(t, stub)
+
+	databases, err := client.Database.List(t.Context())
+	if err != nil {
+		t.Fatalf("List: %v", err)
+	}
+	if len(databases) != 2 || !databases[0].Open || databases[1].Open {
+		t.Errorf("List read open as %v, want [true false]", openOf(databases))
+	}
+	if databases[0].Standing != StandingUnlicensed {
+		t.Errorf("an Open family's standing = %q, want it as served", databases[0].Standing)
+	}
+
+	attempts, err := client.Database.Downloads(t.Context(), 0)
+	if err != nil {
+		t.Fatalf("Downloads: %v", err)
+	}
+	if len(attempts) != 2 || !attempts[0].Open || attempts[1].Open {
+		t.Errorf("Downloads read %d attempt(s), want open as [true false]", len(attempts))
+	}
+}
+
+func openOf(databases []Database) []bool {
+	open := make([]bool, len(databases))
+	for i, d := range databases {
+		open[i] = d.Open
+	}
+	return open
+}
+
 // Zero means "the API's own default", which is what a caller who does not care
 // passes. Sending limit=0 would be rejected by the schema's minimum of 1.
 func TestDownloadsOmitsALimitItWasNotGiven(t *testing.T) {

@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.03
+  version: 2026.10.08
 servers:
   - url: https://internetdata.io
 tags:
@@ -28,7 +28,9 @@ tags:
       database is usually fetched.
 
       Access is granted by CONTRACT, one dataset family at a time: there is no
-      self-service purchase and no subscription behind it.
+      self-service purchase and no subscription behind it. The Open databases
+      are the exception: any organization downloads one with its key, licensed
+      or not, under CC BY-SA 4.0. `list` marks them `open`.
 
       A successful download answers `302` with a time-limited URL pointing
       straight at object storage. Follow the redirect (`curl -L`); the link
@@ -58,6 +60,7 @@ paths:
         The whole published catalog, with your organization's license beside
         each entry, so `standing` says whether a database is yours today
         (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
+        An `open` database downloads whatever its `standing`.
       security:
         - ApiKeyQueryAuth: []
         - ApiKeyHeaderAuth: []
@@ -896,7 +899,8 @@ components:
       description: |
         Where your license for a database family stands today. `licensed` is a
         live grant, `expired` one whose term has ended, and `unlicensed` a
-        database published but never bought.
+        database published but never bought. An Open database (`open`)
+        downloads whatever this says.
       enum:
         - licensed
         - expired
@@ -912,6 +916,7 @@ components:
         - name
         - summary
         - standing
+        - open
         - license_type
         - starts
         - expires
@@ -931,6 +936,14 @@ components:
           description: One line on what the newest version contains.
         standing:
           $ref: '#/components/schemas/Standing'
+        open:
+          type: boolean
+          description: |
+            An Open database: any organization downloads it, and fetches its
+            checksums, with no license, under CC BY-SA 4.0 (credit
+            InternetData, https://internetdata.io, and share what you build
+            from it under the same license). `standing` still reports your
+            own license, which grants more where you hold one.
         license_type:
           type: string
           nullable: true
@@ -1013,6 +1026,7 @@ components:
         - format
         - outcome
         - sample
+        - open
         - bytes
         - http_status
         - apikey_id
@@ -1036,6 +1050,12 @@ components:
         sample:
           type: boolean
           description: The evaluation sample rather than the database itself.
+        open:
+          type: boolean
+          description: |
+            Taken under the Open license rather than one of your licenses: an
+            Open database downloaded while your organization held no license
+            in term for it.
         bytes:
           type: integer
           format: int64
@@ -1624,7 +1644,7 @@ components:
     V2NotLicensed:
       description: |
         Your organization holds no license for this database, or its term has
-        ended.
+        ended. Never for an Open database.
         `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`.
       content:
         application/json:
