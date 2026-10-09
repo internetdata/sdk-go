@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.6.1 - 2026-10-09
+
+### Fixes
+
+- Retry an answer a database call cannot read, as a server error with its status ([`590369e`](https://github.com/internetdata/sdk-go/commit/590369e67363a729b771bab364a3305592b45663))
+- Read a Retry-After as digits or an HTTP date, and nothing else ([`7d20e4a`](https://github.com/internetdata/sdk-go/commit/7d20e4a7efe51f59adcaa1c0d24e767d6f5de9da))
+
 ## 2.6.0 - 2026-10-09
 
 ### Features
