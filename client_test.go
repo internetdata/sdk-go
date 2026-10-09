@@ -217,6 +217,24 @@ func TestAnAnswerACallCannotReadIsARetriedServerError(t *testing.T) {
 	}
 }
 
+// Seconds as digits, or an HTTP date in any of its three forms, and nothing
+// else: through v2.6.0 ParseInt read +1 as a second.
+func TestARetryAfterIsDigitsOrAnHTTPDate(t *testing.T) {
+	at := time.Now().UTC().Add(time.Hour)
+	cases := map[string]ErrorKind{
+		"+1": KindQuotaExceeded, "0x10": KindQuotaExceeded, "1_0": KindQuotaExceeded, "1e3": KindQuotaExceeded,
+		"1.5": KindQuotaExceeded, "-1": KindQuotaExceeded, "x": KindQuotaExceeded, "tomorrow": KindQuotaExceeded,
+		"120": KindRateLimited, at.Format(http.TimeFormat): KindRateLimited,
+		at.Format("Monday, 02-Jan-06 15:04:05 GMT"): KindRateLimited, at.Format(time.ANSIC): KindRateLimited,
+	}
+	for value, want := range cases {
+		got := errorFromResponse(http.StatusTooManyRequests, http.Header{"Retry-After": {value}}, nil)
+		if got.Kind != want {
+			t.Errorf("Retry-After %q read as %s, want %s", value, got.Kind, want)
+		}
+	}
+}
+
 // Zero means "the API's own default", which is what a caller who does not care
 // passes. Sending limit=0 would be rejected by the schema's minimum of 1.
 func TestDownloadsOmitsALimitItWasNotGiven(t *testing.T) {

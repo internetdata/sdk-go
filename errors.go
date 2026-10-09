@@ -132,8 +132,11 @@ func parseRetryAfter(value string) time.Duration {
 	if value == "" {
 		return 0
 	}
-	if seconds, err := strconv.ParseInt(value, 10, 64); err == nil {
-		if seconds < 0 {
+	// Seconds are digits alone: ParseInt would also take a sign, and read +1
+	// as a second.
+	if strings.Trim(value, "0123456789") == "" {
+		seconds, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
 			return 0
 		}
 		// Saturated rather than wrapped: 2^63 - 1 seconds multiplied out
