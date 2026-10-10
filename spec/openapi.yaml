@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.08
+  version: 2026.10.09
 servers:
   - url: https://internetdata.io
 tags:
@@ -501,10 +501,13 @@ paths:
       summary: Rotate
       description: |
         Replaces the secret behind a key, keeping its id, name and settings.
-        The previous secret stops working immediately.
+        The previous secret stops working immediately. The new secret comes
+        back in the answer, so this needs `apikeys.reveal` as well as
+        `apikeys.manage`.
       security:
         - BearerAuth:
             - apikeys.manage
+            - apikeys.reveal
       parameters:
         - $ref: '#/components/parameters/ApikeyIdParam'
       responses:
