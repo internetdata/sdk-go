@@ -33,6 +33,45 @@ func TestAClientBuildsWithNoKeyAndSendsNoAuthorizationHeader(t *testing.T) {
 	}
 }
 
+// A key pasted with blanks around it, a line ending above all, is the key; a key
+// of blanks alone is no key.
+func TestTheKeyIsTrimmedAndBlanksAloneAreNoKey(t *testing.T) {
+	cases := map[string]string{
+		" a-real-key\r\n": "Bearer a-real-key",
+		"\ta-real-key ":   "Bearer a-real-key",
+		"   ":             "",
+		"\t":              "",
+		"\r\n":            "",
+	}
+	for key, want := range cases {
+		t.Run(key, func(t *testing.T) {
+			stub := newStub(map[string]stubRoute{pathList: {body: catalog("bogon_ip")}})
+			client, err := New(WithHTTPClient(stub.client()), WithRetries(0), WithAPIKey(key))
+			if err != nil {
+				t.Fatalf("New: %v", err)
+			}
+			if _, err := client.Database.List(t.Context()); err != nil {
+				t.Fatalf("List: %v", err)
+			}
+			if got := stub.seen()[0].auth; got != want {
+				t.Errorf("Authorization = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+// A control character inside the key is refused where it is set, before any
+// request is built from it.
+func TestNewRefusesAKeyHoldingAControlCharacter(t *testing.T) {
+	for _, key := range []string{"key\r\nX-Injected: 1", "ke\ty", "key\x00", "key\x7f", "k\ney"} {
+		t.Run(key, func(t *testing.T) {
+			if _, err := New(WithAPIKey(key)); err == nil {
+				t.Error("New should have refused the key")
+			}
+		})
+	}
+}
+
 func TestNewRejectsUnusableOptions(t *testing.T) {
 	cases := []struct {
 		name   string

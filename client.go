@@ -93,8 +93,19 @@ type Option func(*config) error
 // The key comes from the console and needs the db.download scope. Keys are
 // default-deny, so an existing key does not reach these endpoints until the
 // scope is added to it.
+//
+// The key is trimmed, and blanks alone are no key. A control character left in
+// it is refused, by New.
 func WithAPIKey(key string) Option {
 	return func(c *config) error {
+		// Untrimmed, a key of blanks went out as "Bearer" and a padded one
+		// padded, and net/http refuses a CR, LF, NUL or DEL in a header, so
+		// every call failed as a retried network error with nothing sent, while
+		// a tab inside the key went out on the wire (2.6.2, measured 2026-10-12).
+		key = strings.TrimSpace(key)
+		if strings.ContainsFunc(key, func(r rune) bool { return r < 0x20 || r == 0x7f }) {
+			return errors.New("the API key holds a control character")
+		}
 		c.apiKey = key
 		return nil
 	}
