@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.6.3 - 2026-10-12
+
+### Fixes
+
+- Trim the API key, and refuse one holding a control character ([`e0ad659`](https://github.com/internetdata/sdk-go/commit/e0ad6596e175826a2ae8baa6da01b6cff107889e))
+
 ## 2.6.2 - 2026-10-10
 
 ### Fixes
