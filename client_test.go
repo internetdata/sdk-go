@@ -147,8 +147,8 @@ func TestChecksumsUnwrapsPastTheEnvelopeAndKeepsAllFour(t *testing.T) {
 	}
 }
 
-// `open` says a family downloads with no license, whatever its standing, and
-// that an attempt was taken under that Open license rather than one of yours.
+// `open` marks an Open family, whose standing stays as served, and a download
+// of one.
 func TestOpenIsReadFromTheListingAndTheDownloadHistory(t *testing.T) {
 	listing := catalog("asn", "vpn_ip")
 	families := listing["databases"].([]map[string]any)

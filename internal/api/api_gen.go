@@ -248,11 +248,11 @@ type Database struct {
 	// NoticeDueAt The last day notice of non-renewal can be given for the term ending at renews_at. Null whenever renews_at is, and when the agreement records no notice period.
 	NoticeDueAt *time.Time `json:"notice_due_at"`
 
-	// Open An Open database: any organization downloads it, and fetches its
-	// checksums, with no license, under CC BY-SA 4.0 (credit
-	// InternetData, https://internetdata.io, and share what you build
-	// from it under the same license). `standing` still reports your
-	// own license, which grants more where you hold one.
+	// Open An Open database: free under CC BY-SA 4.0 (credit InternetData,
+	// https://internetdata.io, and share what you build from it under
+	// the same license). Every organization holds a `standard` license
+	// to it from the start, which `standing` and `license_type` report
+	// like any other.
 	Open bool `json:"open"`
 
 	// RenewsAt When a rolling license next renews. Null when the license has no defined term, when expires sets a hard stop instead, and when there is no license.
@@ -260,8 +260,7 @@ type Database struct {
 
 	// Standing Where your license for a database family stands today. `licensed` is a
 	// live grant, `expired` one whose term has ended, and `unlicensed` a
-	// database published but never bought. An Open database (`open`)
-	// downloads whatever this says.
+	// database published but never bought.
 	Standing Standing   `json:"standing"`
 	Starts   *time.Time `json:"starts"`
 
@@ -399,9 +398,7 @@ type Download struct {
 	Format     string    `json:"format"`
 	HTTPStatus *int      `json:"http_status"`
 
-	// Open Taken under the Open license rather than one of your licenses: an
-	// Open database downloaded while your organization held no license
-	// in term for it.
+	// Open A download of an Open database.
 	Open    bool            `json:"open"`
 	Outcome DownloadOutcome `json:"outcome"`
 
@@ -470,8 +467,7 @@ type RevokeRequest struct {
 
 // Standing Where your license for a database family stands today. `licensed` is a
 // live grant, `expired` one whose term has ended, and `unlicensed` a
-// database published but never bought. An Open database (`open`)
-// downloads whatever this says.
+// database published but never bought.
 type Standing string
 
 // TokenRequest defines model for TokenRequest.
@@ -863,7 +859,6 @@ type ClientInterface interface {
 	// The whole published catalog, with your organization's license beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-	// An `open` database downloads whatever its `standing`.
 	//
 	// Corresponds with GET /api/v2/database/list (the `ListDatabases` operationId).
 	ListDatabases(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1286,7 +1281,6 @@ func (c *Client) ListDownloads(ctx context.Context, params *ListDownloadsParams,
 // The whole published catalog, with your organization's license beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-// An `open` database downloads whatever its `standing`.
 //
 // Corresponds with GET /api/v2/database/list (the `ListDatabases` operationId).
 func (c *Client) ListDatabases(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2496,7 +2490,6 @@ type ClientWithResponsesInterface interface {
 	// The whole published catalog, with your organization's license beside
 	// each entry, so `standing` says whether a database is yours today
 	// (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-	// An `open` database downloads whatever its `standing`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -3923,7 +3916,6 @@ func (c *ClientWithResponses) ListDownloadsWithResponse(ctx context.Context, par
 // The whole published catalog, with your organization's license beside
 // each entry, so `standing` says whether a database is yours today
 // (`licensed`), was (`expired`), or has never been bought (`unlicensed`).
-// An `open` database downloads whatever its `standing`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
