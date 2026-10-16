@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.13
+  version: 2026.10.15
 servers:
   - url: https://internetdata.io
 tags:
@@ -416,7 +416,7 @@ paths:
       summary: Members
       description: |
         Read-only. Adding or removing a member is an invitation flow with email
-        in the middle rather than a POST, and modelling it as one here would
+        in the middle rather than a POST, and modeling it as one here would
         promise something this API does not do.
       security:
         - BearerAuth:
@@ -1365,7 +1365,7 @@ components:
           type: string
         key_prefix:
           type: string
-          description: The leading, non-secret part, so a key is recognisable without storing it.
+          description: The leading, non-secret part, so a key is recognizable without storing it.
         created:
           type: string
           format: date-time
@@ -1405,7 +1405,7 @@ components:
       properties:
         name:
           type: string
-          description: A label you will recognise later. Shown wherever the key is listed.
+          description: A label you will recognize later. Shown wherever the key is listed.
         allowed_scopes:
           type: array
           items:

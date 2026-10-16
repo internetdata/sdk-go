@@ -146,7 +146,7 @@ type AccountCreateApikeyRequest struct {
 	// AllowedScopes What the new key may do. Omit for a key that carries no named scope, which is the safe default.
 	AllowedScopes *[]string `json:"allowed_scopes,omitempty"`
 
-	// Name A label you will recognise later. Shown wherever the key is listed.
+	// Name A label you will recognize later. Shown wherever the key is listed.
 	Name string `json:"name"`
 }
 
@@ -210,7 +210,7 @@ type ApikeyDetail struct {
 	Expires       *time.Time         `json:"expires,omitempty"`
 	ID            openapi_types.UUID `json:"id"`
 
-	// KeyPrefix The leading, non-secret part, so a key is recognisable without storing it.
+	// KeyPrefix The leading, non-secret part, so a key is recognizable without storing it.
 	KeyPrefix  string     `json:"key_prefix"`
 	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 	Name       string     `json:"name"`
@@ -825,7 +825,7 @@ type ClientInterface interface {
 	// AccountOrgMembers Members
 	//
 	// Read-only. Adding or removing a member is an invitation flow with email
-	// in the middle rather than a POST, and modelling it as one here would
+	// in the middle rather than a POST, and modeling it as one here would
 	// promise something this API does not do.
 	//
 	// Corresponds with GET /api/v1/iam/org/members (the `AccountOrgMembers` operationId).
@@ -1207,7 +1207,7 @@ func (c *Client) AccountOrg(ctx context.Context, reqEditors ...RequestEditorFn) 
 // AccountOrgMembers Members
 //
 // Read-only. Adding or removing a member is an invitation flow with email
-// in the middle rather than a POST, and modelling it as one here would
+// in the middle rather than a POST, and modeling it as one here would
 // promise something this API does not do.
 //
 // Corresponds with GET /api/v1/iam/org/members (the `AccountOrgMembers` operationId).
@@ -2448,7 +2448,7 @@ type ClientWithResponsesInterface interface {
 	// AccountOrgMembersWithResponse Members
 	//
 	// Read-only. Adding or removing a member is an invitation flow with email
-	// in the middle rather than a POST, and modelling it as one here would
+	// in the middle rather than a POST, and modeling it as one here would
 	// promise something this API does not do.
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -3850,7 +3850,7 @@ func (c *ClientWithResponses) AccountOrgWithResponse(ctx context.Context, reqEdi
 // AccountOrgMembersWithResponse Members
 //
 // Read-only. Adding or removing a member is an invitation flow with email
-// in the middle rather than a POST, and modelling it as one here would
+// in the middle rather than a POST, and modeling it as one here would
 // promise something this API does not do.
 //
 // Returns a wrapper object for the known response body format(s).
