@@ -446,11 +446,14 @@ type OauthMetadata struct {
 	DeviceAuthorizationEndpoint       *string   `json:"device_authorization_endpoint,omitempty"`
 	GrantTypesSupported               *[]string `json:"grant_types_supported,omitempty"`
 	Issuer                            string    `json:"issuer"`
-	ResponseTypesSupported            *[]string `json:"response_types_supported,omitempty"`
-	RevocationEndpoint                *string   `json:"revocation_endpoint,omitempty"`
-	ScopesSupported                   *[]string `json:"scopes_supported,omitempty"`
-	ServiceDocumentation              *string   `json:"service_documentation,omitempty"`
-	TokenEndpoint                     string    `json:"token_endpoint"`
+
+	// RegistrationEndpoint RFC 7591 dynamic client registration, for a client that cannot serve its own metadata.
+	RegistrationEndpoint   *string   `json:"registration_endpoint,omitempty"`
+	ResponseTypesSupported *[]string `json:"response_types_supported,omitempty"`
+	RevocationEndpoint     *string   `json:"revocation_endpoint,omitempty"`
+	ScopesSupported        *[]string `json:"scopes_supported,omitempty"`
+	ServiceDocumentation   *string   `json:"service_documentation,omitempty"`
+	TokenEndpoint          string    `json:"token_endpoint"`
 
 	// TokenEndpointAuthMethodsSupported Always `none`. Every client is public and has no secret.
 	TokenEndpointAuthMethodsSupported *[]string `json:"token_endpoint_auth_methods_supported,omitempty"`
@@ -504,7 +507,8 @@ type TokenResponse struct {
 	ExpiresIn int `json:"expires_in"`
 
 	// MslmApikey Not part of OAuth, and only for our own clients: a client that signed
-	// in with a Client ID Metadata Document never receives a key. The API
+	// in with a Client ID Metadata Document or registered itself never
+	// receives a key. The API
 	// key itself, so a device ends up holding an ordinary key. Returned by
 	// the device code and authorization code grants only, never by a
 	// refresh, and only alongside
@@ -886,13 +890,18 @@ type ClientInterface interface {
 	// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
 	// https redirect URI must be on the same origin as the `client_id`; a
 	// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
-	// matches on any port. Such a client is granted `apikeys.use` at most.
+	// matches on any port. Such a client is granted `apikeys.use` at most. A
+	// client registered at `/oauth/register` uses the `client_id` it was
+	// given and one of the `redirect_uris` it registered.
 	//
 	// An unknown `client_id` or an unregistered `redirect_uri` is shown to the
-	// USER and never redirected, because sending an error to an address we
-	// have not verified belongs to you is how an open redirector works.
-	// Everything else comes back to your `redirect_uri` with `error`, your
-	// `state`, and `iss`.
+	// person and never redirected, because sending an error to an address we
+	// have not verified belongs to you is how an open redirector works. Any
+	// other error in the request is shown to the person too: anyone can make a
+	// client, so its `redirect_uri` is verified only as its own (RFC 9700
+	// section 4.11.2). Only the person's answer comes back to your
+	// `redirect_uri`: a `code`, or `error` `access_denied`, each with your
+	// `state` and `iss`.
 	//
 	// Corresponds with GET /oauth/authorize (the `OauthAuthorize` operationId).
 	OauthAuthorize(ctx context.Context, params *OauthAuthorizeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1328,13 +1337,18 @@ func (c *Client) DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadat
 // with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
 // https redirect URI must be on the same origin as the `client_id`; a
 // loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
-// matches on any port. Such a client is granted `apikeys.use` at most.
+// matches on any port. Such a client is granted `apikeys.use` at most. A
+// client registered at `/oauth/register` uses the `client_id` it was
+// given and one of the `redirect_uris` it registered.
 //
 // An unknown `client_id` or an unregistered `redirect_uri` is shown to the
-// USER and never redirected, because sending an error to an address we
-// have not verified belongs to you is how an open redirector works.
-// Everything else comes back to your `redirect_uri` with `error`, your
-// `state`, and `iss`.
+// person and never redirected, because sending an error to an address we
+// have not verified belongs to you is how an open redirector works. Any
+// other error in the request is shown to the person too: anyone can make a
+// client, so its `redirect_uri` is verified only as its own (RFC 9700
+// section 4.11.2). Only the person's answer comes back to your
+// `redirect_uri`: a `code`, or `error` `access_denied`, each with your
+// `state` and `iss`.
 //
 // Corresponds with GET /oauth/authorize (the `OauthAuthorize` operationId).
 func (c *Client) OauthAuthorize(ctx context.Context, params *OauthAuthorizeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2521,13 +2535,18 @@ type ClientWithResponsesInterface interface {
 	// with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
 	// https redirect URI must be on the same origin as the `client_id`; a
 	// loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
-	// matches on any port. Such a client is granted `apikeys.use` at most.
+	// matches on any port. Such a client is granted `apikeys.use` at most. A
+	// client registered at `/oauth/register` uses the `client_id` it was
+	// given and one of the `redirect_uris` it registered.
 	//
 	// An unknown `client_id` or an unregistered `redirect_uri` is shown to the
-	// USER and never redirected, because sending an error to an address we
-	// have not verified belongs to you is how an open redirector works.
-	// Everything else comes back to your `redirect_uri` with `error`, your
-	// `state`, and `iss`.
+	// person and never redirected, because sending an error to an address we
+	// have not verified belongs to you is how an open redirector works. Any
+	// other error in the request is shown to the person too: anyone can make a
+	// client, so its `redirect_uri` is verified only as its own (RFC 9700
+	// section 4.11.2). Only the person's answer comes back to your
+	// `redirect_uri`: a `code`, or `error` `access_denied`, each with your
+	// `state` and `iss`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -3959,13 +3978,18 @@ func (c *ClientWithResponses) DatabaseMetadataV2WithResponse(ctx context.Context
 // with `token_endpoint_auth_method` `none` and your `redirect_uris`. An
 // https redirect URI must be on the same origin as the `client_id`; a
 // loopback one (`http://127.0.0.1`, `http://[::1]`, `http://localhost`)
-// matches on any port. Such a client is granted `apikeys.use` at most.
+// matches on any port. Such a client is granted `apikeys.use` at most. A
+// client registered at `/oauth/register` uses the `client_id` it was
+// given and one of the `redirect_uris` it registered.
 //
 // An unknown `client_id` or an unregistered `redirect_uri` is shown to the
-// USER and never redirected, because sending an error to an address we
-// have not verified belongs to you is how an open redirector works.
-// Everything else comes back to your `redirect_uri` with `error`, your
-// `state`, and `iss`.
+// person and never redirected, because sending an error to an address we
+// have not verified belongs to you is how an open redirector works. Any
+// other error in the request is shown to the person too: anyone can make a
+// client, so its `redirect_uri` is verified only as its own (RFC 9700
+// section 4.11.2). Only the person's answer comes back to your
+// `redirect_uri`: a `code`, or `error` `access_denied`, each with your
+// `state` and `iss`.
 //
 // Returns a wrapper object for the known response body format(s).
 //

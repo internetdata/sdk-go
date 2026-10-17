@@ -296,6 +296,7 @@ type OauthMetadata struct {
 	TokenEndpointAuthMethodsSupported          *[]string `json:"token_endpoint_auth_methods_supported,omitempty"`
 	AuthorizationResponseIssParameterSupported *bool     `json:"authorization_response_iss_parameter_supported,omitempty"`
 	ClientIDMetadataDocumentSupported          *bool     `json:"client_id_metadata_document_supported,omitempty"`
+	RegistrationEndpoint                       *string   `json:"registration_endpoint,omitempty"`
 	ServiceDocumentation                       *string   `json:"service_documentation,omitempty"`
 }
 
