@@ -179,13 +179,12 @@ Check that `state` came back as you sent it before you exchange `code`, which wo
 
 ### Register a client
 
-An app with no client ID, and no client metadata document to use as one, registers itself and signs in with the `ClientID` it gets back:
+An app with no client ID, and no client metadata document to use as one, registers itself, then signs in with the `ClientID` it gets back as the client ID for `AuthorizationURL` and `ExchangeAuthorizationCode`:
 
 ```go
 client, err := internetdata.New()
 registration, err := client.Oauth.Register(ctx, []string{"http://127.0.0.1:8765/callback"},
     internetdata.RegisterOptions{ClientName: "Your App"})
-// registration.ClientID is the client ID for AuthorizationURL and ExchangeAuthorizationCode.
 ```
 
 Each redirect URI must be https on a public host name, or http on a loopback address, which then matches any port. Nothing is kept until a person approves the client, so an app with no client ID saved can simply register again.
