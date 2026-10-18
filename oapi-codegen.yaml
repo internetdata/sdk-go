@@ -33,3 +33,4 @@ output-options:
     - oauthAuthorize
     - oauthToken
     - oauthRevoke
+    - oauthRegister

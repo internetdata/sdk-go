@@ -1,12 +1,14 @@
 package internetdata
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net/http"
@@ -184,6 +186,40 @@ func (o *OauthAPI) Revoke(ctx context.Context, clientID, token string) error {
 	return err
 }
 
+// Register registers a client for the authorization code flow, for a program
+// that cannot serve a Client ID Metadata Document, and returns its ClientID.
+//
+// Each redirect URI must be https on a public host name, or http on a
+// loopback address, which then matches on any port; the server refuses any
+// other with an *OauthError coded invalid_redirect_uri. Nothing is kept until
+// a person approves the client, so registering again costs nothing, and this
+// is retried like any read. No redirect URI at all, or one that is empty or
+// not UTF-8, is refused with a bad_request *Error before anything is sent.
+func (o *OauthAPI) Register(
+	ctx context.Context, redirectURIs []string, opts RegisterOptions,
+) (*ClientRegistration, error) {
+	if len(redirectURIs) == 0 {
+		return nil, &Error{Kind: KindBadRequest, Message: "redirectURIs must list at least one URI"}
+	}
+	for i, uri := range redirectURIs {
+		if uri == "" || !utf8.ValidString(uri) {
+			return nil, &Error{Kind: KindBadRequest, Message: fmt.Sprintf("redirectURIs[%d] must be a non-empty UTF-8 string", i)}
+		}
+	}
+	if !utf8.ValidString(opts.ClientName) {
+		return nil, &Error{Kind: KindBadRequest, Message: "ClientName must be UTF-8"}
+	}
+	body, err := json.Marshal(registrationRequest{RedirectURIs: redirectURIs, ClientName: opts.ClientName})
+	if err != nil {
+		return nil, &Error{Kind: KindBadRequest, Message: err.Error()}
+	}
+	return withRetry(ctx, o.retries, func() (*ClientRegistration, error) {
+		res, err := o.api.OauthRegisterWithBody(ctx, "application/json", bytes.NewReader(body))
+		return decodeOauth[ClientRegistration](res, err,
+			"client_id", "client_id_issued_at", "client_name", "redirect_uris", "token_endpoint_auth_method")
+	})
+}
+
 // PollDeviceToken waits for the person to approve a device sign-in and
 // returns its tokens.
 //
@@ -268,6 +304,39 @@ type AuthorizationURLOptions struct {
 	State string
 	// Resource is the API the tokens are meant for.
 	Resource string
+}
+
+// RegisterOptions is what a registration asks for beyond its redirect URIs.
+// An empty field is left out of the request rather than sent empty.
+type RegisterOptions struct {
+	// ClientName is shown to the person as the client's own claim, marked
+	// unverified, beside where its redirect goes.
+	ClientName string
+}
+
+type registrationRequest struct {
+	RedirectURIs []string `json:"redirect_uris"`
+	ClientName   string   `json:"client_name,omitempty"`
+}
+
+// ClientRegistration is a registered client, public and with no secret: it
+// proves each sign-in with PKCE. An optional member the server did not send
+// is nil.
+type ClientRegistration struct {
+	// ClientID is the client ID for AuthorizationURL and ExchangeAuthorizationCode.
+	ClientID string `json:"client_id"`
+	// ClientIDIssuedAt is when it was issued, in Unix seconds.
+	ClientIDIssuedAt int64 `json:"client_id_issued_at"`
+	// ClientName is the name the person will see, a placeholder when none was
+	// given or none can be shown.
+	ClientName    string    `json:"client_name"`
+	RedirectURIs  []string  `json:"redirect_uris"`
+	GrantTypes    *[]string `json:"grant_types,omitempty"`
+	ResponseTypes *[]string `json:"response_types,omitempty"`
+	// TokenEndpointAuthMethod is always none.
+	TokenEndpointAuthMethod string `json:"token_endpoint_auth_method"`
+	// Scope is the most this client may be granted.
+	Scope *string `json:"scope,omitempty"`
 }
 
 // Pkce is one sign-in's PKCE pair: Challenge goes in the authorization URL,

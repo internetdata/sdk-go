@@ -53,9 +53,12 @@ func TestOauthRequestsCarryNoCredential(t *testing.T) {
 	if _, err := client.Oauth.PollDeviceToken(ctx, "internetdata-cli", device); err != nil {
 		t.Fatalf("PollDeviceToken: %v", err)
 	}
+	if _, err := client.Oauth.Register(ctx, []string{"http://127.0.0.1/cb"}, RegisterOptions{ClientName: "Example CLI"}); err != nil {
+		t.Fatalf("Register: %v", err)
+	}
 
-	if len(stub.requests) != 7 {
-		t.Fatalf("saw %d request(s), want 7", len(stub.requests))
+	if len(stub.requests) != 8 {
+		t.Fatalf("saw %d request(s), want 8", len(stub.requests))
 	}
 	authURL, err := client.Oauth.AuthorizationURL("internetdata-cli", "http://127.0.0.1/cb", strings.Repeat("c", 43), AuthorizationURLOptions{})
 	if err != nil || strings.Contains(authURL, key) {
@@ -478,7 +481,8 @@ const everyRequiredMember = `{"issuer":"https://api.example.test",` +
 	`"authorization_endpoint":"https://api.example.test/oauth/authorize",` +
 	`"token_endpoint":"https://api.example.test/oauth/token","device_code":"mo_dc_x","user_code":"BCDF-GHJK",` +
 	`"verification_uri":"https://app.example.test/device","expires_in":900,"interval":1,` +
-	`"access_token":"mo_at_x","token_type":"Bearer"}`
+	`"access_token":"mo_at_x","token_type":"Bearer","client_id":"dcr_x","client_id_issued_at":1792304178,` +
+	`"client_name":"Example CLI","redirect_uris":["http://127.0.0.1/cb"],"token_endpoint_auth_method":"none"}`
 
 func assertOauthOutcome(t *testing.T, err error, want oauthExpect) {
 	t.Helper()
@@ -706,7 +710,8 @@ type oauthCorpus struct {
 		Forms   []oauthFormCase  `json:"forms"`
 		Retries []oauthRetryCase `json:"retries"`
 	} `json:"deferred"`
-	Poll struct {
+	Register oauthRegisterCorpus `json:"register"`
+	Poll     struct {
 		Cases []struct {
 			Name      string              `json:"name"`
 			ClientID  string              `json:"clientId"`
