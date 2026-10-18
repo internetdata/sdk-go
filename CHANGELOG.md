@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.0 - 2026-10-18
+
+### Features
+
+- Add Oauth.Register, for RFC 7591 dynamic client registration ([`34b696d`](https://github.com/internetdata/sdk-go/commit/34b696d78f37436c977370bbb0121dff1fcba11a))
+
 ## 2.7.0 - 2026-10-17
 
 ### Features
