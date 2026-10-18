@@ -230,8 +230,8 @@ type ApikeyList struct {
 type ClientRegistration struct {
 	ClientID string `json:"client_id"`
 
-	// ClientIDIssuedAt Unix seconds.
-	ClientIDIssuedAt int `json:"client_id_issued_at"`
+	// ClientIDIssuedAt Unix seconds. 64-bit, since 32 bits run out on 2038-01-19.
+	ClientIDIssuedAt int64 `json:"client_id_issued_at"`
 
 	// ClientName As the person will see it.
 	ClientName string `json:"client_name"`

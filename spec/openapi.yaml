@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.16
+  version: 2026.10.18
 servers:
   - url: https://internetdata.io
 tags:
@@ -1705,7 +1705,8 @@ components:
           type: string
         client_id_issued_at:
           type: integer
-          description: Unix seconds.
+          format: int64
+          description: Unix seconds. 64-bit, since 32 bits run out on 2038-01-19.
         client_name:
           type: string
           description: As the person will see it.
