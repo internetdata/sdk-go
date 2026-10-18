@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.1 - 2026-10-18
+
+### Fixes
+
+- Re-pin the spec to 2026.10.18: client_id_issued_at is int64 ([`1ed5779`](https://github.com/internetdata/sdk-go/commit/1ed577905ad0dd04776b53c983ea1db5f31c0f0f))
+
 ## 2.8.0 - 2026-10-18
 
 ### Features
