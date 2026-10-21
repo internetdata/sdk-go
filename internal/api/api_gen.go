@@ -597,11 +597,14 @@ type AccountNotFound = AccountRc
 // AccountUnauthorized defines model for AccountUnauthorized.
 type AccountUnauthorized = AccountRc
 
+// V2Forbidden defines model for V2Forbidden.
+type V2Forbidden = Error
+
+// V2IpNotAllowed defines model for V2IpNotAllowed.
+type V2IpNotAllowed = Error
+
 // V2NotAvailable defines model for V2NotAvailable.
 type V2NotAvailable = Error
-
-// V2NotLicensed defines model for V2NotLicensed.
-type V2NotLicensed = Error
 
 // V2Unauthorized defines model for V2Unauthorized.
 type V2Unauthorized = Error
@@ -3448,7 +3451,7 @@ type DatabaseChecksumV2Response struct {
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *V2NotLicensed
+	JSON403 *V2Forbidden
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *V2UnknownDatabase
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3479,7 +3482,7 @@ func (r DatabaseChecksumV2Response) GetJSON401() *V2Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r DatabaseChecksumV2Response) GetJSON403() *V2NotLicensed {
+func (r DatabaseChecksumV2Response) GetJSON403() *V2Forbidden {
 	return r.JSON403
 }
 
@@ -3535,7 +3538,7 @@ type DownloadDatabaseV2Response struct {
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *V2NotLicensed
+	JSON403 *V2Forbidden
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *V2UnknownDatabase
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3555,7 +3558,7 @@ func (r DownloadDatabaseV2Response) GetJSON401() *V2Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r DownloadDatabaseV2Response) GetJSON403() *V2NotLicensed {
+func (r DownloadDatabaseV2Response) GetJSON403() *V2Forbidden {
 	return r.JSON403
 }
 
@@ -3607,6 +3610,8 @@ type ListDownloadsResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *V2IpNotAllowed
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -3619,6 +3624,11 @@ func (r ListDownloadsResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListDownloadsResponse) GetJSON401() *V2Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListDownloadsResponse) GetJSON403() *V2IpNotAllowed {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -3659,6 +3669,8 @@ type ListDatabasesResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *V2IpNotAllowed
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -3671,6 +3683,11 @@ func (r ListDatabasesResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListDatabasesResponse) GetJSON401() *V2Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListDatabasesResponse) GetJSON403() *V2IpNotAllowed {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -3709,6 +3726,8 @@ type DatabaseMetadataV2Response struct {
 	JSON200 *DatabaseMetadata
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *V2Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *V2IpNotAllowed
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *V2UnknownDatabase
 	// JSON503 the response for an HTTP 503 `application/json` response
@@ -3723,6 +3742,11 @@ func (r DatabaseMetadataV2Response) GetJSON200() *DatabaseMetadata {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r DatabaseMetadataV2Response) GetJSON401() *V2Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DatabaseMetadataV2Response) GetJSON403() *V2IpNotAllowed {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -4937,7 +4961,7 @@ func ParseDatabaseChecksumV2Response(rsp *http.Response) (*DatabaseChecksumV2Res
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest V2NotLicensed
+		var dest V2Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4994,7 +5018,7 @@ func ParseDownloadDatabaseV2Response(rsp *http.Response) (*DownloadDatabaseV2Res
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest V2NotLicensed
+		var dest V2Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5062,6 +5086,13 @@ func ParseListDownloadsResponse(rsp *http.Response) (*ListDownloadsResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest V2IpNotAllowed
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -5097,6 +5128,13 @@ func ParseListDatabasesResponse(rsp *http.Response) (*ListDatabasesResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest V2IpNotAllowed
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -5129,6 +5167,13 @@ func ParseDatabaseMetadataV2Response(rsp *http.Response) (*DatabaseMetadataV2Res
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest V2IpNotAllowed
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest V2UnknownDatabase

@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.18
+  version: 2026.10.21
 servers:
   - url: https://internetdata.io
 tags:
@@ -81,6 +81,8 @@ paths:
                       $ref: '#/components/schemas/Database'
         '401':
           $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2IpNotAllowed'
   /api/v2/database/download:
     get:
       tags:
@@ -113,7 +115,7 @@ paths:
         '401':
           $ref: '#/components/responses/V2Unauthorized'
         '403':
-          $ref: '#/components/responses/V2NotLicensed'
+          $ref: '#/components/responses/V2Forbidden'
         '404':
           $ref: '#/components/responses/V2UnknownDatabase'
         '503':
@@ -146,6 +148,8 @@ paths:
                 $ref: '#/components/schemas/DatabaseMetadata'
         '401':
           $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2IpNotAllowed'
         '404':
           $ref: '#/components/responses/V2UnknownDatabase'
         '503':
@@ -192,7 +196,7 @@ paths:
         '401':
           $ref: '#/components/responses/V2Unauthorized'
         '403':
-          $ref: '#/components/responses/V2NotLicensed'
+          $ref: '#/components/responses/V2Forbidden'
         '404':
           $ref: '#/components/responses/V2UnknownDatabase'
         '503':
@@ -236,6 +240,8 @@ paths:
                       $ref: '#/components/schemas/Download'
         '401':
           $ref: '#/components/responses/V2Unauthorized'
+        '403':
+          $ref: '#/components/responses/V2IpNotAllowed'
   /api/v1/database/download:
     get:
       tags:
@@ -1758,18 +1764,31 @@ components:
   responses:
     V2Unauthorized:
       description: |
-        Missing or invalid bearer key, the key lacks the `db.download` scope, or
-        it belongs to no organization.
+        Missing, invalid, revoked or expired key; the key lacks the
+        `db.download` scope; or the key belongs to no active organization.
+        Each answers the same.
         `rc`: `UNAUTHORIZED`.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    V2NotLicensed:
+    V2IpNotAllowed:
       description: |
-        Your organization holds no license for this database, or its term has
-        ended.
-        `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`.
+        The request comes from an address outside the key's or its
+        organization's allowed addresses. Change the allowlist or call from an
+        allowed address: the key itself is fine.
+        `rc`: `IP_NOT_ALLOWED`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    V2Forbidden:
+      description: |
+        Your organization holds no license for this database (`NOT_LICENSED`),
+        or its term has ended (`LICENSE_EXPIRED`); or the request comes from an
+        address outside the key's or its organization's allowed addresses
+        (`IP_NOT_ALLOWED`).
+        `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`, `IP_NOT_ALLOWED`.
       content:
         application/json:
           schema:
