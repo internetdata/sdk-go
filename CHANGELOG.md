@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.2 - 2026-10-21
+
+### Fixes
+
+- Re-pin the spec to 2026.10.21: a 403 for a refused address ([`8d2b165`](https://github.com/internetdata/sdk-go/commit/8d2b165326d9f156153b0c5d25645758c0aa7f32))
+
 ## 2.8.1 - 2026-10-18
 
 ### Fixes
