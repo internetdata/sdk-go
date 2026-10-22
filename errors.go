@@ -146,10 +146,17 @@ func parseRetryAfter(value string) time.Duration {
 		}
 		return time.Duration(seconds) * time.Second
 	}
-	// The header also permits an HTTP date.
-	when, err := http.ParseTime(value)
-	if err != nil {
-		return 0
+	// The header also permits an HTTP date, in GMT. http.ParseTime reads RFC
+	// 850's form with any zone, so through v2.8.2 a date in PST was waited out
+	// as if it were GMT.
+	for _, layout := range httpDateLayouts {
+		if when, err := time.Parse(layout, value); err == nil {
+			return max(0, time.Until(when))
+		}
 	}
-	return max(0, time.Until(when))
+	return 0
 }
+
+// RFC 9110's three HTTP date forms, each in GMT: the IMF-fixdate, RFC 850's
+// and asctime's, which carries no zone at all.
+var httpDateLayouts = []string{http.TimeFormat, "Monday, 02-Jan-06 15:04:05 GMT", time.ANSIC}

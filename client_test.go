@@ -256,8 +256,47 @@ func TestAnAnswerACallCannotReadIsARetriedServerError(t *testing.T) {
 	}
 }
 
-// Seconds as digits, or an HTTP date in any of its three forms, and nothing
-// else: through v2.6.0 ParseInt read +1 as a second.
+// A date-time is read only with a zone RFC 3339 allows. time.Time reads an
+// offset hour of 24 and a minute of 60 too, so through v2.8.2 +24:00 was a date
+// a day off; every other made-up date it already refused.
+func TestADateTimeIsReadOnlyWithAZoneRFC3339Allows(t *testing.T) {
+	read := map[string]bool{
+		"2026-10-05T10:00:00Z": true, "2026-10-05T10:00:00.123Z": true, "2026-10-05T10:00:00+23:59": true,
+		"2026-10-05T10:00:00-00:00": true, "2026-10-05T10:00:00+05:30": true,
+		"2026-10-05T10:00:00+24:00": false, "2026-10-05T10:00:00-24:00": false, "2026-10-05T10:00:00+24:59": false,
+		"2026-10-05T10:00:00+05:60": false, "2026-10-05T10:00:00+0500": false, "2026-10-05T10:00:00": false,
+	}
+	for value, want := range read {
+		t.Run(value, func(t *testing.T) {
+			t.Parallel()
+			listing := catalog("asn")
+			listing["databases"].([]map[string]any)[0]["starts"] = value
+			download := map[string]any{"dataset_id": "asn_v1", "format": "csvgz", "outcome": "ok", "sample": false,
+				"open": false, "bytes": 760, "http_status": 302, "apikey_id": "ak_1", "client_ip": nil,
+				"user_agent": nil, "created": value}
+			stub := newStub(map[string]stubRoute{
+				pathList:      {body: listing},
+				pathDownloads: {body: map[string]any{"downloads": []any{download}}},
+			})
+			client := newTestClient(t, stub, WithRetries(0))
+
+			_, listErr := client.Database.List(t.Context())
+			_, downloadsErr := client.Database.Downloads(t.Context(), 0)
+			for call, err := range map[string]error{"List": listErr, "Downloads": downloadsErr} {
+				var apiErr *Error
+				switch {
+				case want && err != nil:
+					t.Errorf("%s: %v, want the date read", call, err)
+				case !want && (!errors.As(err, &apiErr) || apiErr.Kind != KindServerError || apiErr.StatusCode != 200):
+					t.Errorf("%s: error was %v, want a server_error carrying 200", call, err)
+				}
+			}
+		})
+	}
+}
+
+// Seconds as digits, or an HTTP date in any of its three forms, in GMT, and
+// nothing else: through v2.6.0 ParseInt read +1 as a second.
 func TestARetryAfterIsDigitsOrAnHTTPDate(t *testing.T) {
 	at := time.Now().UTC().Add(time.Hour)
 	cases := map[string]ErrorKind{
@@ -265,6 +304,11 @@ func TestARetryAfterIsDigitsOrAnHTTPDate(t *testing.T) {
 		"1.5": KindQuotaExceeded, "-1": KindQuotaExceeded, "x": KindQuotaExceeded, "tomorrow": KindQuotaExceeded,
 		"120": KindRateLimited, at.Format(http.TimeFormat): KindRateLimited,
 		at.Format("Monday, 02-Jan-06 15:04:05 GMT"): KindRateLimited, at.Format(time.ANSIC): KindRateLimited,
+		// Through v2.8.2 RFC 850's form was read in any zone.
+		at.Format("Monday, 02-Jan-06 15:04:05 PST"):  KindQuotaExceeded,
+		at.Format("Monday, 02-Jan-06 15:04:05 XYZ"):  KindQuotaExceeded,
+		at.Format("Mon, 02 Jan 2006 15:04:05 PST"):   KindQuotaExceeded,
+		at.Format("Mon, 02 Jan 2006 15:04:05 +0000"): KindQuotaExceeded,
 	}
 	for value, want := range cases {
 		got := errorFromResponse(http.StatusTooManyRequests, http.Header{"Retry-After": {value}}, nil)

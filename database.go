@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime/types"
 
@@ -140,7 +141,26 @@ func decodeAnswer[T any](res *http.Response, err error) (*T, error) {
 	return &answer, nil
 }
 
-var unmarshaler = reflect.TypeFor[json.Unmarshaler]()
+var (
+	unmarshaler = reflect.TypeFor[json.Unmarshaler]()
+	timeType    = reflect.TypeFor[time.Time]()
+)
+
+// Reports whether a date-time time.Time has already read ends in a zone RFC
+// 3339 allows: Z, or an offset of at most 23 hours and 59 minutes. time.Time
+// reads +24:00 and +05:60 too, so through v2.8.2 either was a date a day or an
+// hour off.
+func rfc3339Offset(value string) bool {
+	if strings.HasSuffix(value, "Z") {
+		return true
+	}
+	if len(value) < len("+00:00") {
+		return false
+	}
+	offset := value[len(value)-len("+00:00"):]
+	return (offset[0] == '+' || offset[0] == '-') && offset[3] == ':' &&
+		offset[1:3] <= "23" && offset[4:6] <= "59"
+}
 
 // Reports whether raw, a decoded JSON value, carries every member t requires,
 // at every depth. The generated types spell a member the spec requires and does
@@ -153,6 +173,10 @@ func complete(t reflect.Type, raw any) bool {
 	}
 	if t.Kind() == reflect.Pointer {
 		return complete(t.Elem(), raw)
+	}
+	if t == timeType {
+		value, ok := raw.(string)
+		return ok && rfc3339Offset(value)
 	}
 	if reflect.PointerTo(t).Implements(unmarshaler) {
 		return true
