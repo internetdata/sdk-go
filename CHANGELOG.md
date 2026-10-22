@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.3 - 2026-10-22
+
+### Fixes
+
+- Read a Retry-After date and a date-time only in the zones they allow ([`8f18778`](https://github.com/internetdata/sdk-go/commit/8f18778ef4d932367f4682401fb38daa960ad718))
+
 ## 2.8.2 - 2026-10-21
 
 ### Fixes
