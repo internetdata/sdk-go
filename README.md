@@ -139,7 +139,7 @@ if errors.As(err, &apiErr) {
 
 `Kind` is one of `bad_request`, `unauthorized`, `forbidden`, `rate_limited`, `quota_exceeded`, `server_error` or `network`. `Message` is the API's `rc`, which is what separates two refusals that share a status: `NOT_LICENSED` means buy it, `LICENSE_EXPIRED` means renew it, and `IP_NOT_ALLOWED` means the call came from an address the key or its organization does not allow, and all three are `403`.
 
-Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit is when the API faces extreme traffic bursts and so retrying later works; but a spent quota needs your allowance raised or the window to roll over. The library retries rate limits for you, but not if your quota is exceeded.
+`rate_limited` is a 429 that carries `Retry-After`, and the library retries it for you. `quota_exceeded` is a 429 without one, which it never retries. InternetData's database API has no quota, so you won't see `quota_exceeded` from it.
 
 ### Sign in with OAuth (device flow)
 
