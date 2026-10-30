@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.4 - 2026-10-30
+
+### Fixes
+
+- Read a date-time in RFC 3339's form alone, its T and Z in either case ([`e1dd7dd`](https://github.com/internetdata/sdk-go/commit/e1dd7ddaae3394fd2654ac80b275199a81b30cc1))
+
 ## 2.8.3 - 2026-10-22
 
 ### Fixes
