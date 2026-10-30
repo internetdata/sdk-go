@@ -295,6 +295,103 @@ func TestADateTimeIsReadOnlyWithAZoneRFC3339Allows(t *testing.T) {
 	}
 }
 
+// A date-time is read in RFC 3339's form alone, its T and Z in either case.
+// time.Time refuses a lowercase t or z and reads a one-digit hour and a comma
+// before the fraction, so through v2.8.3 the first failed the call and the
+// others were dates.
+func TestADateTimeIsReadInRFC3339sFormAlone(t *testing.T) {
+	at := time.Date(2026, 10, 5, 10, 0, 0, 0, time.UTC)
+	read := map[string]time.Time{
+		"2026-10-05t10:00:00z": at, "2026-10-05t10:00:00Z": at, "2026-10-05T10:00:00z": at,
+		"2026-10-05t15:30:00.5+05:30": at.Add(500 * time.Millisecond),
+	}
+	refused := []string{
+		"2026-10-05T1:00:00Z", "2026-10-05T10:00:00,5Z", "2026-10-05T10:00:00.Z", "2026-10-05T10:00Z",
+		"2026-10-05 10:00:00Z", " 2026-10-05T10:00:00Z", "2026-10-05T10:00:00Z\n", "٢026-10-05T10:00:00Z",
+	}
+	answers := map[string]struct {
+		path string
+		body func(value string) any
+		read func(c *Client) (time.Time, error)
+	}{
+		"List": {pathList, func(value string) any {
+			listing := catalog("asn")
+			listing["databases"].([]map[string]any)[0]["starts"] = value
+			return listing
+		}, func(c *Client) (time.Time, error) {
+			list, err := c.Database.List(context.Background())
+			if err != nil {
+				return time.Time{}, err
+			}
+			return *list[0].Starts, nil
+		}},
+		"Downloads": {pathDownloads, func(value string) any {
+			return map[string]any{"downloads": []any{map[string]any{"dataset_id": "asn_v1", "format": "csvgz",
+				"outcome": "ok", "sample": false, "open": false, "bytes": 760, "http_status": 302,
+				"apikey_id": "ak_1", "client_ip": nil, "user_agent": nil, "created": value}}}
+		}, func(c *Client) (time.Time, error) {
+			downloads, err := c.Database.Downloads(context.Background(), 0)
+			if err != nil {
+				return time.Time{}, err
+			}
+			return downloads[0].Created, nil
+		}},
+	}
+	for name, answer := range answers {
+		for value, want := range read {
+			t.Run(name+" reads "+value, func(t *testing.T) {
+				t.Parallel()
+				stub := newStub(map[string]stubRoute{answer.path: {body: answer.body(value)}})
+				got, err := answer.read(newTestClient(t, stub, WithRetries(0)))
+				if err != nil || !got.Equal(want) {
+					t.Errorf("read %v, %v; want %v", got, err, want)
+				}
+			})
+		}
+		for _, value := range refused {
+			t.Run(name+" refuses "+value, func(t *testing.T) {
+				t.Parallel()
+				stub := newStub(map[string]stubRoute{answer.path: {body: answer.body(value)}})
+				_, err := answer.read(newTestClient(t, stub, WithRetries(1)))
+				var apiErr *Error
+				if !errors.As(err, &apiErr) || apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
+					t.Errorf("error was %v, want a server_error carrying 200", err)
+				}
+				if n := stub.count(); n != 2 {
+					t.Errorf("sent %d request(s), want 2", n)
+				}
+			})
+		}
+	}
+}
+
+// A number keeps every digit through the walk that respells a date-time.
+func TestANumberPastAFloatsPrecisionIsReadExactly(t *testing.T) {
+	stub := newStub(map[string]stubRoute{pathDownloads: {body: []byte(`{"downloads":[{"dataset_id":"asn_v1",` +
+		`"format":"csvgz","outcome":"ok","sample":false,"open":false,"bytes":9007199254740993,` +
+		`"http_status":302,"apikey_id":"ak_1","client_ip":null,"user_agent":null,"created":"2026-10-05T10:00:00Z"}]}`)}})
+	downloads, err := newTestClient(t, stub).Database.Downloads(context.Background(), 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := *downloads[0].Bytes; got != 9007199254740993 {
+		t.Errorf("bytes read as %d, want 9007199254740993", got)
+	}
+}
+
+// An answer followed by anything but whitespace is not the answer.
+func TestAnAnswerWithTrailingDataIsARetriedServerError(t *testing.T) {
+	stub := newStub(map[string]stubRoute{pathList: {body: []byte(`{"databases":[]} {"databases":[]}`)}})
+	_, err := newTestClient(t, stub, WithRetries(1)).Database.List(context.Background())
+	var apiErr *Error
+	if !errors.As(err, &apiErr) || apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
+		t.Errorf("error was %v, want a server_error carrying 200", err)
+	}
+	if n := stub.count(); n != 2 {
+		t.Errorf("sent %d request(s), want 2", n)
+	}
+}
+
 // Seconds as digits, or an HTTP date in any of its three forms, in GMT, and
 // nothing else: through v2.6.0 ParseInt read +1 as a second.
 func TestARetryAfterIsDigitsOrAnHTTPDate(t *testing.T) {
