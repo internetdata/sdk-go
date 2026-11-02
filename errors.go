@@ -91,8 +91,8 @@ func errorFromResponse(status int, header http.Header, body []byte) *Error {
 		return &Error{Kind: KindForbidden, Message: message, StatusCode: status}
 	}
 	// Any other 4xx is a CLIENT error, and 404 is the one this API actually
-	// serves: an id it does not publish. Falling through to the server_error
-	// default would make it retryable, so a misspelled id would be requested
+	// serves: an ID it does not publish. Falling through to the server_error
+	// default would make it retryable, so a misspelled ID would be requested
 	// three times before failing. Only 5xx and transport failures are worth a
 	// retry.
 	if status < http.StatusInternalServerError {

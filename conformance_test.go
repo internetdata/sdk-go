@@ -109,7 +109,7 @@ func TestTheFormatsAreExactlyWhatTheCorpusPins(t *testing.T) {
 // out.
 //
 // Driven off the corpus rather than written out, so a rule added there fails
-// here instead of going quietly unasserted. The private ids are deliberately
+// here instead of going quietly unasserted. The private IDs are deliberately
 // not in the corpus - it is committed into public repositories - so the stub
 // names a placeholder of its own.
 func TestTheVisibilityContractIsHeldRuleByRule(t *testing.T) {

@@ -2,7 +2,7 @@
 //
 // The transfer is budgeted before it starts. Metadata publishes a size per
 // format, and that size is checked against the ceiling below FIRST, so a
-// mistaken database id can never quietly pull one of the multi-gigabyte
+// mistaken database ID can never quietly pull one of the multi-gigabyte
 // databases through CI.
 
 package integration
@@ -37,8 +37,8 @@ const (
 	// published catalog reaches 5.34 GiB, and this is the only thing standing
 	// between a typo and pulling one of those.
 	ceiling = 8 << 20
-	// A real, public catalog id this organization holds no license for. Repoint
-	// it if that ever changes; the refusal is the assertion, not the id.
+	// A real, public catalog ID this organization holds no license for. Repoint
+	// it if that ever changes; the refusal is the assertion, not the ID.
 	unlicensedID = "hosting_ip_v1"
 )
 
@@ -96,7 +96,7 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 			t.Errorf("%s is unlicensed and still carries a right", d.Base)
 		}
 		// The point of the family shape: a license covers the family, and these
-		// are the ids the download, checksum and metadata calls take.
+		// are the IDs the download, checksum and metadata calls take.
 		if len(d.Versions) == 0 {
 			t.Errorf("%s carries no versions", d.Base)
 		}

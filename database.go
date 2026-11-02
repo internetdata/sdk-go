@@ -31,7 +31,7 @@ type DatabaseAPI struct {
 
 // List is the published catalog, with your organization's license beside each
 // family. A license covers a family, while a download names one of its
-// versions, so the ids the download and checksum calls take come from
+// versions, so the IDs the download and checksum calls take come from
 // Database.Versions.
 //
 // This is the server's answer for this key, so a listing held from one key is
@@ -278,7 +278,7 @@ type Checksums struct {
 }
 
 // Format is a format a database is published in. Not every one is built in
-// every format: the _provider catalogs are keyed by provider id rather than by
+// every format: the _provider catalogs are keyed by provider ID rather than by
 // IP range, so no MMDB exists for them, and asking for one is an error rather
 // than an empty answer. DatabaseVersion.Formats says which exist.
 type Format string
