@@ -2,6 +2,14 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.8.5 - 2026-11-03
+
+### Fixes
+
+- Re-pin the spec to 2026.11.02: ID and IDs in its descriptions ([`8aa3d4c`](https://github.com/internetdata/sdk-go/commit/8aa3d4cbb8b168d5c5a124e86d1d23ba08933613))
+- Write ID and IDs in prose, never id or ids ([`6f00318`](https://github.com/internetdata/sdk-go/commit/6f003183635fbe18fa7f3275bf0f5d26fa850645))
+- Refuse an OAuth answer whose required member is null ([`2bb99ea`](https://github.com/internetdata/sdk-go/commit/2bb99ead571e78e28055c05353c5f8708b1464ed))
+
 ## 2.8.4 - 2026-10-30
 
 ### Fixes
