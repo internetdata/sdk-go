@@ -39,7 +39,7 @@ Every database call hangs off `client.Database`, which is where the sibling VPND
 
 ### The catalog
 
-`List` returns one entry per database FAMILY, with your license beside it. A license covers the family, while a download names one of its versions, so the ids you pass to everything else come from `Versions`:
+`List` returns one entry per database FAMILY, with your license beside it. A license covers the family, while a download names one of its versions, so the IDs you pass to everything else come from `Versions`:
 
 ```go
 for _, db := range databases {

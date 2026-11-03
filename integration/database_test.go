@@ -102,7 +102,7 @@ func TestTheCatalogAnswersTheSchemaTheClientWasGeneratedFrom(t *testing.T) {
 		}
 		for _, v := range d.Versions {
 			if v.ID == "" || v.Version == 0 {
-				t.Errorf("%s has a version with no id or number: %+v", d.Base, v)
+				t.Errorf("%s has a version with no ID or number: %+v", d.Base, v)
 			}
 			if len(v.Formats) == 0 {
 				t.Errorf("%s carries no formats", v.ID)
@@ -353,7 +353,7 @@ func TestTheDownloadHistoryReadsBack(t *testing.T) {
 	}
 	for i, d := range history {
 		if d.DatasetID == "" || d.Created.IsZero() {
-			t.Errorf("attempt %d carries no id or timestamp: %+v", i, d)
+			t.Errorf("attempt %d carries no ID or timestamp: %+v", i, d)
 		}
 		if !slices.Contains(outcomes, d.Outcome) {
 			t.Errorf("attempt %d carries an undocumented outcome %q", i, d.Outcome)
