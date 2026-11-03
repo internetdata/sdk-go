@@ -174,8 +174,10 @@ func TestOauthResponsesDecode(t *testing.T) {
 	}
 }
 
-// No corpus case: every response there decodes. One member left out per case,
-// since a body missing two at once let a defaulting decoder survive elsewhere.
+// No corpus case: every response there decodes. One member left out or sent as
+// null per case, since a body missing two at once let a defaulting decoder
+// survive elsewhere. Through v2.8.4 a null was read as the member's zero value,
+// so an access_token of null was a token of "".
 func TestOauthAnAnswerMissingARequiredMemberFails(t *testing.T) {
 	required := map[string][]string{
 		"metadata":            {"issuer", "authorization_endpoint", "token_endpoint"},
@@ -184,26 +186,31 @@ func TestOauthAnAnswerMissingARequiredMemberFails(t *testing.T) {
 	}
 	for operation, members := range required {
 		for _, member := range members {
-			t.Run(operation+"/"+member, func(t *testing.T) {
-				var body map[string]json.RawMessage
-				if err := json.Unmarshal([]byte(everyRequiredMember), &body); err != nil {
-					t.Fatal(err)
-				}
-				delete(body, member)
-				raw, _ := json.Marshal(body)
-				stub := &oauthStub{replies: []oauthReply{{Status: 200, Body: raw}}}
-				client := newOauthClient(t, stub, WithRetries(0))
-				err := callOauth(t.Context(), client, operation,
-					oauthArgs{ClientID: "internetdata-cli", DeviceCode: "mo_dc_x"})
-				var apiErr *Error
-				var refused *OauthError
-				if !errors.As(err, &apiErr) || errors.As(err, &refused) {
-					t.Fatalf("error was %v, want the ordinary *Error", err)
-				}
-				if apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
-					t.Errorf("Kind %q, StatusCode %d, want server_error and 200", apiErr.Kind, apiErr.StatusCode)
-				}
-			})
+			for _, sent := range []string{"missing", "null"} {
+				t.Run(operation+"/"+member+"/"+sent, func(t *testing.T) {
+					var body map[string]json.RawMessage
+					if err := json.Unmarshal([]byte(everyRequiredMember), &body); err != nil {
+						t.Fatal(err)
+					}
+					delete(body, member)
+					if sent == "null" {
+						body[member] = json.RawMessage("null")
+					}
+					raw, _ := json.Marshal(body)
+					stub := &oauthStub{replies: []oauthReply{{Status: 200, Body: raw}}}
+					client := newOauthClient(t, stub, WithRetries(0))
+					err := callOauth(t.Context(), client, operation,
+						oauthArgs{ClientID: "internetdata-cli", DeviceCode: "mo_dc_x"})
+					var apiErr *Error
+					var refused *OauthError
+					if !errors.As(err, &apiErr) || errors.As(err, &refused) {
+						t.Fatalf("error was %v, want the ordinary *Error", err)
+					}
+					if apiErr.Kind != KindServerError || apiErr.StatusCode != 200 {
+						t.Errorf("Kind %q, StatusCode %d, want server_error and 200", apiErr.Kind, apiErr.StatusCode)
+					}
+				})
+			}
 		}
 	}
 }

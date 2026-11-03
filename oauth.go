@@ -477,8 +477,10 @@ func decodeOauth[T any](res *http.Response, err error, required ...string) (*T, 
 	if err := json.Unmarshal(body, &members); err != nil {
 		return nil, unreadable(res.StatusCode, "the answer was not a JSON object")
 	}
+	// json.Unmarshal reads a null as the member's zero value, so through v2.8.4
+	// an access_token of null was a token of "".
 	for _, name := range required {
-		if _, ok := members[name]; !ok {
+		if value, ok := members[name]; !ok || string(value) == "null" {
 			return nil, unreadable(res.StatusCode, "the answer carried no "+name)
 		}
 	}
