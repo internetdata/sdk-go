@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.10.21
+  version: 2026.11.02
 servers:
   - url: https://internetdata.io
 tags:
@@ -506,7 +506,7 @@ paths:
         - API keys
       summary: Rotate
       description: |
-        Replaces the secret behind a key, keeping its id, name and settings.
+        Replaces the secret behind a key, keeping its ID, name and settings.
         The previous secret stops working immediately. The new secret comes
         back in the answer, so this needs `apikeys.reveal` as well as
         `apikeys.manage`.
@@ -890,7 +890,7 @@ components:
       name: apikey
       description: |
         UUID-format API key issued to the customer. Each key is authorized for a
-        specific set of database ids; requesting any other id returns 403.
+        specific set of database IDs; requesting any other ID returns 403.
 
         v1 only. The v2 endpoints take a console-issued key as a bearer token.
     BearerAuth:
@@ -936,7 +936,7 @@ components:
       name: id
       in: path
       required: true
-      description: The key's id, as returned by the list endpoint. Never the key itself.
+      description: The key's ID, as returned by the list endpoint. Never the key itself.
       schema:
         type: string
         format: uuid
@@ -973,7 +973,7 @@ components:
       description: |
         One database FAMILY, with your organization's license beside it. A
         license covers the family, while a download names a specific version,
-        so the ids passed to `download` and `checksum` come from `versions`.
+        so the IDs passed to `download` and `checksum` come from `versions`.
       required:
         - base
         - name
@@ -1061,7 +1061,7 @@ components:
       properties:
         id:
           type: string
-          description: The versioned id. Pass this to `download`, `checksum` and `metadata`.
+          description: The versioned ID. Pass this to `download`, `checksum` and `metadata`.
           example: vpn_ip_v1
         version:
           type: integer
@@ -1072,7 +1072,7 @@ components:
           type: array
           description: |
             The formats this version is BUILT in. Asking for another is a 400,
-            not a gap - the `_provider` catalogs are keyed by provider id, so no
+            not a gap - the `_provider` catalogs are keyed by provider ID, so no
             MMDB exists for them.
           items:
             $ref: '#/components/schemas/DatabaseFormat'
@@ -1826,7 +1826,7 @@ components:
           schema:
             $ref: '#/components/schemas/DbInvalidApiKeyError'
     Forbidden:
-      description: The `apikey` is valid but is not authorized for the requested database id.
+      description: The `apikey` is valid but is not authorized for the requested database ID.
       content:
         application/json:
           schema:

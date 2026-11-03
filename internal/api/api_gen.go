@@ -268,7 +268,7 @@ type ClientRegistrationRequest struct {
 
 // Database One database FAMILY, with your organization's license beside it. A
 // license covers the family, while a download names a specific version,
-// so the ids passed to `download` and `checksum` come from `versions`.
+// so the IDs passed to `download` and `checksum` come from `versions`.
 type Database struct {
 	// Base The family, e.g. `vpn_ip`. What a license is held against.
 	//
@@ -361,11 +361,11 @@ type DatabaseMetadataColumn struct {
 // DatabaseVersion defines model for DatabaseVersion.
 type DatabaseVersion struct {
 	// Formats The formats this version is BUILT in. Asking for another is a 400,
-	// not a gap - the `_provider` catalogs are keyed by provider id, so no
+	// not a gap - the `_provider` catalogs are keyed by provider ID, so no
 	// MMDB exists for them.
 	Formats []DatabaseFormat `json:"formats"`
 
-	// ID The versioned id. Pass this to `download`, `checksum` and `metadata`.
+	// ID The versioned ID. Pass this to `download`, `checksum` and `metadata`.
 	//
 	// Example: vpn_ip_v1
 	ID string `json:"id"`
@@ -834,7 +834,7 @@ type ClientInterface interface {
 
 	// AccountRotateApikey Rotate
 	//
-	// Replaces the secret behind a key, keeping its id, name and settings.
+	// Replaces the secret behind a key, keeping its ID, name and settings.
 	// The previous secret stops working immediately. The new secret comes
 	// back in the answer, so this needs `apikeys.reveal` as well as
 	// `apikeys.manage`.
@@ -1245,7 +1245,7 @@ func (c *Client) AccountRevokeApikey(ctx context.Context, id ApikeyIDParam, reqE
 
 // AccountRotateApikey Rotate
 //
-// Replaces the secret behind a key, keeping its id, name and settings.
+// Replaces the secret behind a key, keeping its ID, name and settings.
 // The previous secret stops working immediately. The new secret comes
 // back in the answer, so this needs `apikeys.reveal` as well as
 // `apikeys.manage`.
@@ -2629,7 +2629,7 @@ type ClientWithResponsesInterface interface {
 
 	// AccountRotateApikeyWithResponse Rotate
 	//
-	// Replaces the secret behind a key, keeping its id, name and settings.
+	// Replaces the secret behind a key, keeping its ID, name and settings.
 	// The previous secret stops working immediately. The new secret comes
 	// back in the answer, so this needs `apikeys.reveal` as well as
 	// `apikeys.manage`.
@@ -4141,7 +4141,7 @@ func (c *ClientWithResponses) AccountRevokeApikeyWithResponse(ctx context.Contex
 
 // AccountRotateApikeyWithResponse Rotate
 //
-// Replaces the secret behind a key, keeping its id, name and settings.
+// Replaces the secret behind a key, keeping its ID, name and settings.
 // The previous secret stops working immediately. The new secret comes
 // back in the answer, so this needs `apikeys.reveal` as well as
 // `apikeys.manage`.
