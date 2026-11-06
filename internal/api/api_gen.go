@@ -577,6 +577,9 @@ type TokenResponse struct {
 // ApikeyIDParam defines model for ApikeyIdParam.
 type ApikeyIDParam = openapi_types.UUID
 
+// DBBuild Example: 20261105.0t53s5
+type DBBuild = string
+
 // DBFormat A file format a database version is published in.
 //
 // Example: mmdb
@@ -628,6 +631,11 @@ type DownloadDatabaseV2Params struct {
 
 	// Format Database file format.
 	Format DBFormat `form:"format" json:"format"`
+
+	// Build One build of the database, by the name a `database.updated` webhook gives
+	// it, so the file is the one whose `sha256` the webhook carries. Without
+	// it, the build that is live.
+	Build *DBBuild `form:"build,omitempty" json:"build,omitempty"`
 }
 
 // ListDownloadsParams defines parameters for ListDownloads.
@@ -2076,6 +2084,18 @@ func NewDownloadDatabaseV2Request(server string, params *DownloadDatabaseV2Param
 			for _, qp := range strings.Split(queryFrag, "&") {
 				rawQueryFragments = append(rawQueryFragments, qp)
 			}
+		}
+
+		if params.Build != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "build", *params.Build, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
 		}
 
 		if encoded := queryValues.Encode(); encoded != "" {
@@ -3541,6 +3561,8 @@ type DownloadDatabaseV2Response struct {
 	JSON403 *V2Forbidden
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *V2UnknownDatabase
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
 	// JSON503 the response for an HTTP 503 `application/json` response
 	JSON503 *V2NotAvailable
 	// Headers302 the parsed response headers for an HTTP 302 response
@@ -3565,6 +3587,11 @@ func (r DownloadDatabaseV2Response) GetJSON403() *V2Forbidden {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r DownloadDatabaseV2Response) GetJSON404() *V2UnknownDatabase {
 	return r.JSON404
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r DownloadDatabaseV2Response) GetJSON410() *Error {
+	return r.JSON410
 }
 
 // GetJSON503 returns the response for an HTTP 503 `application/json` response
@@ -5030,6 +5057,13 @@ func ParseDownloadDatabaseV2Response(rsp *http.Response) (*DownloadDatabaseV2Res
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
 		var dest V2NotAvailable

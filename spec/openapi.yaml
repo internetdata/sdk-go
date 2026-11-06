@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.02
+  version: 2026.11.05
 servers:
   - url: https://internetdata.io
 tags:
@@ -99,6 +99,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/DbId'
         - $ref: '#/components/parameters/DbFormat'
+        - $ref: '#/components/parameters/DbBuild'
       responses:
         '302':
           description: Follow the Location header to object storage.
@@ -107,7 +108,9 @@ paths:
               schema:
                 type: string
         '400':
-          description: The database is not built in the requested format.
+          description: |
+            The database is not built in the requested format (`INVALID_FORMAT`),
+            or `build` is not a build's name (`INVALID_BUILD`).
           content:
             application/json:
               schema:
@@ -118,6 +121,14 @@ paths:
           $ref: '#/components/responses/V2Forbidden'
         '404':
           $ref: '#/components/responses/V2UnknownDatabase'
+        '410':
+          description: |
+            The build named in `build` is no longer kept (`BUILD_GONE`): builds are
+            kept 7 days. Download without `build` for the live one.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '503':
           $ref: '#/components/responses/V2NotAvailable'
   /api/v2/database/metadata:
@@ -932,6 +943,18 @@ components:
       description: Database file format.
       schema:
         $ref: '#/components/schemas/DatabaseFormat'
+    DbBuild:
+      name: build
+      in: query
+      required: false
+      description: |
+        One build of the database, by the name a `database.updated` webhook gives
+        it, so the file is the one whose `sha256` the webhook carries. Without
+        it, the build that is live.
+      schema:
+        type: string
+        pattern: ^[0-9]{8}\.[a-z0-9]{6}$
+        example: 20261105.0t53s5
     ApikeyIdParam:
       name: id
       in: path
