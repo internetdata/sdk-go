@@ -95,6 +95,17 @@ if !internetdata.Format(fromFlag).Valid() {
 }
 ```
 
+### Downloading a named build
+
+Each download call fetches the build that is live unless you name one. A `database.updated` webhook names the build it announces and carries its `sha256`, so a receiver that downloads after the next publish asks for that build to get the file the hash is of:
+
+```go
+written, err := client.Database.DownloadFile(ctx, "vpn_ip_v1", internetdata.FormatMMDB, "./vpn_ip_v1.mmdb",
+    internetdata.Build(event.Data.Build))
+```
+
+A build is kept 7 days. Past that the call fails as `bad_request` with the message `BUILD_GONE`, and downloading without `Build` fetches the live one.
+
 ### Downloading it yourself
 
 The API answers a download with a redirect to a time-limited URL on object storage. `DownloadURL` hands you that URL rather than following it, so you can pass it to a downloader, a job queue or another machine:

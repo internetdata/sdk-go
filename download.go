@@ -11,6 +11,33 @@ import (
 	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
+// DownloadOption chooses which file DownloadURL, Download, DownloadFile and
+// DownloadBytes fetch.
+type DownloadOption func(*downloadConfig)
+
+type downloadConfig struct {
+	build string
+}
+
+// Build names one build of the database, as a database.updated webhook gives
+// it ("20261105.0t53s5"), so the file is the one whose sha256 the webhook
+// carries. Without it, or with an empty name, a download fetches the build
+// that is live. A build is kept 7 days; past that the call fails as
+// KindBadRequest with the message BUILD_GONE.
+func Build(name string) DownloadOption {
+	return func(c *downloadConfig) { c.build = name }
+}
+
+func downloadOptions(opts []DownloadOption) downloadConfig {
+	var c downloadConfig
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&c)
+		}
+	}
+	return c
+}
+
 // DownloadURL is the time-limited URL for one database file.
 //
 // The API answers 302 to object storage and the redirect is NOT followed: the
@@ -18,16 +45,19 @@ import (
 // gigabytes, hand it to a downloader, or pass it on without passing on the API
 // key. The link is presigned and so authorizes itself; it authorizes the START
 // of a transfer, so one already running is not interrupted when it lapses.
-func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
+func (d *DatabaseAPI) DownloadURL(
+	ctx context.Context, id string, format Format, opts ...DownloadOption,
+) (string, error) {
 	if err := checkFormat(format); err != nil {
 		return "", err
 	}
+	params := &api.DownloadDatabaseV2Params{ID: id, Format: api.DatabaseFormat(format)}
+	if build := downloadOptions(opts).build; build != "" {
+		params.Build = &build
+	}
 	ctx = withoutRedirects(ctx)
 	return withRetry(ctx, d.retries, func() (string, error) {
-		res, err := d.api.DownloadDatabaseV2(ctx, &api.DownloadDatabaseV2Params{
-			ID:     id,
-			Format: api.DatabaseFormat(format),
-		})
+		res, err := d.api.DownloadDatabaseV2(ctx, params)
 		if err != nil {
 			return "", errorFromTransport(err)
 		}
@@ -62,9 +92,9 @@ func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format)
 // in an *Error: a reset socket and a full disk are different problems, and only
 // one of them is ours.
 func (d *DatabaseAPI) Download(
-	ctx context.Context, id string, format Format, dst io.Writer,
+	ctx context.Context, id string, format Format, dst io.Writer, opts ...DownloadOption,
 ) (int64, error) {
-	res, err := d.fetchFile(ctx, id, format)
+	res, err := d.fetchFile(ctx, id, format, opts)
 	if err != nil {
 		return 0, err
 	}
@@ -79,9 +109,9 @@ func (d *DatabaseAPI) Download(
 // database, and a failed refresh cannot destroy the copy already there.
 // Otherwise identical to Download.
 func (d *DatabaseAPI) DownloadFile(
-	ctx context.Context, id string, format Format, path string,
+	ctx context.Context, id string, format Format, path string, opts ...DownloadOption,
 ) (int64, error) {
-	res, err := d.fetchFile(ctx, id, format)
+	res, err := d.fetchFile(ctx, id, format, opts)
 	if err != nil {
 		return 0, err
 	}
@@ -112,8 +142,10 @@ func (d *DatabaseAPI) DownloadFile(
 // magnitude, from bogon_asn_v1 at a few hundred bytes to the largest IP feeds
 // at several gigabytes. Metadata publishes a Size per format; read it first, or
 // use Download or DownloadFile for anything you have not measured.
-func (d *DatabaseAPI) DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error) {
-	res, err := d.fetchFile(ctx, id, format)
+func (d *DatabaseAPI) DownloadBytes(
+	ctx context.Context, id string, format Format, opts ...DownloadOption,
+) ([]byte, error) {
+	res, err := d.fetchFile(ctx, id, format, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +180,9 @@ const maxPrealloc = 64 << 20
 // holding it. The key rides a request editor on the generated client, which
 // this request does not go through.
 func (d *DatabaseAPI) fetchFile(
-	ctx context.Context, id string, format Format,
+	ctx context.Context, id string, format Format, opts []DownloadOption,
 ) (*http.Response, error) {
-	url, err := d.DownloadURL(ctx, id, format)
+	url, err := d.DownloadURL(ctx, id, format, opts...)
 	if err != nil {
 		return nil, err
 	}

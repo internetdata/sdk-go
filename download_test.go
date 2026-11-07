@@ -451,3 +451,65 @@ type filler struct{}
 func (filler) Read(p []byte) (int, error) {
 	return len(p), nil
 }
+
+func TestABuildGoesOnTheDownloadRequestAndNoneWithoutOne(t *testing.T) {
+	origin := newOrigin(t, originConfig{})
+	db := origin.client.Database
+	ctx := t.Context()
+	build := Build("20261105.0t53s5")
+
+	if _, err := db.DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ, build); err != nil {
+		t.Fatalf("DownloadURL: %v", err)
+	}
+	if _, err := db.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ, build); err != nil {
+		t.Fatalf("DownloadBytes: %v", err)
+	}
+	if _, err := db.Download(ctx, "bogon_ip_v1", FormatCSVGZ, io.Discard, build); err != nil {
+		t.Fatalf("Download: %v", err)
+	}
+	path := filepath.Join(t.TempDir(), "built.csv.gz")
+	if _, err := db.DownloadFile(ctx, "bogon_ip_v1", FormatCSVGZ, path, build); err != nil {
+		t.Fatalf("DownloadFile: %v", err)
+	}
+	if _, err := db.DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ, Build("")); err != nil {
+		t.Fatalf("DownloadURL with an empty build: %v", err)
+	}
+	if _, err := db.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ, nil); err != nil {
+		t.Fatalf("DownloadBytes with a nil option: %v", err)
+	}
+
+	var got []string
+	origin.mu.Lock()
+	for _, r := range origin.seen {
+		if r.URL.Path == pathDownload {
+			got = append(got, r.URL.Query().Encode())
+		}
+	}
+	origin.mu.Unlock()
+	named := "build=20261105.0t53s5&format=csvgz&id=bogon_ip_v1"
+	live := "format=csvgz&id=bogon_ip_v1"
+	want := []string{named, named, named, named, live, live}
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Errorf("the download requests asked\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+	}
+}
+
+func TestAGoneBuildIsABadRequestAskedOnce(t *testing.T) {
+	stub := newStub(map[string]stubRoute{
+		pathDownload: {status: http.StatusGone, body: map[string]string{"rc": "BUILD_GONE"}},
+	})
+	client := newTestClient(t, stub)
+
+	_, err := client.Database.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ, Build("20261029.aaaaaa"))
+	var apiErr *Error
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("error was %v, want an *internetdata.Error", err)
+	}
+	if apiErr.Kind != KindBadRequest || apiErr.Retryable() || apiErr.Message != "BUILD_GONE" {
+		t.Errorf("got Kind %q, Retryable %v, Message %q; want bad_request, false, BUILD_GONE",
+			apiErr.Kind, apiErr.Retryable(), apiErr.Message)
+	}
+	if n := stub.count(); n != 1 {
+		t.Errorf("sent %d request(s), want 1", n)
+	}
+}
