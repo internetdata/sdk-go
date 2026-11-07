@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.9.0 - 2026-11-07
+
+### Features
+
+- Download a named build: DownloadURL, Download, DownloadFile and DownloadBytes take Build ([`d9b936e`](https://github.com/internetdata/sdk-go/commit/d9b936ea6a52922dbc7b4c6e64f3c78c21d5fd5d))
+
 ## 2.8.6 - 2026-11-06
 
 ### Fixes
