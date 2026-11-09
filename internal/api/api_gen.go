@@ -1042,11 +1042,10 @@ type ClientInterface interface {
 
 	// OauthRevokeWithBody Revoke
 	//
-	// RFC 7009. Always answers 200, including for a token that was never
-	// valid - an endpoint that distinguished the two would be a way to test
-	// whether a stolen string is a live credential.
+	// RFC 7009. Always answers 200, even for a token that was never valid, so
+	// it can't be used to test whether a token is live.
 	//
-	// Revoking a REFRESH token ends the whole authorization and takes its
+	// Revoking a refresh token ends the whole authorization and takes its
 	// access tokens with it. Revoking an access token affects only that token.
 	//
 	// Takes any type of body and a specified content type.
@@ -1056,11 +1055,10 @@ type ClientInterface interface {
 
 	// OauthRevokeWithFormdataBody Revoke
 	//
-	// RFC 7009. Always answers 200, including for a token that was never
-	// valid - an endpoint that distinguished the two would be a way to test
-	// whether a stolen string is a live credential.
+	// RFC 7009. Always answers 200, even for a token that was never valid, so
+	// it can't be used to test whether a token is live.
 	//
-	// Revoking a REFRESH token ends the whole authorization and takes its
+	// Revoking a refresh token ends the whole authorization and takes its
 	// access tokens with it. Revoking an access token affects only that token.
 	//
 	// Takes a body of the `application/x-www-form-urlencoded` content type.
@@ -1070,7 +1068,8 @@ type ClientInterface interface {
 
 	// OauthTokenWithBody Token
 	//
-	// Three grant types.
+	// Issues tokens for three grant types: a device code, an authorization
+	// code and a refresh token.
 	//
 	// `urn:ietf:params:oauth:grant-type:device_code` polls a device
 	// authorization. Until the person approves it answers
@@ -1094,7 +1093,8 @@ type ClientInterface interface {
 
 	// OauthTokenWithFormdataBody Token
 	//
-	// Three grant types.
+	// Issues tokens for three grant types: a device code, an authorization
+	// code and a refresh token.
 	//
 	// `urn:ietf:params:oauth:grant-type:device_code` polls a device
 	// authorization. Until the person approves it answers
@@ -1593,11 +1593,10 @@ func (c *Client) OauthRegister(ctx context.Context, body OauthRegisterJSONReques
 
 // OauthRevokeWithBody Revoke
 //
-// RFC 7009. Always answers 200, including for a token that was never
-// valid - an endpoint that distinguished the two would be a way to test
-// whether a stolen string is a live credential.
+// RFC 7009. Always answers 200, even for a token that was never valid, so
+// it can't be used to test whether a token is live.
 //
-// Revoking a REFRESH token ends the whole authorization and takes its
+// Revoking a refresh token ends the whole authorization and takes its
 // access tokens with it. Revoking an access token affects only that token.
 //
 // Takes any type of body and a specified content type.
@@ -1617,11 +1616,10 @@ func (c *Client) OauthRevokeWithBody(ctx context.Context, contentType string, bo
 
 // OauthRevokeWithFormdataBody Revoke
 //
-// RFC 7009. Always answers 200, including for a token that was never
-// valid - an endpoint that distinguished the two would be a way to test
-// whether a stolen string is a live credential.
+// RFC 7009. Always answers 200, even for a token that was never valid, so
+// it can't be used to test whether a token is live.
 //
-// Revoking a REFRESH token ends the whole authorization and takes its
+// Revoking a refresh token ends the whole authorization and takes its
 // access tokens with it. Revoking an access token affects only that token.
 //
 // Takes a body of the `application/x-www-form-urlencoded` content type.
@@ -1641,7 +1639,8 @@ func (c *Client) OauthRevokeWithFormdataBody(ctx context.Context, body OauthRevo
 
 // OauthTokenWithBody Token
 //
-// Three grant types.
+// Issues tokens for three grant types: a device code, an authorization
+// code and a refresh token.
 //
 // `urn:ietf:params:oauth:grant-type:device_code` polls a device
 // authorization. Until the person approves it answers
@@ -1675,7 +1674,8 @@ func (c *Client) OauthTokenWithBody(ctx context.Context, contentType string, bod
 
 // OauthTokenWithFormdataBody Token
 //
-// Three grant types.
+// Issues tokens for three grant types: a device code, an authorization
+// code and a refresh token.
 //
 // `urn:ietf:params:oauth:grant-type:device_code` polls a device
 // authorization. Until the person approves it answers
@@ -2869,11 +2869,10 @@ type ClientWithResponsesInterface interface {
 
 	// OauthRevokeWithBodyWithResponse Revoke
 	//
-	// RFC 7009. Always answers 200, including for a token that was never
-	// valid - an endpoint that distinguished the two would be a way to test
-	// whether a stolen string is a live credential.
+	// RFC 7009. Always answers 200, even for a token that was never valid, so
+	// it can't be used to test whether a token is live.
 	//
-	// Revoking a REFRESH token ends the whole authorization and takes its
+	// Revoking a refresh token ends the whole authorization and takes its
 	// access tokens with it. Revoking an access token affects only that token.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -2883,11 +2882,10 @@ type ClientWithResponsesInterface interface {
 
 	// OauthRevokeWithFormdataBodyWithResponse Revoke
 	//
-	// RFC 7009. Always answers 200, including for a token that was never
-	// valid - an endpoint that distinguished the two would be a way to test
-	// whether a stolen string is a live credential.
+	// RFC 7009. Always answers 200, even for a token that was never valid, so
+	// it can't be used to test whether a token is live.
 	//
-	// Revoking a REFRESH token ends the whole authorization and takes its
+	// Revoking a refresh token ends the whole authorization and takes its
 	// access tokens with it. Revoking an access token affects only that token.
 	//
 	// Takes a body of the `application/x-www-form-urlencoded` content type, and returns a wrapper object for the known response body format(s).
@@ -2897,7 +2895,8 @@ type ClientWithResponsesInterface interface {
 
 	// OauthTokenWithBodyWithResponse Token
 	//
-	// Three grant types.
+	// Issues tokens for three grant types: a device code, an authorization
+	// code and a refresh token.
 	//
 	// `urn:ietf:params:oauth:grant-type:device_code` polls a device
 	// authorization. Until the person approves it answers
@@ -2921,7 +2920,8 @@ type ClientWithResponsesInterface interface {
 
 	// OauthTokenWithFormdataBodyWithResponse Token
 	//
-	// Three grant types.
+	// Issues tokens for three grant types: a device code, an authorization
+	// code and a refresh token.
 	//
 	// `urn:ietf:params:oauth:grant-type:device_code` polls a device
 	// authorization. Until the person approves it answers
@@ -4472,11 +4472,10 @@ func (c *ClientWithResponses) OauthRegisterWithResponse(ctx context.Context, bod
 
 // OauthRevokeWithBodyWithResponse Revoke
 //
-// RFC 7009. Always answers 200, including for a token that was never
-// valid - an endpoint that distinguished the two would be a way to test
-// whether a stolen string is a live credential.
+// RFC 7009. Always answers 200, even for a token that was never valid, so
+// it can't be used to test whether a token is live.
 //
-// Revoking a REFRESH token ends the whole authorization and takes its
+// Revoking a refresh token ends the whole authorization and takes its
 // access tokens with it. Revoking an access token affects only that token.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -4492,11 +4491,10 @@ func (c *ClientWithResponses) OauthRevokeWithBodyWithResponse(ctx context.Contex
 
 // OauthRevokeWithFormdataBodyWithResponse Revoke
 //
-// RFC 7009. Always answers 200, including for a token that was never
-// valid - an endpoint that distinguished the two would be a way to test
-// whether a stolen string is a live credential.
+// RFC 7009. Always answers 200, even for a token that was never valid, so
+// it can't be used to test whether a token is live.
 //
-// Revoking a REFRESH token ends the whole authorization and takes its
+// Revoking a refresh token ends the whole authorization and takes its
 // access tokens with it. Revoking an access token affects only that token.
 //
 // Takes a body of the `application/x-www-form-urlencoded` content type, and returns a wrapper object for the known response body format(s).
@@ -4512,7 +4510,8 @@ func (c *ClientWithResponses) OauthRevokeWithFormdataBodyWithResponse(ctx contex
 
 // OauthTokenWithBodyWithResponse Token
 //
-// Three grant types.
+// Issues tokens for three grant types: a device code, an authorization
+// code and a refresh token.
 //
 // `urn:ietf:params:oauth:grant-type:device_code` polls a device
 // authorization. Until the person approves it answers
@@ -4542,7 +4541,8 @@ func (c *ClientWithResponses) OauthTokenWithBodyWithResponse(ctx context.Context
 
 // OauthTokenWithFormdataBodyWithResponse Token
 //
-// Three grant types.
+// Issues tokens for three grant types: a device code, an authorization
+// code and a refresh token.
 //
 // `urn:ietf:params:oauth:grant-type:device_code` polls a device
 // authorization. Until the person approves it answers

@@ -12,7 +12,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.05
+  version: 2026.11.08
 servers:
   - url: https://internetdata.io
 tags:
@@ -815,7 +815,8 @@ paths:
         - Authorization
       summary: Token
       description: |
-        Three grant types.
+        Issues tokens for three grant types: a device code, an authorization
+        code and a refresh token.
 
         `urn:ietf:params:oauth:grant-type:device_code` polls a device
         authorization. Until the person approves it answers
@@ -873,11 +874,10 @@ paths:
         - Authorization
       summary: Revoke
       description: |
-        RFC 7009. Always answers 200, including for a token that was never
-        valid - an endpoint that distinguished the two would be a way to test
-        whether a stolen string is a live credential.
+        RFC 7009. Always answers 200, even for a token that was never valid, so
+        it can't be used to test whether a token is live.
 
-        Revoking a REFRESH token ends the whole authorization and takes its
+        Revoking a refresh token ends the whole authorization and takes its
         access tokens with it. Revoking an access token affects only that token.
       security: []
       requestBody:
