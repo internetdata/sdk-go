@@ -97,14 +97,14 @@ if !internetdata.Format(fromFlag).Valid() {
 
 ### Downloading a named build
 
-Each download call fetches the build that is live unless you name one. A `database.updated` webhook names the build it announces and carries its `sha256`, so a receiver that downloads after the next publish asks for that build to get the file the hash is of:
+Each download call fetches the build that is live unless you name one. A `database.updated` webhook names the build it announces and carries its `sha256`, so a receiver that downloads after the next publish asks for that build to get the file the hash is of. `client.Database.AtBuild(build)` has the same four download calls, for that build:
 
 ```go
-written, err := client.Database.DownloadFile(ctx, "vpn_ip_v1", internetdata.FormatMMDB, "./vpn_ip_v1.mmdb",
-    internetdata.Build(event.Data.Build))
+written, err := client.Database.AtBuild(event.Data.Build).DownloadFile(ctx,
+    "vpn_ip_v1", internetdata.FormatMMDB, "./vpn_ip_v1.mmdb")
 ```
 
-A build is kept 7 days. Past that the call fails as `bad_request` with the message `BUILD_GONE`, and downloading without `Build` fetches the live one.
+A build is kept 7 days. Past that the call fails as `bad_request` with the message `BUILD_GONE`, and `client.Database`'s own download calls fetch the live one.
 
 ### Downloading it yourself
 

@@ -11,33 +11,6 @@ import (
 	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
-// DownloadOption chooses which file DownloadURL, Download, DownloadFile and
-// DownloadBytes fetch.
-type DownloadOption func(*downloadConfig)
-
-type downloadConfig struct {
-	build string
-}
-
-// Build names one build of the database, as a database.updated webhook gives
-// it ("20261105.0t53s5"), so the file is the one whose sha256 the webhook
-// carries. Without it, or with an empty name, a download fetches the build
-// that is live. A build is kept 7 days; past that the call fails as
-// KindBadRequest with the message BUILD_GONE.
-func Build(name string) DownloadOption {
-	return func(c *downloadConfig) { c.build = name }
-}
-
-func downloadOptions(opts []DownloadOption) downloadConfig {
-	var c downloadConfig
-	for _, opt := range opts {
-		if opt != nil {
-			opt(&c)
-		}
-	}
-	return c
-}
-
 // DownloadURL is the time-limited URL for one database file.
 //
 // The API answers 302 to object storage and the redirect is NOT followed: the
@@ -45,14 +18,18 @@ func downloadOptions(opts []DownloadOption) downloadConfig {
 // gigabytes, hand it to a downloader, or pass it on without passing on the API
 // key. The link is presigned and so authorizes itself; it authorizes the START
 // of a transfer, so one already running is not interrupted when it lapses.
-func (d *DatabaseAPI) DownloadURL(
-	ctx context.Context, id string, format Format, opts ...DownloadOption,
+func (d *DatabaseAPI) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
+	return d.downloadURL(ctx, id, format, "")
+}
+
+func (d *DatabaseAPI) downloadURL(
+	ctx context.Context, id string, format Format, build string,
 ) (string, error) {
 	if err := checkFormat(format); err != nil {
 		return "", err
 	}
 	params := &api.DownloadDatabaseV2Params{ID: id, Format: api.DatabaseFormat(format)}
-	if build := downloadOptions(opts).build; build != "" {
+	if build != "" {
 		params.Build = &build
 	}
 	ctx = withoutRedirects(ctx)
@@ -91,10 +68,14 @@ func (d *DatabaseAPI) DownloadURL(
 // A failure DURING the transfer is returned as it happened rather than wrapped
 // in an *Error: a reset socket and a full disk are different problems, and only
 // one of them is ours.
-func (d *DatabaseAPI) Download(
-	ctx context.Context, id string, format Format, dst io.Writer, opts ...DownloadOption,
+func (d *DatabaseAPI) Download(ctx context.Context, id string, format Format, dst io.Writer) (int64, error) {
+	return d.download(ctx, id, format, dst, "")
+}
+
+func (d *DatabaseAPI) download(
+	ctx context.Context, id string, format Format, dst io.Writer, build string,
 ) (int64, error) {
-	res, err := d.fetchFile(ctx, id, format, opts)
+	res, err := d.fetchFile(ctx, id, format, build)
 	if err != nil {
 		return 0, err
 	}
@@ -109,9 +90,15 @@ func (d *DatabaseAPI) Download(
 // database, and a failed refresh cannot destroy the copy already there.
 // Otherwise identical to Download.
 func (d *DatabaseAPI) DownloadFile(
-	ctx context.Context, id string, format Format, path string, opts ...DownloadOption,
+	ctx context.Context, id string, format Format, path string,
 ) (int64, error) {
-	res, err := d.fetchFile(ctx, id, format, opts)
+	return d.downloadFile(ctx, id, format, path, "")
+}
+
+func (d *DatabaseAPI) downloadFile(
+	ctx context.Context, id string, format Format, path string, build string,
+) (int64, error) {
+	res, err := d.fetchFile(ctx, id, format, build)
 	if err != nil {
 		return 0, err
 	}
@@ -142,10 +129,14 @@ func (d *DatabaseAPI) DownloadFile(
 // magnitude, from bogon_asn_v1 at a few hundred bytes to the largest IP feeds
 // at several gigabytes. Metadata publishes a Size per format; read it first, or
 // use Download or DownloadFile for anything you have not measured.
-func (d *DatabaseAPI) DownloadBytes(
-	ctx context.Context, id string, format Format, opts ...DownloadOption,
+func (d *DatabaseAPI) DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error) {
+	return d.downloadBytes(ctx, id, format, "")
+}
+
+func (d *DatabaseAPI) downloadBytes(
+	ctx context.Context, id string, format Format, build string,
 ) ([]byte, error) {
-	res, err := d.fetchFile(ctx, id, format, opts)
+	res, err := d.fetchFile(ctx, id, format, build)
 	if err != nil {
 		return nil, err
 	}
@@ -180,9 +171,9 @@ const maxPrealloc = 64 << 20
 // holding it. The key rides a request editor on the generated client, which
 // this request does not go through.
 func (d *DatabaseAPI) fetchFile(
-	ctx context.Context, id string, format Format, opts []DownloadOption,
+	ctx context.Context, id string, format Format, build string,
 ) (*http.Response, error) {
-	url, err := d.DownloadURL(ctx, id, format, opts...)
+	url, err := d.downloadURL(ctx, id, format, build)
 	if err != nil {
 		return nil, err
 	}
@@ -206,4 +197,44 @@ func (d *DatabaseAPI) fetchFile(
 		}
 		return res, nil
 	})
+}
+
+// AtBuild is the four download calls for one build of each database, by the
+// name a database.updated webhook gives it ("20261105.0t53s5"), so the file is
+// the one whose sha256 the webhook carries; DatabaseAPI's own fetch the build
+// that is live, as does an empty name. A build is kept 7 days; past that the
+// call fails as KindBadRequest with the message BUILD_GONE, sent once.
+func (d *DatabaseAPI) AtBuild(name string) *BuildDownloads {
+	return &BuildDownloads{db: d, build: name}
+}
+
+// BuildDownloads downloads the build AtBuild named, with the same four methods
+// and signatures as DatabaseAPI.
+type BuildDownloads struct {
+	db    *DatabaseAPI
+	build string
+}
+
+// DownloadURL is DatabaseAPI.DownloadURL for this build.
+func (b *BuildDownloads) DownloadURL(ctx context.Context, id string, format Format) (string, error) {
+	return b.db.downloadURL(ctx, id, format, b.build)
+}
+
+// Download is DatabaseAPI.Download for this build.
+func (b *BuildDownloads) Download(
+	ctx context.Context, id string, format Format, dst io.Writer,
+) (int64, error) {
+	return b.db.download(ctx, id, format, dst, b.build)
+}
+
+// DownloadFile is DatabaseAPI.DownloadFile for this build.
+func (b *BuildDownloads) DownloadFile(
+	ctx context.Context, id string, format Format, path string,
+) (int64, error) {
+	return b.db.downloadFile(ctx, id, format, path, b.build)
+}
+
+// DownloadBytes is DatabaseAPI.DownloadBytes for this build.
+func (b *BuildDownloads) DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error) {
+	return b.db.downloadBytes(ctx, id, format, b.build)
 }

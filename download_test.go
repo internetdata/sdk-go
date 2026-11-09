@@ -456,26 +456,26 @@ func TestABuildGoesOnTheDownloadRequestAndNoneWithoutOne(t *testing.T) {
 	origin := newOrigin(t, originConfig{})
 	db := origin.client.Database
 	ctx := t.Context()
-	build := Build("20261105.0t53s5")
+	build := db.AtBuild("20261105.0t53s5")
 
-	if _, err := db.DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ, build); err != nil {
+	if _, err := build.DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ); err != nil {
 		t.Fatalf("DownloadURL: %v", err)
 	}
-	if _, err := db.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ, build); err != nil {
+	if _, err := build.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ); err != nil {
 		t.Fatalf("DownloadBytes: %v", err)
 	}
-	if _, err := db.Download(ctx, "bogon_ip_v1", FormatCSVGZ, io.Discard, build); err != nil {
+	if _, err := build.Download(ctx, "bogon_ip_v1", FormatCSVGZ, io.Discard); err != nil {
 		t.Fatalf("Download: %v", err)
 	}
 	path := filepath.Join(t.TempDir(), "built.csv.gz")
-	if _, err := db.DownloadFile(ctx, "bogon_ip_v1", FormatCSVGZ, path, build); err != nil {
+	if _, err := build.DownloadFile(ctx, "bogon_ip_v1", FormatCSVGZ, path); err != nil {
 		t.Fatalf("DownloadFile: %v", err)
 	}
-	if _, err := db.DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ, Build("")); err != nil {
+	if _, err := db.AtBuild("").DownloadURL(ctx, "bogon_ip_v1", FormatCSVGZ); err != nil {
 		t.Fatalf("DownloadURL with an empty build: %v", err)
 	}
-	if _, err := db.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ, nil); err != nil {
-		t.Fatalf("DownloadBytes with a nil option: %v", err)
+	if _, err := db.DownloadBytes(ctx, "bogon_ip_v1", FormatCSVGZ); err != nil {
+		t.Fatalf("DownloadBytes with no build: %v", err)
 	}
 
 	var got []string
@@ -500,7 +500,7 @@ func TestAGoneBuildIsABadRequestAskedOnce(t *testing.T) {
 	})
 	client := newTestClient(t, stub)
 
-	_, err := client.Database.DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ, Build("20261029.aaaaaa"))
+	_, err := client.Database.AtBuild("20261029.aaaaaa").DownloadURL(t.Context(), "bogon_ip_v1", FormatCSVGZ)
 	var apiErr *Error
 	if !errors.As(err, &apiErr) {
 		t.Fatalf("error was %v, want an *internetdata.Error", err)
@@ -513,3 +513,20 @@ func TestAGoneBuildIsABadRequestAskedOnce(t *testing.T) {
 		t.Errorf("sent %d request(s), want 1", n)
 	}
 }
+
+// The download calls keep v2.8's signatures, on DatabaseAPI and on a build
+// alike, so an interface a caller declared from them is still satisfied.
+// v2.9.0 broke one by giving each a variadic option.
+var _ interface {
+	DownloadURL(ctx context.Context, id string, format Format) (string, error)
+	Download(ctx context.Context, id string, format Format, dst io.Writer) (int64, error)
+	DownloadFile(ctx context.Context, id string, format Format, path string) (int64, error)
+	DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error)
+} = (*DatabaseAPI)(nil)
+
+var _ interface {
+	DownloadURL(ctx context.Context, id string, format Format) (string, error)
+	Download(ctx context.Context, id string, format Format, dst io.Writer) (int64, error)
+	DownloadFile(ctx context.Context, id string, format Format, path string) (int64, error)
+	DownloadBytes(ctx context.Context, id string, format Format) ([]byte, error)
+} = (*BuildDownloads)(nil)
