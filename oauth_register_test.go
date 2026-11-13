@@ -22,7 +22,8 @@ func TestOauthRegisterBodies(t *testing.T) {
 			}
 			req := stub.requests[0]
 			assertEndpoint(t, req, c.Endpoint)
-			if got := req.url; got != "https://api.example.test"+c.Endpoint.Path {
+			// At the apex, as every OAuth call is: api. dropped, and the slash with it.
+			if got := req.url; got != "https://example.test"+c.Endpoint.Path {
 				t.Errorf("requested %s", got)
 			}
 			if got := req.header.Get("Content-Type"); !strings.HasPrefix(got, c.ContentType) {

@@ -20,7 +20,7 @@ import (
 )
 
 // DefaultBaseURL is the production API. Override it with WithBaseURL.
-const DefaultBaseURL = "https://internetdata.io"
+const DefaultBaseURL = "https://api.internetdata.io"
 
 const (
 	defaultRetries = 2
@@ -73,14 +73,16 @@ func New(opts ...Option) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("internetdata: %w", err)
 	}
-	// The same transport without the key's request editor, which is client-wide.
-	keyless, err := api.NewClientWithResponses(cfg.baseURL, apiOpts[0])
+	// The same transport without the key's request editor, which is client-wide,
+	// sent to the authorization server.
+	issuer := apexOf(cfg.baseURL)
+	keyless, err := api.NewClientWithResponses(issuer, apiOpts[0])
 	if err != nil {
 		return nil, fmt.Errorf("internetdata: %w", err)
 	}
 	return &Client{
 		Database: &DatabaseAPI{api: inner, transfer: untimed(httpClient), retries: cfg.retries},
-		Oauth:    &OauthAPI{api: keyless, baseURL: cfg.baseURL, retries: cfg.retries, sleep: sleep, now: time.Now},
+		Oauth:    &OauthAPI{api: keyless, baseURL: issuer, retries: cfg.retries, sleep: sleep, now: time.Now},
 	}, nil
 }
 
@@ -112,6 +114,10 @@ func WithAPIKey(key string) Option {
 }
 
 // WithBaseURL points the client at a different deployment of the API.
+//
+// Client.Oauth signs in at the apex rather than the API's host, since that is
+// whose issuer it is: api. is dropped from the host and api-<env>. becomes
+// <env>.; any other base URL is used as given.
 func WithBaseURL(rawURL string) Option {
 	return func(c *config) error {
 		parsed, err := url.Parse(rawURL)
@@ -205,6 +211,29 @@ func untimed(client *http.Client) *http.Client {
 	transfer := *client
 	transfer.Timeout = 0
 	return &transfer
+}
+
+// apexOf is the authorization server's base URL for an API base URL: its host
+// with api. dropped, or api-<env>. turned into <env>., and any other as given.
+// The API host answers no OAuth path at all, so the issuer is reached there.
+func apexOf(baseURL string) string {
+	parsed, err := url.Parse(baseURL)
+	if err != nil {
+		return baseURL
+	}
+	label, rest, ok := strings.Cut(parsed.Host, ".")
+	if !ok || rest == "" {
+		return baseURL
+	}
+	switch {
+	case strings.EqualFold(label, "api"):
+		parsed.Host = rest
+	case len(label) > len("api-") && strings.EqualFold(label[:len("api-")], "api-"):
+		parsed.Host = label[len("api-"):] + "." + rest
+	default:
+		return baseURL
+	}
+	return parsed.String()
 }
 
 // Backs off exponentially, except that a server-supplied Retry-After wins over

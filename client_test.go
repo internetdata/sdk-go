@@ -5,6 +5,7 @@ package internetdata
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -636,6 +637,61 @@ func TestEveryTrailingSlashOnTheBaseURLIsDropped(t *testing.T) {
 				if strings.HasPrefix(call.path, "//") {
 					t.Errorf("sent %s", call.path)
 				}
+			}
+		})
+	}
+}
+
+// The database answers on the API's host, and OAuth at the apex, whose issuer
+// it is: api. dropped, api-<env>. turned into <env>., anything else as given.
+func TestOauthSignsInAtTheApexAndEverythingElseAtTheBaseURL(t *testing.T) {
+	cases := []struct{ base, api, oauth string }{
+		{"", "https://api.internetdata.io", "https://internetdata.io"},
+		{"https://api.internetdata.io/", "https://api.internetdata.io", "https://internetdata.io"},
+		{"https://api-dev.example.test", "https://api-dev.example.test", "https://dev.example.test"},
+		{"https://internetdata.io", "https://internetdata.io", "https://internetdata.io"},
+		{"https://dev.example.test", "https://dev.example.test", "https://dev.example.test"},
+		{"https://API.example.test:8443", "https://API.example.test:8443", "https://example.test:8443"},
+		{"http://127.0.0.1:8080", "http://127.0.0.1:8080", "http://127.0.0.1:8080"},
+		{"http://api-local:8080", "http://api-local:8080", "http://api-local:8080"},
+		{"https://apis.example.test", "https://apis.example.test", "https://apis.example.test"},
+		{"https://api-.example.test", "https://api-.example.test", "https://api-.example.test"},
+	}
+	for _, c := range cases {
+		t.Run(c.base, func(t *testing.T) {
+			stub := newStub(map[string]stubRoute{
+				pathList: {body: catalog("bogon_ip")},
+				"/.well-known/oauth-authorization-server": {body: json.RawMessage(everyRequiredMember)},
+			})
+			opts := []Option{WithHTTPClient(stub.client()), WithRetries(0)}
+			if c.base != "" {
+				opts = append(opts, WithBaseURL(c.base))
+			}
+			client, err := New(opts...)
+			if err != nil {
+				t.Fatalf("New: %v", err)
+			}
+
+			if _, err := client.Database.List(t.Context()); err != nil {
+				t.Fatalf("List: %v", err)
+			}
+			if _, err := client.Oauth.Metadata(t.Context()); err != nil {
+				t.Fatalf("Oauth.Metadata: %v", err)
+			}
+			link, err := client.Oauth.AuthorizationURL("cid", "http://127.0.0.1:8765/cb", "challenge",
+				AuthorizationURLOptions{})
+			if err != nil {
+				t.Fatalf("AuthorizationURL: %v", err)
+			}
+
+			want := []string{c.api + pathList, c.oauth + "/.well-known/oauth-authorization-server"}
+			for i, call := range stub.seen() {
+				if i >= len(want) || call.url != want[i] {
+					t.Errorf("request %d went to %s, want %v", i, call.url, want)
+				}
+			}
+			if !strings.HasPrefix(link, c.oauth+"/oauth/authorize?") {
+				t.Errorf("AuthorizationURL = %s, want it at %s", link, c.oauth)
 			}
 		})
 	}

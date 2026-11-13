@@ -33,6 +33,7 @@ type stubRoute struct {
 }
 
 type stubCall struct {
+	url   string
 	path  string
 	query string
 	key   string
@@ -53,7 +54,9 @@ func (s *stubTransport) client() *http.Client {
 func (s *stubTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	auth := req.Header.Get("Authorization")
 	key := strings.TrimPrefix(auth, "Bearer ")
-	s.record(stubCall{path: req.URL.Path, query: req.URL.RawQuery, key: key, auth: auth})
+	s.record(stubCall{
+		url: req.URL.String(), path: req.URL.Path, query: req.URL.RawQuery, key: key, auth: auth,
+	})
 
 	if perKey, ok := s.byKey[key]; ok {
 		if route, ok := perKey[req.URL.Path]; ok {
