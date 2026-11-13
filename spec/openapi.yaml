@@ -2,8 +2,9 @@ openapi: 3.0.3
 info:
   title: InternetData API
   description: |
-    The InternetData API: download the databases your organization is licensed
-    for, and manage the account behind them.
+    The InternetData API: look up what every database InternetData publishes says
+    about an IP address, an AS or a domain, download the databases your organization
+    is licensed for, and manage the account behind them.
 
     See https://docs.internetdata.io for guides and https://github.com/internetdata
     for the official client libraries.
@@ -12,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.08
+  version: 2026.11.13
 servers:
   - url: https://internetdata.io
 tags:
@@ -50,6 +51,12 @@ tags:
   - name: Authorization
     description: Obtaining and revoking tokens.
     x-displayName: Authorization
+  - name: Lookup
+    description: Look up an address, an AS or a domain.
+    x-displayName: Lookup
+  - name: Entitlement
+    description: What your key may spend, and what it has.
+    x-displayName: Entitlement
 paths:
   /api/v2/database/list:
     get:
@@ -893,6 +900,1579 @@ paths:
             application/json:
               schema:
                 type: object
+  /{ip}:
+    get:
+      operationId: lookupIp
+      tags:
+        - Lookup
+      summary: IP lookup
+      description: >
+        Answers what every database says about one IPv4 or IPv6 address. Which fields come back is
+
+        decided by the presented key; with no key, on Unlimited, the free plan, the answer carries
+        the fields in
+
+        the address table's unlimited column. The path also takes `AS15169` or a domain, as
+        internetdata.io's
+
+        pages do, and then answers as `GET /asn/{asn}` or `GET /domain/{domain}` would.
+      parameters:
+        - in: path
+          name: ip
+          required: true
+          schema:
+            type: string
+          description: The IPv4 or IPv6 address to look up.
+          examples:
+            ipv4:
+              value: 146.70.116.130
+            ipv6:
+              value: 2606:4700:4700::1111
+      responses:
+        '200':
+          description: What each database says about the address, as much as your plan shows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+              examples:
+                unlimited:
+                  summary: Unlimited, with no API key
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_tor: false
+                    is_relay: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    tor: {}
+                    relay: {}
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+                trial:
+                  summary: A free-plan key within its day's trial of every field
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_vpn: true
+                    is_tor: false
+                    is_relay: false
+                    is_resproxy: false
+                    is_dcproxy: false
+                    is_mobproxy: false
+                    is_pubproxy: false
+                    is_hosting: true
+                    is_cdn: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    vpn:
+                      provider: mullvad
+                      provider_name: Mullvad
+                      confidence: high
+                      last_seen: '2026-11-13'
+                    tor: {}
+                    relay: {}
+                    resproxy: {}
+                    dcproxy: {}
+                    mobproxy: {}
+                    pubproxy: {}
+                    hosting:
+                      provider: m247
+                      provider_name: M247
+                      confidence: high
+                      last_seen: '2026-11-13'
+                    cdn: {}
+                    carrier: {}
+                    satellite: {}
+                    ssh: {}
+                    smtp: {}
+                    web: []
+                    dns_resolver: {}
+                    bittorrent: {}
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                      region: Vienna
+                      region_code: AT-9
+                      city: Vienna
+                      postal_code: '1230'
+                      latitude: 48.20849
+                      longitude: 16.37208
+                      accuracy_radius: 10
+                      geoname_id: '2761369'
+                      dma_code: ''
+                      last_changed: '2026-10-06'
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                      type: hosting
+                      country: AT
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+                      name: M247 Europe
+                      phone: ''
+                      address: Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania
+                      country: AT
+                      network: 146.70.116.0-146.70.116.255
+                      validated: false
+                      unvalidated_since: ''
+                    whois:
+                      id: M247-LTD-Vienna
+                      name: M247 Vienna
+                      org: ORG-MES59-RIPE
+                      country: AT
+                      status: LEGACY
+                      source: ripe
+                      domain: m247.ro
+                      abuse_email: abuse@m247.ro
+                      asn: 9009
+                    rwhois:
+                      id: ''
+                      name: ''
+                      country: ''
+                      source: ''
+                      domain: ''
+                      abuse_email: ''
+                    hosted_domains:
+                      total: 0
+                    trial_expired: false
+                trialExpired:
+                  summary: A free-plan key past its day's trial, with Unlimited's fields
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_tor: false
+                    is_relay: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    tor: {}
+                    relay: {}
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+                    trial_expired: true
+                paid:
+                  summary: 'A paid plan: a VPN exit in a hosting network'
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_vpn: true
+                    is_tor: false
+                    is_relay: false
+                    is_resproxy: false
+                    is_dcproxy: false
+                    is_mobproxy: false
+                    is_pubproxy: false
+                    is_hosting: true
+                    is_cdn: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    vpn:
+                      provider: mullvad
+                      provider_name: Mullvad
+                      confidence: high
+                      last_seen: '2026-11-13'
+                    tor: {}
+                    relay: {}
+                    resproxy: {}
+                    dcproxy: {}
+                    mobproxy: {}
+                    pubproxy: {}
+                    hosting:
+                      provider: m247
+                      provider_name: M247
+                      confidence: high
+                      last_seen: '2026-11-13'
+                    cdn: {}
+                    carrier: {}
+                    satellite: {}
+                    ssh: {}
+                    smtp: {}
+                    web: []
+                    dns_resolver: {}
+                    bittorrent: {}
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                      region: Vienna
+                      region_code: AT-9
+                      city: Vienna
+                      postal_code: '1230'
+                      latitude: 48.20849
+                      longitude: 16.37208
+                      accuracy_radius: 10
+                      geoname_id: '2761369'
+                      dma_code: ''
+                      last_changed: '2026-10-06'
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                      type: hosting
+                      country: AT
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+                      name: M247 Europe
+                      phone: ''
+                      address: Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania
+                      country: AT
+                      network: 146.70.116.0-146.70.116.255
+                      validated: false
+                      unvalidated_since: ''
+                    whois:
+                      id: M247-LTD-Vienna
+                      name: M247 Vienna
+                      org: ORG-MES59-RIPE
+                      country: AT
+                      status: LEGACY
+                      source: ripe
+                      domain: m247.ro
+                      abuse_email: abuse@m247.ro
+                      asn: 9009
+                    rwhois:
+                      id: ''
+                      name: ''
+                      country: ''
+                      source: ''
+                      domain: ''
+                      abuse_email: ''
+                    hosted_domains:
+                      total: 0
+                paidServices:
+                  summary: 'A paid plan: an anycast resolver with its services'
+                  value:
+                    ip: 1.1.1.1
+                    is_bogon: false
+                    is_vpn: false
+                    is_tor: false
+                    is_relay: false
+                    is_resproxy: false
+                    is_dcproxy: false
+                    is_mobproxy: false
+                    is_pubproxy: false
+                    is_hosting: true
+                    is_cdn: true
+                    is_anycast: true
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: true
+                    is_dns_resolver: true
+                    is_bittorrent: true
+                    vpn: {}
+                    tor: {}
+                    relay: {}
+                    resproxy: {}
+                    dcproxy: {}
+                    mobproxy: {}
+                    pubproxy: {}
+                    hosting:
+                      provider: ''
+                      provider_name: ''
+                      confidence: medium
+                      last_seen: '2026-11-12'
+                    cdn:
+                      provider: cloudflare
+                      provider_name: Cloudflare
+                      confidence: high
+                      last_seen: '2026-11-13'
+                    carrier: {}
+                    satellite: {}
+                    ssh: {}
+                    smtp: {}
+                    web:
+                      - port: 443
+                        tls_ok: true
+                        session_ok: true
+                        status_code: 301
+                        server: cloudflare
+                        location: https://one.one.one.one/
+                        title: ''
+                        cert_subject_cn: cloudflare-dns.com
+                        cert_subject_o: Cloudflare, Inc.
+                        cert_issuer_dn: >-
+                          C=US, ST=Texas, L=Houston, O=SSL Corp, CN=SSL.com SSL Intermediate CA ECC
+                          R2
+                        cert_browser_trusted: true
+                        tls_version: TLSv1.3
+                        first_seen: '2026-08-12'
+                        last_seen: '2026-10-31'
+                    dns_resolver:
+                      port: 53
+                      recursion_available: true
+                      rcode: 0
+                      answer_correct: true
+                      first_seen: '2026-08-09'
+                      last_seen: '2026-11-07'
+                    bittorrent:
+                      verified: true
+                      id_matches_ip: false
+                      first_seen: '2026-10-21'
+                      last_seen: '2026-11-12'
+                      last_reachable: ''
+                      days_seen: 19
+                      num_ports: 84
+                      peak_num_ports: 9
+                      indexer: false
+                      clients: []
+                    location:
+                      continent: OC
+                      continent_name: Oceania
+                      country: AU
+                      country_name: Australia
+                      timezone: Australia/Brisbane
+                      currency_code: AUD
+                      currency_name: Dollar
+                      currency_symbol: A$
+                      flag_emoji: 🇦🇺
+                      flag_unicode: U+1F1E6 U+1F1FA
+                      region: Queensland
+                      region_code: AU-QLD
+                      city: Brisbane
+                      postal_code: '4000'
+                      latitude: -27.46794
+                      longitude: 153.02809
+                      accuracy_radius: 20000
+                      geoname_id: '2174003'
+                      dma_code: ''
+                      last_changed: '2026-10-13'
+                    asn:
+                      asn: 13335
+                      name: Cloudflare, Inc.
+                      domain: cloudflare.com
+                      type: hosting
+                      prefix: 1.1.1.0/24
+                      country: US
+                      rpki_status: valid
+                    company:
+                      name: APNIC and Cloudflare DNS Resolver project
+                      domain: cloudflare.com
+                      type: hosting
+                      country: AU
+                    hostname: one.one.one.one
+                    abuse:
+                      email: abuse@cloudflare.com
+                      name: Abuse
+                      phone: +1-650-319-8930
+                      address: 101 Townsend Street, San Francisco, CA, 94107
+                      country: AU
+                      network: 1.1.1.0-1.1.1.255
+                      validated: false
+                      unvalidated_since: '2025-09-04'
+                    whois:
+                      id: APNIC-LABS
+                      name: APNIC Research and Development
+                      org: ORG-ARAD1-AP
+                      country: AU
+                      status: ASSIGNED PORTABLE
+                      source: apnic
+                      domain: apnic.net
+                      abuse_email: helpdesk@apnic.net
+                      asn: 13335
+                    rwhois:
+                      id: ''
+                      name: ''
+                      country: ''
+                      source: ''
+                      domain: ''
+                      abuse_email: ''
+                    hosted_domains:
+                      total: 23427
+                bogon:
+                  summary: A private address on a paid plan
+                  value:
+                    ip: 10.0.0.1
+                    is_bogon: true
+                    is_vpn: false
+                    is_tor: false
+                    is_relay: false
+                    is_resproxy: false
+                    is_dcproxy: false
+                    is_mobproxy: false
+                    is_pubproxy: false
+                    is_hosting: false
+                    is_cdn: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    vpn: {}
+                    tor: {}
+                    relay: {}
+                    resproxy: {}
+                    dcproxy: {}
+                    mobproxy: {}
+                    pubproxy: {}
+                    hosting: {}
+                    cdn: {}
+                    carrier: {}
+                    satellite: {}
+                    ssh: {}
+                    smtp: {}
+                    web: []
+                    dns_resolver: {}
+                    bittorrent: {}
+                    location:
+                      continent: ''
+                      continent_name: ''
+                      country: ''
+                      country_name: ''
+                      timezone: ''
+                      currency_code: ''
+                      currency_name: ''
+                      currency_symbol: ''
+                      flag_emoji: ''
+                      flag_unicode: ''
+                      region: ''
+                      region_code: ''
+                      city: ''
+                      postal_code: ''
+                      latitude: 0
+                      longitude: 0
+                      accuracy_radius: 0
+                      geoname_id: ''
+                      dma_code: ''
+                      last_changed: ''
+                    asn:
+                      asn: 0
+                      name: ''
+                      domain: ''
+                      type: ''
+                      prefix: ''
+                      country: ''
+                      rpki_status: ''
+                    company:
+                      name: ''
+                      domain: ''
+                      type: ''
+                      country: ''
+                    hostname: ''
+                    abuse:
+                      email: ''
+                      name: ''
+                      phone: ''
+                      address: ''
+                      country: ''
+                      network: ''
+                      validated: false
+                      unvalidated_since: ''
+                    whois:
+                      id: ''
+                      name: ''
+                      org: ''
+                      country: ''
+                      status: ''
+                      source: ''
+                      domain: ''
+                      abuse_email: ''
+                      asn: 0
+                    rwhois:
+                      id: ''
+                      name: ''
+                      country: ''
+                      source: ''
+                      domain: ''
+                      abuse_email: ''
+                    hosted_domains:
+                      total: 0
+        '400':
+          description: Not an address, an AS number or a domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: not a valid IP address, AS number or domain
+                  value:
+                    error: not a valid IP address, AS number or domain
+        '401':
+          description: The key is not one, or no longer works.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: invalid API key
+                  value:
+                    error: invalid API key
+                e2:
+                  summary: API key revoked
+                  value:
+                    error: API key revoked
+                e3:
+                  summary: API key expired
+                  value:
+                    error: API key expired
+        '403':
+          description: The key may not be used from this address, or was sent over plain HTTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: source address not allowed for this API key
+                  value:
+                    error: source address not allowed for this API key
+                e2:
+                  summary: API key sent over plain HTTP; use https://
+                  value:
+                    error: API key sent over plain HTTP; use https://
+        '429':
+          description: |
+            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
+            limit), or, with none, a paid plan's overage cap.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: rate limit exceeded
+                  value:
+                    error: rate limit exceeded
+                e2:
+                  summary: >-
+                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                    plan
+                  value:
+                    error: >-
+                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                      plan
+                e3:
+                  summary: overage cap reached; raise or remove it in Billing
+                  value:
+                    error: overage cap reached; raise or remove it in Billing
+          headers:
+            Retry-After:
+              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              schema:
+                type: integer
+        '500':
+          description: Our data could not be read. Retry; nothing was charged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: lookup failed
+                  value:
+                    error: lookup failed
+      security:
+        - {}
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
+  /myip:
+    get:
+      operationId: lookupMyIp
+      tags:
+        - Lookup
+      summary: My IP
+      description: |
+        The address you are calling from, answered as `GET /{ip}` would answer it, and charged as
+        that lookup is.
+      responses:
+        '200':
+          description: The lookup of your own address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupResponse'
+              examples:
+                unlimited:
+                  summary: Unlimited, with no API key
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_tor: false
+                    is_relay: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    tor: {}
+                    relay: {}
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+        '401':
+          description: The key is not one, or no longer works.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: invalid API key
+                  value:
+                    error: invalid API key
+                e2:
+                  summary: API key revoked
+                  value:
+                    error: API key revoked
+                e3:
+                  summary: API key expired
+                  value:
+                    error: API key expired
+        '403':
+          description: The key may not be used from this address, or was sent over plain HTTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: source address not allowed for this API key
+                  value:
+                    error: source address not allowed for this API key
+                e2:
+                  summary: API key sent over plain HTTP; use https://
+                  value:
+                    error: API key sent over plain HTTP; use https://
+        '429':
+          description: |
+            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
+            limit), or, with none, a paid plan's overage cap.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: rate limit exceeded
+                  value:
+                    error: rate limit exceeded
+                e2:
+                  summary: >-
+                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                    plan
+                  value:
+                    error: >-
+                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                      plan
+                e3:
+                  summary: overage cap reached; raise or remove it in Billing
+                  value:
+                    error: overage cap reached; raise or remove it in Billing
+          headers:
+            Retry-After:
+              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              schema:
+                type: integer
+        '500':
+          description: Our data could not be read. Retry; nothing was charged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: lookup failed
+                  value:
+                    error: lookup failed
+      security:
+        - {}
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
+  /asn/{asn}:
+    get:
+      operationId: lookupAsn
+      tags:
+        - Lookup
+      summary: ASN lookup
+      description: >
+        Answers what InternetData knows about one autonomous system: its registration on every plan,
+
+        and on a paid one its ASN Whois record and every prefix it announces in global BGP, with
+        RPKI status,
+
+        up to 20000 per address family (the counts beside them are always whole). An AS no database
+        knows answers
+
+        its number with empty values.
+      parameters:
+        - in: path
+          name: asn
+          required: true
+          schema:
+            type: string
+          description: The AS number, as `AS15169` in any case, or the bare number.
+          examples:
+            prefixed:
+              value: AS9009
+            bare:
+              value: '9009'
+      responses:
+        '200':
+          description: What each database says about the AS, as much as your plan shows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsnLookupResponse'
+              examples:
+                unlimited:
+                  summary: Unlimited, with no API key
+                  value:
+                    asn: 9009
+                    name: M247 Europe SRL
+                    country: RO
+                    registry: ripe
+                    allocated: '2005-06-06'
+                    domain: m247global.com
+                paid:
+                  summary: A paid plan, two of its prefixes shown
+                  value:
+                    asn: 9009
+                    name: M247 Europe SRL
+                    country: RO
+                    registry: ripe
+                    allocated: '2005-06-06'
+                    domain: m247global.com
+                    type: hosting
+                    num_ips: 1615872
+                    num_prefixes4: 4510
+                    num_prefixes6: 807
+                    rpki_valid: 2972
+                    rpki_invalid: 50
+                    rpki_not_found: 2295
+                    whois:
+                      abuse: ''
+                      abuse_city: ''
+                      abuse_country: ''
+                      abuse_email: abuse@m247.ro
+                      abuse_kind: role
+                      abuse_name: M247 Europe
+                      abuse_phone: ''
+                      abuse_unvalidated_since: ''
+                      abuse_validated: ''
+                      admin: ''
+                      admin_city: ''
+                      admin_country: ''
+                      admin_email: ''
+                      admin_kind: ''
+                      admin_name: ''
+                      admin_phone: ''
+                      country: RO
+                      created: '2011-04-11'
+                      descr: ''
+                      handle: M247
+                      maintainer: RIPE-NCC-END-MNT|M247-EU-MNT
+                      maintainer_email: ''
+                      name: M247 Europe SRL
+                      org: ORG-MES6-RIPE
+                      org_address: >-
+                        11B Sos. Fabrica de Glucoza, 1st floor District 2, 020331, Bucharest,
+                        ROMANIA
+                      org_city: ''
+                      org_country: RO
+                      org_name: M247 Europe SRL
+                      remarks: ''
+                      source: ripe
+                      status: ASSIGNED
+                      tech: ''
+                      tech_city: ''
+                      tech_country: ''
+                      tech_email: ''
+                      tech_kind: ''
+                      tech_name: ''
+                      tech_phone: ''
+                      updated: '2023-03-15'
+                    prefixes:
+                      - prefix: 2.56.16.0/22
+                        peer_count: 17
+                        rpki_status: not_found
+                        first_seen: '2026-10-02'
+                        country: VN
+                        size: 1024
+                        other_origins: []
+                      - prefix: 2001:550:1d05::/48
+                        peer_count: 19
+                        rpki_status: not_found
+                        first_seen: '2026-10-02'
+                        country: US
+                        size: 0
+                        other_origins: []
+        '400':
+          description: Not an address, an AS number or a domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: not a valid IP address, AS number or domain
+                  value:
+                    error: not a valid IP address, AS number or domain
+        '401':
+          description: The key is not one, or no longer works.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: invalid API key
+                  value:
+                    error: invalid API key
+                e2:
+                  summary: API key revoked
+                  value:
+                    error: API key revoked
+                e3:
+                  summary: API key expired
+                  value:
+                    error: API key expired
+        '403':
+          description: The key may not be used from this address, or was sent over plain HTTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: source address not allowed for this API key
+                  value:
+                    error: source address not allowed for this API key
+                e2:
+                  summary: API key sent over plain HTTP; use https://
+                  value:
+                    error: API key sent over plain HTTP; use https://
+        '429':
+          description: |
+            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
+            limit), or, with none, a paid plan's overage cap.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: rate limit exceeded
+                  value:
+                    error: rate limit exceeded
+                e2:
+                  summary: >-
+                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                    plan
+                  value:
+                    error: >-
+                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                      plan
+                e3:
+                  summary: overage cap reached; raise or remove it in Billing
+                  value:
+                    error: overage cap reached; raise or remove it in Billing
+          headers:
+            Retry-After:
+              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              schema:
+                type: integer
+        '500':
+          description: Our data could not be read. Retry; nothing was charged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: lookup failed
+                  value:
+                    error: lookup failed
+      security:
+        - {}
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
+  /domain/{domain}:
+    get:
+      operationId: lookupDomain
+      tags:
+        - Lookup
+      summary: Domain lookup
+      description: >
+        Answers what InternetData knows about one domain from its latest snapshots: on every plan
+
+        whether it is registered and which DNS record types it has; on a paid one the records
+        themselves, up to
+
+        100 a type, the organization's IP ranges and whether it is a disposable email domain. An
+        internationalized
+
+        name is answered under its punycode spelling.
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: The domain to look up.
+          examples:
+            domain:
+              value: example.com
+      responses:
+        '200':
+          description: What each database says about the domain, as much as your plan shows.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainLookupResponse'
+              examples:
+                unlimited:
+                  summary: Unlimited, with no API key
+                  value:
+                    domain: example.com
+                    is_registered: true
+                    has_a: true
+                    has_aaaa: true
+                    has_mx: true
+                    has_ns: true
+                    has_cname: false
+                paid:
+                  summary: A paid plan
+                  value:
+                    domain: example.com
+                    is_registered: true
+                    is_disposable: false
+                    has_a: true
+                    has_aaaa: true
+                    has_mx: true
+                    has_ns: true
+                    has_cname: false
+                    dns:
+                      a:
+                        - ip: 192.0.2.10
+                          last_seen: '2026-11-08'
+                      aaaa:
+                        - ip: 2001:db8::10
+                          last_seen: '2026-11-08'
+                      mx:
+                        - priority: 10
+                          host: mail.example.com
+                          last_seen: '2026-11-08'
+                      ns:
+                        - host: ns1.example.com
+                          last_seen: '2026-11-08'
+                        - host: ns2.example.com
+                          last_seen: '2026-11-08'
+                      cname: []
+                    ip_ranges:
+                      domain: example.com
+                      redirects_to: ''
+                      total: 1
+                      ipv4: 256
+                      ranges:
+                        - range: 192.0.2.0/24
+                          name: EXAMPLE-NET
+                          country: US
+                    disposable: {}
+        '400':
+          description: Not an address, an AS number or a domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: not a valid IP address, AS number or domain
+                  value:
+                    error: not a valid IP address, AS number or domain
+        '401':
+          description: The key is not one, or no longer works.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: invalid API key
+                  value:
+                    error: invalid API key
+                e2:
+                  summary: API key revoked
+                  value:
+                    error: API key revoked
+                e3:
+                  summary: API key expired
+                  value:
+                    error: API key expired
+        '403':
+          description: The key may not be used from this address, or was sent over plain HTTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: source address not allowed for this API key
+                  value:
+                    error: source address not allowed for this API key
+                e2:
+                  summary: API key sent over plain HTTP; use https://
+                  value:
+                    error: API key sent over plain HTTP; use https://
+        '429':
+          description: |
+            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
+            limit), or, with none, a paid plan's overage cap.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: rate limit exceeded
+                  value:
+                    error: rate limit exceeded
+                e2:
+                  summary: >-
+                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                    plan
+                  value:
+                    error: >-
+                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                      plan
+                e3:
+                  summary: overage cap reached; raise or remove it in Billing
+                  value:
+                    error: overage cap reached; raise or remove it in Billing
+          headers:
+            Retry-After:
+              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              schema:
+                type: integer
+        '500':
+          description: Our data could not be read. Retry; nothing was charged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: lookup failed
+                  value:
+                    error: lookup failed
+      security:
+        - {}
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
+  /batch:
+    post:
+      operationId: lookupBatch
+      tags:
+        - Lookup
+      summary: Batch
+      description: >
+        Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+
+        lookup would be and each counted as one lookup. Answers and failures are keyed by the string
+        you sent, in
+
+        the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is
+        answered as the
+
+        lookup it is on any plan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchLookupRequest'
+            example:
+              ips:
+                - 146.70.116.130
+                - 1.1.1.1
+              asns:
+                - AS9009
+              domains:
+                - example.com
+      responses:
+        '200':
+          description: Every item, under `results` or `errors`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchLookupResponse'
+              examples:
+                mixed:
+                  summary: An address answered, and one entry that is not an address
+                  value:
+                    results:
+                      146.70.116.130:
+                        ip: 146.70.116.130
+                        is_bogon: false
+                        is_vpn: true
+                        is_tor: false
+                        is_relay: false
+                        is_resproxy: false
+                        is_dcproxy: false
+                        is_mobproxy: false
+                        is_pubproxy: false
+                        is_hosting: true
+                        is_cdn: false
+                        is_anycast: false
+                        is_carrier: false
+                        is_satellite: false
+                        is_ssh: false
+                        is_smtp: false
+                        is_web: false
+                        is_dns_resolver: false
+                        is_bittorrent: false
+                        vpn:
+                          provider: mullvad
+                          provider_name: Mullvad
+                          confidence: high
+                          last_seen: '2026-11-13'
+                        tor: {}
+                        relay: {}
+                        resproxy: {}
+                        dcproxy: {}
+                        mobproxy: {}
+                        pubproxy: {}
+                        hosting:
+                          provider: m247
+                          provider_name: M247
+                          confidence: high
+                          last_seen: '2026-11-13'
+                        cdn: {}
+                        carrier: {}
+                        satellite: {}
+                        ssh: {}
+                        smtp: {}
+                        web: []
+                        dns_resolver: {}
+                        bittorrent: {}
+                        location:
+                          continent: EU
+                          continent_name: Europe
+                          country: AT
+                          country_name: Austria
+                          timezone: Europe/Vienna
+                          currency_code: EUR
+                          currency_name: Euro
+                          currency_symbol: €
+                          flag_emoji: 🇦🇹
+                          flag_unicode: U+1F1E6 U+1F1F9
+                          region: Vienna
+                          region_code: AT-9
+                          city: Vienna
+                          postal_code: '1230'
+                          latitude: 48.20849
+                          longitude: 16.37208
+                          accuracy_radius: 10
+                          geoname_id: '2761369'
+                          dma_code: ''
+                          last_changed: '2026-10-06'
+                        asn:
+                          asn: 9009
+                          name: M247 Europe SRL
+                          domain: m247global.com
+                          type: hosting
+                          prefix: 146.70.116.0/24
+                          country: RO
+                          rpki_status: not_found
+                        company:
+                          name: M247 LTD Vienna Infrastructure
+                          domain: m247.ro
+                          type: hosting
+                          country: AT
+                        hostname: ''
+                        abuse:
+                          email: abuse@m247.ro
+                          name: M247 Europe
+                          phone: ''
+                          address: Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania
+                          country: AT
+                          network: 146.70.116.0-146.70.116.255
+                          validated: false
+                          unvalidated_since: ''
+                        whois:
+                          id: M247-LTD-Vienna
+                          name: M247 Vienna
+                          org: ORG-MES59-RIPE
+                          country: AT
+                          status: LEGACY
+                          source: ripe
+                          domain: m247.ro
+                          abuse_email: abuse@m247.ro
+                          asn: 9009
+                        rwhois:
+                          id: ''
+                          name: ''
+                          country: ''
+                          source: ''
+                          domain: ''
+                          abuse_email: ''
+                        hosted_domains:
+                          total: 0
+                    errors:
+                      146.70.116:
+                        status: 400
+                        error: not a valid IP address, AS number or domain
+                failures:
+                  summary: Entries past the overage cap, and one our data could not answer
+                  value:
+                    results: {}
+                    errors:
+                      AS9009:
+                        status: 429
+                        error: overage cap reached; raise or remove it in Billing
+                      example.com:
+                        status: 500
+                        error: lookup failed
+        '400':
+          description: The body is not a batch, or holds no items or more than 1000.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: body must be a JSON object whose ips, asns and domains members are arrays
+                  value:
+                    error: body must be a JSON object whose ips, asns and domains members are arrays
+                e2:
+                  summary: ips, asns and domains must hold between 1 and 1000 items in all
+                  value:
+                    error: ips, asns and domains must hold between 1 and 1000 items in all
+        '401':
+          description: No key, or a key that does not work.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: POST /batch needs an API key on a paid plan
+                  value:
+                    error: POST /batch needs an API key on a paid plan
+                e2:
+                  summary: invalid API key
+                  value:
+                    error: invalid API key
+                e3:
+                  summary: API key revoked
+                  value:
+                    error: API key revoked
+                e4:
+                  summary: API key expired
+                  value:
+                    error: API key expired
+        '402':
+          description: A key on the free plan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: POST /batch needs a paid plan
+                  value:
+                    error: POST /batch needs a paid plan
+        '403':
+          description: The key may not be used from this address, or was sent over plain HTTP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: source address not allowed for this API key
+                  value:
+                    error: source address not allowed for this API key
+                e2:
+                  summary: API key sent over plain HTTP; use https://
+                  value:
+                    error: API key sent over plain HTTP; use https://
+        '413':
+          description: The body is larger than 512 KB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: request body too large
+                  value:
+                    error: request body too large
+        '429':
+          description: A rate limit; retry after `Retry-After`.
+          headers:
+            Retry-After:
+              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupError'
+              examples:
+                e1:
+                  summary: rate limit exceeded
+                  value:
+                    error: rate limit exceeded
+                e2:
+                  summary: >-
+                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                    plan
+                  value:
+                    error: >-
+                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
+                      plan
+      security:
+        - {}
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
+  /api/v1/entitlement:
+    get:
+      operationId: myEntitlement
+      tags:
+        - Entitlement
+      summary: Plan and usage
+      description: |
+        Answers what the presented key is, what plan is behind it, and what has
+        been spent against that plan's allowance in the current window.
+      responses:
+        '200':
+          description: The key's entitlements and consumption.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entitlement'
+              examples:
+                paid:
+                  summary: A key on a paid plan, uncapped
+                  value:
+                    org_id: 85bb51e4-2eb6-4a31-8e4d-02ba8b98fe61
+                    apikey:
+                      id: 0ab424cc-7619-4dad-b027-afacdc2cedb0
+                      expires: null
+                      allowed_cidrs: []
+                    plan:
+                      key: max
+                      tier: max
+                    usage:
+                      requests: 580
+                      quota: 5000000
+                      hard_limit: null
+                      window_start: '2026-09-04T07:00:00Z'
+                      window_end: '2026-10-04T07:00:00Z'
+                free:
+                  summary: >-
+                    A key of an organization on the free plan, Unlimited: its usage is the day's
+                    lookups answered with every field, out of the 100 a day its trial has. Nothing
+                    stops it past them, its lookups answering with Unlimited's fields, so there is
+                    no hard limit, and the window is the UTC day.
+                  value:
+                    org_id: f32191d0-ef02-450e-a505-eb5814c35cab
+                    apikey:
+                      id: 10c2b437-3aa2-4a63-bd17-8e7c8c7f0def
+                      expires: null
+                      allowed_cidrs: []
+                    plan:
+                      key: free
+                      tier: free
+                    usage:
+                      requests: 37
+                      quota: 100
+                      hard_limit: null
+                      window_start: '2026-11-11T00:00:00Z'
+                      window_end: '2026-11-12T00:00:00Z'
+        '401':
+          description: No key was presented, or it is unknown, revoked or expired.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementError'
+              examples:
+                missing:
+                  value:
+                    error: an API key is required
+                invalid:
+                  value:
+                    error: invalid API key
+                revoked:
+                  value:
+                    error: API key revoked
+                expired:
+                  value:
+                    error: API key expired
+        '403':
+          description: |
+            The key restricts which source addresses may use it, and this
+            request did not come from one of them.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementError'
+              example:
+                error: source address not allowed for this API key
+        '503':
+          description: |
+            The usage counters could not be read. Reported rather than guessed
+            at: the whole answer is the number, and a confident zero would read
+            as "you have used nothing".
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementError'
+              example:
+                error: usage is temporarily unavailable
+      security:
+        - apiKeyQuery: []
+        - apiKeyHeader: []
+        - bearerAuth: []
+    servers:
+      - url: https://api.internetdata.io
+        description: Production
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -926,6 +2506,20 @@ components:
 
         This is the same v2 key as the other two schemes. A v1 credential is a
         different vocabulary and fails validation here, as it would anywhere.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: '`Authorization: Bearer <key>`.'
+    apiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: '`X-Api-Key: <key>`.'
+    apiKeyQuery:
+      type: apiKey
+      in: query
+      name: apikey
+      description: '`?apikey=<key>`. Convenient in a browser; prefer a header elsewhere.'
   parameters:
     DbId:
       name: id
@@ -1784,6 +3378,1140 @@ components:
           type: string
       required:
         - error
+    LookupResponse:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: 'The address looked up, as parsed: `::ffff:a.b.c.d` answers as `a.b.c.d`.'
+        is_bogon:
+          type: boolean
+          description: Reserved space, answered from the address alone.
+        is_vpn:
+          type: boolean
+          description: 'In VPN IP: a VPN service''s server. Paid plans and the trial.'
+        is_tor:
+          type: boolean
+          description: 'In Tor IP: a Tor exit.'
+        is_relay:
+          type: boolean
+          description: 'In Relay IP: an anonymizing relay such as iCloud Private Relay.'
+        is_resproxy:
+          type: boolean
+          description: >-
+            In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the
+            trial.
+        is_dcproxy:
+          type: boolean
+          description: In Datacenter Proxy IP's 90-day window. Paid plans and the trial.
+        is_mobproxy:
+          type: boolean
+          description: In Mobile Proxy IP's 90-day window. Paid plans and the trial.
+        is_pubproxy:
+          type: boolean
+          description: >-
+            In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid
+            plans and the trial.
+        is_hosting:
+          type: boolean
+          description: 'In Hosting IP: a hosting or cloud network. Paid plans and the trial.'
+        is_cdn:
+          type: boolean
+          description: 'In CDN IP: a content delivery network. Paid plans and the trial.'
+        is_anycast:
+          type: boolean
+          description: 'In Anycast IP: announced from many places at once.'
+        is_carrier:
+          type: boolean
+          description: 'In Carrier IP: a mobile carrier''s address space.'
+        is_satellite:
+          type: boolean
+          description: 'In Satellite IP: a satellite operator''s address space.'
+        is_ssh:
+          type: boolean
+          description: 'In SSH IP: an SSH server answered here.'
+        is_smtp:
+          type: boolean
+          description: 'In SMTP IP: a mail server answered here.'
+        is_web:
+          type: boolean
+          description: 'In Web IP: a web server answered here on port 80 or 443.'
+        is_dns_resolver:
+          type: boolean
+          description: 'In DNS Resolver IP: an open DNS resolver answered here.'
+        is_bittorrent:
+          type: boolean
+          description: 'In BitTorrent IP: a BitTorrent client was seen here in the last 90 days.'
+        vpn:
+          allOf:
+            - $ref: '#/components/schemas/ClassDetail'
+          description: VPN IP's row, `{}` when `is_vpn` is false. Paid plans and the trial.
+        tor:
+          allOf:
+            - $ref: '#/components/schemas/ClassDetail'
+          description: Tor IP's row, `{}` when `is_tor` is false.
+        relay:
+          allOf:
+            - $ref: '#/components/schemas/ClassDetail'
+          description: Relay IP's row, `{}` when `is_relay` is false.
+        resproxy:
+          allOf:
+            - $ref: '#/components/schemas/ProxyDetail'
+          description: '`{}` when `is_resproxy` is false. Paid plans and the trial.'
+        dcproxy:
+          allOf:
+            - $ref: '#/components/schemas/ProxyDetail'
+          description: '`{}` when `is_dcproxy` is false. Paid plans and the trial.'
+        mobproxy:
+          allOf:
+            - $ref: '#/components/schemas/ProxyDetail'
+          description: '`{}` when `is_mobproxy` is false. Paid plans and the trial.'
+        pubproxy:
+          allOf:
+            - $ref: '#/components/schemas/PubproxyDetail'
+          description: '`{}` when `is_pubproxy` is false. Paid plans and the trial.'
+        hosting:
+          allOf:
+            - $ref: '#/components/schemas/ClassDetail'
+          description: '`{}` when `is_hosting` is false. Paid plans and the trial.'
+        cdn:
+          allOf:
+            - $ref: '#/components/schemas/ClassDetail'
+          description: '`{}` when `is_cdn` is false. Paid plans and the trial.'
+        carrier:
+          allOf:
+            - $ref: '#/components/schemas/CarrierDetail'
+          description: '`{}` when `is_carrier` is false. Paid plans and the trial.'
+        satellite:
+          allOf:
+            - $ref: '#/components/schemas/SatelliteDetail'
+          description: '`{}` when `is_satellite` is false. Paid plans and the trial.'
+        ssh:
+          allOf:
+            - $ref: '#/components/schemas/SshDetail'
+          description: '`{}` when `is_ssh` is false. Paid plans and the trial.'
+        smtp:
+          allOf:
+            - $ref: '#/components/schemas/SmtpDetail'
+          description: '`{}` when `is_smtp` is false. Paid plans and the trial.'
+        web:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebDetail'
+          description: >-
+            A row per port that answered, lowest first; `[]` when `is_web` is false. Paid plans and
+            the trial.
+        dns_resolver:
+          allOf:
+            - $ref: '#/components/schemas/DnsResolverDetail'
+          description: '`{}` when `is_dns_resolver` is false. Paid plans and the trial.'
+        bittorrent:
+          allOf:
+            - $ref: '#/components/schemas/BitTorrentDetail'
+          description: '`{}` when `is_bittorrent` is false. Paid plans and the trial.'
+        location:
+          $ref: '#/components/schemas/Location'
+        asn:
+          $ref: '#/components/schemas/Asn'
+        company:
+          $ref: '#/components/schemas/Company'
+        hostname:
+          type: string
+          description: >-
+            The name the address's reverse DNS (PTR) record points to in IP RDNS, empty when it has
+            none.
+        abuse:
+          $ref: '#/components/schemas/AbuseContact'
+        whois:
+          $ref: '#/components/schemas/Whois'
+        rwhois:
+          $ref: '#/components/schemas/Rwhois'
+        hosted_domains:
+          $ref: '#/components/schemas/HostedDomains'
+        trial_expired:
+          type: boolean
+          description: >-
+            On every answer to a key on the free plan, and on no other: `false` while the day's
+            trial of every field lasts, `true` once the answer has Unlimited's fields.
+      required:
+        - ip
+        - is_bogon
+        - is_tor
+        - is_relay
+        - is_anycast
+        - is_carrier
+        - is_satellite
+        - is_ssh
+        - is_smtp
+        - is_web
+        - is_dns_resolver
+        - is_bittorrent
+        - tor
+        - relay
+        - location
+        - asn
+        - company
+        - hostname
+        - abuse
+      description: What every database says about one address.
+    ClassDetail:
+      type: object
+      properties:
+        provider:
+          type: string
+          description: The provider's ID in its catalog; empty for an unattributed range, and on Tor.
+        provider_name:
+          type: string
+          description: The name the catalog gives the provider, empty where it names none.
+        confidence:
+          type: string
+          description: '`high`, `medium` or `low`: how sure we are the range is what the flag says.'
+        last_seen:
+          type: string
+          description: The last day the range was seen as such.
+    ProxyDetail:
+      type: object
+      properties:
+        provider:
+          type: string
+          description: The proxy pool's ID in its catalog, empty where unattributed.
+        provider_name:
+          type: string
+          description: The name the catalog gives it.
+        first_seen:
+          type: string
+          description: The first day of the window the address was seen as an exit.
+        last_seen:
+          type: string
+          description: The last day it was.
+        hits:
+          type: integer
+          description: How many times it was seen in the window.
+        hits_days_pct:
+          type: integer
+          description: On what share of the window's days, in percent.
+        providers_num:
+          type: integer
+          description: How many pools it was seen in.
+    PubproxyDetail:
+      type: object
+      properties:
+        entry:
+          type: boolean
+          description: A public proxy listens here.
+        exit:
+          type: boolean
+          description: Public proxies' traffic leaves from here.
+        protocols:
+          type: array
+          items:
+            type: string
+          description: The protocols at either end, `[]` when unknown.
+        num_ports:
+          type: integer
+          description: How many ports a proxy listens on here.
+        num_proxies:
+          type: integer
+          description: How many proxies' traffic left from here.
+        last_seen:
+          type: string
+          description: The last day one was seen.
+        last_usable:
+          type: string
+          description: The last day one answered a request, empty when none did.
+    CarrierDetail:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The mobile carrier.
+        mcc:
+          type: string
+          description: Its mobile country code.
+        mnc:
+          type: string
+          description: Its mobile network code.
+        country:
+          type: string
+          description: ISO 3166 country code.
+        confidence:
+          type: string
+          description: '`high`, `medium` or `low`.'
+    SatelliteDetail:
+      type: object
+      properties:
+        provider:
+          type: string
+          description: The operator's ID in Satellite IP Provider.
+        provider_name:
+          type: string
+          description: The operator's name.
+        orbit:
+          type: string
+          description: 'The orbit: `leo`, `meo` or `geo`.'
+        segment:
+          type: string
+          description: Who the space serves, such as consumer or maritime.
+        country:
+          type: string
+          description: ISO 3166 country code.
+        asn:
+          type: integer
+          description: The AS the operator announces it from.
+        confidence:
+          type: string
+          description: '`high`, `medium` or `low`.'
+    SshDetail:
+      type: object
+      properties:
+        port:
+          type: integer
+          description: The port the server answered on.
+        banner:
+          type: string
+          description: Its banner.
+        host_key_fp:
+          type: string
+          description: Its host key's fingerprint.
+        session_ok:
+          type: boolean
+          description: A session was set up.
+        first_seen:
+          type: string
+          description: The first day it answered.
+        last_seen:
+          type: string
+          description: The last day it did.
+    SmtpDetail:
+      type: object
+      properties:
+        port:
+          type: integer
+          description: The port the server answered on.
+        banner:
+          type: string
+          description: Its banner.
+        session_ok:
+          type: boolean
+          description: A session was set up.
+        first_seen:
+          type: string
+          description: The first day it answered.
+        last_seen:
+          type: string
+          description: The last day it did.
+    WebDetail:
+      type: object
+      properties:
+        port:
+          type: integer
+          description: 80 or 443.
+        tls_ok:
+          type: boolean
+          description: A TLS handshake completed.
+        session_ok:
+          type: boolean
+          description: An HTTP response came back.
+        status_code:
+          type: integer
+          description: Its status, 0 where none came.
+        server:
+          type: string
+          description: Its `Server` header.
+        location:
+          type: string
+          description: Where it redirected.
+        title:
+          type: string
+          description: The page's title.
+        cert_subject_cn:
+          type: string
+          description: The certificate's subject common name.
+        cert_subject_o:
+          type: string
+          description: Its subject organization.
+        cert_issuer_dn:
+          type: string
+          description: Its issuer.
+        cert_browser_trusted:
+          type: boolean
+          description: Browsers trust it.
+        tls_version:
+          type: string
+          description: The TLS version negotiated, empty without TLS.
+        first_seen:
+          type: string
+          description: The first day the port was open.
+        last_seen:
+          type: string
+          description: The last day it was.
+      required:
+        - port
+        - tls_ok
+        - session_ok
+        - status_code
+        - server
+        - location
+        - title
+        - cert_subject_cn
+        - cert_subject_o
+        - cert_issuer_dn
+        - cert_browser_trusted
+        - tls_version
+        - first_seen
+        - last_seen
+    DnsResolverDetail:
+      type: object
+      properties:
+        port:
+          type: integer
+          description: The port it answered on.
+        recursion_available:
+          type: boolean
+          description: It offered recursion.
+        rcode:
+          type: integer
+          description: Its answer's response code.
+        answer_correct:
+          type: boolean
+          description: Its answer was right.
+        first_seen:
+          type: string
+          description: The first day it answered.
+        last_seen:
+          type: string
+          description: The last day it did.
+    BitTorrentDetail:
+      type: object
+      properties:
+        verified:
+          type: boolean
+          description: A client here answered, or two or more reported it at once.
+        id_matches_ip:
+          type: boolean
+          description: A client here derived its node ID from the address (BEP 42).
+        first_seen:
+          type: string
+          description: The first day a client was seen here.
+        last_seen:
+          type: string
+          description: The last day.
+        last_reachable:
+          type: string
+          description: The last day one answered, empty when none did.
+        days_seen:
+          type: integer
+          description: On how many days.
+        num_ports:
+          type: integer
+          description: Distinct ports over the window.
+        peak_num_ports:
+          type: integer
+          description: The most on one day.
+        indexer:
+          type: boolean
+          description: A DHT indexer rather than people.
+        clients:
+          type: array
+          items:
+            type: string
+          description: The two-letter codes its clients name themselves by.
+    Location:
+      type: object
+      properties:
+        continent:
+          type: string
+          description: Continent code.
+        continent_name:
+          type: string
+          description: Continent name.
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code.
+        country_name:
+          type: string
+          description: Country name.
+        timezone:
+          type: string
+          description: IANA timezone.
+        currency_code:
+          type: string
+          description: ISO 4217 code.
+        currency_name:
+          type: string
+          description: Currency name.
+        currency_symbol:
+          type: string
+          description: Currency symbol.
+        flag_emoji:
+          type: string
+          description: The country's flag.
+        flag_unicode:
+          type: string
+          description: Its code points, `U+1F1E6 U+1F1F9`.
+        region:
+          type: string
+          description: Region (state or province). Paid plans and the trial.
+        region_code:
+          type: string
+          description: ISO 3166-2 region code. Paid plans and the trial.
+        city:
+          type: string
+          description: City. Paid plans and the trial.
+        postal_code:
+          type: string
+          description: Postal code. Paid plans and the trial.
+        latitude:
+          type: number
+          description: Latitude of the city. Paid plans and the trial.
+        longitude:
+          type: number
+          description: Longitude of the city. Paid plans and the trial.
+        accuracy_radius:
+          type: integer
+          description: Radius in km holding the true location with 67% confidence. Paid plans and the trial.
+        geoname_id:
+          type: string
+          description: GeoNames ID of the city. Paid plans and the trial.
+        dma_code:
+          type: string
+          description: US TV market (DMA) code. Paid plans and the trial.
+        last_changed:
+          type: string
+          description: The day the range's location last changed. Paid plans and the trial.
+      required:
+        - continent
+        - continent_name
+        - country
+        - country_name
+        - timezone
+        - currency_code
+        - currency_name
+        - currency_symbol
+        - flag_emoji
+        - flag_unicode
+      description: Where the address is.
+    Asn:
+      type: object
+      properties:
+        asn:
+          type: integer
+          description: The AS announcing the address, 0 where none does.
+        name:
+          type: string
+          description: Its operator.
+        domain:
+          type: string
+          description: Its operator's domain.
+        type:
+          type: string
+          description: The kind of network it runs.
+        prefix:
+          type: string
+          description: The announced prefix covering the address.
+        country:
+          type: string
+          description: The country its registry assigned it to. Paid plans and the trial.
+        rpki_status:
+          type: string
+          description: The announcement's RPKI status. Paid plans and the trial.
+      required:
+        - asn
+        - name
+        - domain
+        - type
+        - prefix
+      description: The network announcing the address, from IP ASN.
+    Company:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Who uses the address.
+        domain:
+          type: string
+          description: Their domain.
+        type:
+          type: string
+          description: >-
+            What kind of organization: hosting, isp, business, education, government. Paid plans and
+            the trial.
+        country:
+          type: string
+          description: ISO 3166 country code. Paid plans and the trial.
+      required:
+        - name
+        - domain
+      description: Who uses the address, from IP Company.
+    AbuseContact:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Where to report abuse from the address.
+        name:
+          type: string
+          description: The contact. Paid plans and the trial.
+        phone:
+          type: string
+          description: Its phone number. Paid plans and the trial.
+        address:
+          type: string
+          description: Its postal address. Paid plans and the trial.
+        country:
+          type: string
+          description: ISO 3166 country code. Paid plans and the trial.
+        network:
+          type: string
+          description: The registry block it was derived from. Paid plans and the trial.
+        validated:
+          type: boolean
+          description: ARIN reports the contact answered its yearly validation. Paid plans and the trial.
+        unvalidated_since:
+          type: string
+          description: Since when it has not. Paid plans and the trial.
+      required:
+        - email
+      description: Where to report abuse, from IP Abuse Contact.
+    Whois:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Network name of the most specific record covering the address.
+        name:
+          type: string
+          description: Its holder.
+        org:
+          type: string
+          description: The registry's handle for the holder.
+        country:
+          type: string
+          description: ISO 3166 country code.
+        status:
+          type: string
+          description: The registry's assignment status.
+        source:
+          type: string
+          description: The registry, or rwhois.
+        domain:
+          type: string
+          description: The holder's domain.
+        abuse_email:
+          type: string
+          description: The record's abuse contact.
+        asn:
+          type: integer
+          description: The AS announcing the record's start address.
+      required:
+        - id
+        - name
+        - org
+        - country
+        - status
+        - source
+        - domain
+        - abuse_email
+        - asn
+      description: IP Whois's most specific record covering the address. Paid plans and the trial.
+    Rwhois:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The network's identifier on the operator's RWHOIS server.
+        name:
+          type: string
+          description: Its assignee.
+        country:
+          type: string
+          description: ISO 3166 country code.
+        source:
+          type: string
+          description: The operator that published it.
+        domain:
+          type: string
+          description: The contact emails' domain.
+        abuse_email:
+          type: string
+          description: Its abuse contact.
+      required:
+        - id
+        - name
+        - country
+        - source
+        - domain
+        - abuse_email
+      description: IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+    HostedDomains:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: How many registered domains resolve to the address.
+      required:
+        - total
+      description: 'From IP Hosted Domains: a count, never the list. Paid plans and the trial.'
+    AsnLookupResponse:
+      type: object
+      properties:
+        asn:
+          type: integer
+          description: The AS number.
+        name:
+          type: string
+          description: Its operator.
+        country:
+          type: string
+          description: The country its registry assigned it to.
+        registry:
+          type: string
+          description: The registry that allocated it.
+        allocated:
+          type: string
+          description: When.
+        domain:
+          type: string
+          description: Its operator's domain.
+        type:
+          type: string
+          description: The kind of network it runs. Paid plans and the trial.
+        num_ips:
+          type: integer
+          description: IPv4 addresses it announces. Paid plans and the trial.
+        num_prefixes4:
+          type: integer
+          description: IPv4 prefixes it announces. Paid plans and the trial.
+        num_prefixes6:
+          type: integer
+          description: IPv6 prefixes it announces. Paid plans and the trial.
+        rpki_valid:
+          type: integer
+          description: Its announcements RPKI calls valid. Paid plans and the trial.
+        rpki_invalid:
+          type: integer
+          description: Invalid. Paid plans and the trial.
+        rpki_not_found:
+          type: integer
+          description: With no RPKI record. Paid plans and the trial.
+        whois:
+          type: object
+          additionalProperties:
+            type: string
+          description: >-
+            Its ASN Whois record, every column, empty where the registry states nothing. Paid plans
+            and the trial.
+        prefixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AsnPrefix'
+          description: What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+        trial_expired:
+          type: boolean
+          description: >-
+            On every answer to a key on the free plan, and on no other: `false` while the day's
+            trial of every field lasts, `true` once the answer has Unlimited's fields.
+      required:
+        - asn
+        - name
+        - country
+        - registry
+        - allocated
+        - domain
+      description: What every database says about one AS.
+    AsnPrefix:
+      type: object
+      properties:
+        prefix:
+          type: string
+          description: The announced prefix.
+        peer_count:
+          type: integer
+          description: How many peers saw it.
+        rpki_status:
+          type: string
+          description: Its RPKI status.
+        first_seen:
+          type: string
+          description: The first day BGP Route saw it.
+        country:
+          type: string
+          description: Where its first address is.
+        size:
+          type: integer
+          description: IPv4 addresses it covers; 0 for IPv6.
+        other_origins:
+          type: array
+          items:
+            type: integer
+          description: Every other AS announcing it.
+      required:
+        - prefix
+        - peer_count
+        - rpki_status
+        - first_seen
+        - country
+        - size
+        - other_origins
+    DomainLookupResponse:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The domain, lowercase and in punycode.
+        is_registered:
+          type: boolean
+          description: 'In Domain List: a registered domain.'
+        is_disposable:
+          type: boolean
+          description: In Disposable Domain. Paid plans and the trial.
+        has_a:
+          type: boolean
+          description: It has A records.
+        has_aaaa:
+          type: boolean
+          description: AAAA records.
+        has_mx:
+          type: boolean
+          description: MX records.
+        has_ns:
+          type: boolean
+          description: NS records.
+        has_cname:
+          type: boolean
+          description: A CNAME record.
+        dns:
+          $ref: '#/components/schemas/DomainDns'
+        ip_ranges:
+          $ref: '#/components/schemas/DomainIpRanges'
+        disposable:
+          allOf:
+            - $ref: '#/components/schemas/DisposableDetail'
+          description: '`{}` when `is_disposable` is false. Paid plans and the trial.'
+        trial_expired:
+          type: boolean
+          description: >-
+            On every answer to a key on the free plan, and on no other: `false` while the day's
+            trial of every field lasts, `true` once the answer has Unlimited's fields.
+      required:
+        - domain
+        - is_registered
+        - has_a
+        - has_aaaa
+        - has_mx
+        - has_ns
+        - has_cname
+      description: What every database says about one domain.
+    DomainDns:
+      type: object
+      properties:
+        a:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsAddressRecord'
+        aaaa:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsAddressRecord'
+        mx:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsMxRecord'
+        ns:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsNsRecord'
+        cname:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsCnameRecord'
+      required:
+        - a
+        - aaaa
+        - mx
+        - ns
+        - cname
+      description: Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+    DnsAddressRecord:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: The address.
+        last_seen:
+          type: string
+          description: The last day the snapshot saw it.
+      required:
+        - ip
+        - last_seen
+    DnsMxRecord:
+      type: object
+      properties:
+        priority:
+          type: integer
+          description: Its priority.
+        host:
+          type: string
+          description: The mail host.
+        last_seen:
+          type: string
+          description: The last day seen.
+      required:
+        - priority
+        - host
+        - last_seen
+    DnsNsRecord:
+      type: object
+      properties:
+        host:
+          type: string
+          description: The name server.
+        last_seen:
+          type: string
+          description: The last day seen.
+      required:
+        - host
+        - last_seen
+    DnsCnameRecord:
+      type: object
+      properties:
+        target:
+          type: string
+          description: Where it points.
+        last_seen:
+          type: string
+          description: The last day seen.
+      required:
+        - target
+        - last_seen
+    DomainIpRanges:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: The organization's domain.
+        redirects_to:
+          type: string
+          description: Where its home page redirects, when that is how it was reached.
+        total:
+          type: integer
+          description: How many ranges it holds.
+        ipv4:
+          type: integer
+          description: IPv4 addresses across them.
+        ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainIpRange'
+          description: The first 1000, IPv4 before IPv6, the largest first.
+      required:
+        - domain
+        - redirects_to
+        - total
+        - ipv4
+        - ranges
+      description: The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+    DomainIpRange:
+      type: object
+      properties:
+        range:
+          type: string
+          description: The range.
+        name:
+          type: string
+          description: Its registry name.
+        country:
+          type: string
+          description: ISO 3166 country code.
+      required:
+        - range
+        - name
+        - country
+    DisposableDetail:
+      type: object
+      properties:
+        confidence:
+          type: string
+          description: '`high`, `medium` or `low`.'
+        providers:
+          type: array
+          items:
+            type: string
+          description: The providers behind it.
+        first_seen:
+          type: string
+          description: The first day seen in use.
+        last_seen:
+          type: string
+          description: The last day.
+    BatchLookupRequest:
+      type: object
+      properties:
+        ips:
+          type: array
+          items:
+            type: string
+          description: Addresses.
+        asns:
+          type: array
+          items:
+            type: string
+          description: AS numbers, `AS15169` or `15169`; a JSON number reads too.
+        domains:
+          type: array
+          items:
+            type: string
+          description: Domains.
+      description: Up to 1000 items across the three arrays, each optional.
+    BatchLookupResponse:
+      type: object
+      properties:
+        results:
+          type: object
+          additionalProperties:
+            oneOf:
+              - $ref: '#/components/schemas/LookupResponse'
+              - $ref: '#/components/schemas/AsnLookupResponse'
+              - $ref: '#/components/schemas/DomainLookupResponse'
+          description: Each answered item's lookup, keyed by the string sent.
+        errors:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BatchLookupError'
+          description: Each failed item, keyed by the string sent.
+      required:
+        - results
+        - errors
+    BatchLookupError:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: The status its own lookup would have answered.
+        error:
+          type: string
+          description: The same message.
+      required:
+        - status
+        - error
+    LookupError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: What went wrong.
+      required:
+        - error
+    Entitlement:
+      type: object
+      required:
+        - org_id
+        - apikey
+        - plan
+        - usage
+      properties:
+        org_id:
+          type: string
+          format: uuid
+          description: The organization the key belongs to.
+        apikey:
+          $ref: '#/components/schemas/EntitlementApikey'
+        plan:
+          $ref: '#/components/schemas/EntitlementPlan'
+        usage:
+          $ref: '#/components/schemas/EntitlementUsage'
+    EntitlementApikey:
+      type: object
+      description: |
+        The credential itself. The key is never echoed - only its ID, which is
+        what the console shows and what you can act on.
+      required:
+        - id
+        - expires
+        - allowed_cidrs
+      properties:
+        id:
+          type: string
+          format: uuid
+        expires:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null for a key with no end date, which is the normal case.
+        allowed_cidrs:
+          type: array
+          items:
+            type: string
+          description: |
+            The source addresses this key may be used from. EMPTY means
+            unrestricted, never "deny all".
+    EntitlementPlan:
+      type: object
+      required:
+        - key
+        - tier
+      properties:
+        key:
+          type: string
+          description: |
+            The plan the organization is on: `free` for the free plan,
+            Unlimited, or a paid plan's key. On `free`, usage counts the
+            day's lookups answered with every field, its daily trial.
+          example: max
+        tier:
+          type: string
+          enum:
+            - free
+            - starter
+            - scale
+            - max
+          description: |
+            The field tier, which decides how much of a lookup answer comes
+            back; `free` is the free plan's. What each tier includes is documented
+            on the lookup endpoint rather than repeated here, so there is one
+            place it can be wrong.
+    EntitlementUsage:
+      type: object
+      required:
+        - requests
+        - quota
+        - hard_limit
+        - window_start
+        - window_end
+      properties:
+        requests:
+          type: integer
+          format: int64
+          description: |
+            Requests counted in the current window. The same number the lookup
+            API gates on, and it can lag by a few seconds.
+        quota:
+          type: integer
+          format: int64
+          description: What the plan includes. Zero on a plan that includes none.
+        hard_limit:
+          type: integer
+          format: int64
+          nullable: true
+          description: |
+            Where we stop serving. NULL means never, which is the normal state
+            of an uncapped paid plan and is not the same as zero. Above the
+            quota and below this, requests are served and billed as overage.
+        window_start:
+          type: string
+          format: date-time
+          description: When the current allowance period began.
+        window_end:
+          type: string
+          format: date-time
+          description: When the allowance next resets.
+    EntitlementError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
   responses:
     V2Unauthorized:
       description: |
@@ -1899,3 +4627,9 @@ x-tagGroups:
   - name: InternetData Authorization
     tags:
       - Authorization
+  - name: InternetData Lookup API
+    tags:
+      - Lookup
+  - name: InternetData Entitlement API
+    tags:
+      - Entitlement

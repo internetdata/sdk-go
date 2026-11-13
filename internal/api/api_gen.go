@@ -90,6 +90,30 @@ func (e DownloadOutcome) Valid() bool {
 	}
 }
 
+// Defines values for EntitlementPlanTier.
+const (
+	Free    EntitlementPlanTier = "free"
+	Max     EntitlementPlanTier = "max"
+	Scale   EntitlementPlanTier = "scale"
+	Starter EntitlementPlanTier = "starter"
+)
+
+// Valid indicates whether the value is a known member of the EntitlementPlanTier enum.
+func (e EntitlementPlanTier) Valid() bool {
+	switch e {
+	case Free:
+		return true
+	case Max:
+		return true
+	case Scale:
+		return true
+	case Starter:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for Standing.
 const (
 	StandingExpired    Standing = "expired"
@@ -139,6 +163,33 @@ func (e OauthAuthorizeParamsCodeChallengeMethod) Valid() bool {
 	default:
 		return false
 	}
+}
+
+// AbuseContact Where to report abuse, from IP Abuse Contact.
+type AbuseContact struct {
+	// Address Its postal address. Paid plans and the trial.
+	Address *string `json:"address,omitempty"`
+
+	// Country ISO 3166 country code. Paid plans and the trial.
+	Country *string `json:"country,omitempty"`
+
+	// Email Where to report abuse from the address.
+	Email string `json:"email"`
+
+	// Name The contact. Paid plans and the trial.
+	Name *string `json:"name,omitempty"`
+
+	// Network The registry block it was derived from. Paid plans and the trial.
+	Network *string `json:"network,omitempty"`
+
+	// Phone Its phone number. Paid plans and the trial.
+	Phone *string `json:"phone,omitempty"`
+
+	// UnvalidatedSince Since when it has not. Paid plans and the trial.
+	UnvalidatedSince *string `json:"unvalidated_since,omitempty"`
+
+	// Validated ARIN reports the contact answered its yearly validation. Paid plans and the trial.
+	Validated *bool `json:"validated,omitempty"`
 }
 
 // AccountCreateApikeyRequest defines model for AccountCreateApikeyRequest.
@@ -226,6 +277,206 @@ type ApikeyList struct {
 	Rc   string         `json:"rc"`
 }
 
+// Asn The network announcing the address, from IP ASN.
+type Asn struct {
+	// Asn The AS announcing the address, 0 where none does.
+	Asn int `json:"asn"`
+
+	// Country The country its registry assigned it to. Paid plans and the trial.
+	Country *string `json:"country,omitempty"`
+
+	// Domain Its operator's domain.
+	Domain string `json:"domain"`
+
+	// Name Its operator.
+	Name string `json:"name"`
+
+	// Prefix The announced prefix covering the address.
+	Prefix string `json:"prefix"`
+
+	// RpkiStatus The announcement's RPKI status. Paid plans and the trial.
+	RpkiStatus *string `json:"rpki_status,omitempty"`
+
+	// Type The kind of network it runs.
+	Type string `json:"type"`
+}
+
+// AsnLookupResponse What every database says about one AS.
+type AsnLookupResponse struct {
+	// Allocated When.
+	Allocated string `json:"allocated"`
+
+	// Asn The AS number.
+	Asn int `json:"asn"`
+
+	// Country The country its registry assigned it to.
+	Country string `json:"country"`
+
+	// Domain Its operator's domain.
+	Domain string `json:"domain"`
+
+	// Name Its operator.
+	Name string `json:"name"`
+
+	// NumIps IPv4 addresses it announces. Paid plans and the trial.
+	NumIps *int `json:"num_ips,omitempty"`
+
+	// NumPrefixes4 IPv4 prefixes it announces. Paid plans and the trial.
+	NumPrefixes4 *int `json:"num_prefixes4,omitempty"`
+
+	// NumPrefixes6 IPv6 prefixes it announces. Paid plans and the trial.
+	NumPrefixes6 *int `json:"num_prefixes6,omitempty"`
+
+	// Prefixes What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+	Prefixes *[]AsnPrefix `json:"prefixes,omitempty"`
+
+	// Registry The registry that allocated it.
+	Registry string `json:"registry"`
+
+	// RpkiInvalid Invalid. Paid plans and the trial.
+	RpkiInvalid *int `json:"rpki_invalid,omitempty"`
+
+	// RpkiNotFound With no RPKI record. Paid plans and the trial.
+	RpkiNotFound *int `json:"rpki_not_found,omitempty"`
+
+	// RpkiValid Its announcements RPKI calls valid. Paid plans and the trial.
+	RpkiValid *int `json:"rpki_valid,omitempty"`
+
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	TrialExpired *bool `json:"trial_expired,omitempty"`
+
+	// Type The kind of network it runs. Paid plans and the trial.
+	Type *string `json:"type,omitempty"`
+
+	// Whois Its ASN Whois record, every column, empty where the registry states nothing. Paid plans and the trial.
+	Whois *map[string]string `json:"whois,omitempty"`
+}
+
+// AsnPrefix defines model for AsnPrefix.
+type AsnPrefix struct {
+	// Country Where its first address is.
+	Country string `json:"country"`
+
+	// FirstSeen The first day BGP Route saw it.
+	FirstSeen string `json:"first_seen"`
+
+	// OtherOrigins Every other AS announcing it.
+	OtherOrigins []int `json:"other_origins"`
+
+	// PeerCount How many peers saw it.
+	PeerCount int `json:"peer_count"`
+
+	// Prefix The announced prefix.
+	Prefix string `json:"prefix"`
+
+	// RpkiStatus Its RPKI status.
+	RpkiStatus string `json:"rpki_status"`
+
+	// Size IPv4 addresses it covers; 0 for IPv6.
+	Size int `json:"size"`
+}
+
+// BatchLookupError defines model for BatchLookupError.
+type BatchLookupError struct {
+	// Error The same message.
+	Error string `json:"error"`
+
+	// Status The status its own lookup would have answered.
+	Status int `json:"status"`
+}
+
+// BatchLookupRequest Up to 1000 items across the three arrays, each optional.
+type BatchLookupRequest struct {
+	// Asns AS numbers, `AS15169` or `15169`; a JSON number reads too.
+	Asns *[]string `json:"asns,omitempty"`
+
+	// Domains Domains.
+	Domains *[]string `json:"domains,omitempty"`
+
+	// Ips Addresses.
+	Ips *[]string `json:"ips,omitempty"`
+}
+
+// BatchLookupResponse defines model for BatchLookupResponse.
+type BatchLookupResponse struct {
+	// Errors Each failed item, keyed by the string sent.
+	Errors map[string]BatchLookupError `json:"errors"`
+
+	// Results Each answered item's lookup, keyed by the string sent.
+	Results map[string]BatchLookupResponse_Results_AdditionalProperties `json:"results"`
+}
+
+// BatchLookupResponse_Results_AdditionalProperties defines model for BatchLookupResponse.results.AdditionalProperties.
+type BatchLookupResponse_Results_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// BitTorrentDetail defines model for BitTorrentDetail.
+type BitTorrentDetail struct {
+	// Clients The two-letter codes its clients name themselves by.
+	Clients *[]string `json:"clients,omitempty"`
+
+	// DaysSeen On how many days.
+	DaysSeen *int `json:"days_seen,omitempty"`
+
+	// FirstSeen The first day a client was seen here.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// IDMatchesIP A client here derived its node ID from the address (BEP 42).
+	IDMatchesIP *bool `json:"id_matches_ip,omitempty"`
+
+	// Indexer A DHT indexer rather than people.
+	Indexer *bool `json:"indexer,omitempty"`
+
+	// LastReachable The last day one answered, empty when none did.
+	LastReachable *string `json:"last_reachable,omitempty"`
+
+	// LastSeen The last day.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// NumPorts Distinct ports over the window.
+	NumPorts *int `json:"num_ports,omitempty"`
+
+	// PeakNumPorts The most on one day.
+	PeakNumPorts *int `json:"peak_num_ports,omitempty"`
+
+	// Verified A client here answered, or two or more reported it at once.
+	Verified *bool `json:"verified,omitempty"`
+}
+
+// CarrierDetail defines model for CarrierDetail.
+type CarrierDetail struct {
+	// Confidence `high`, `medium` or `low`.
+	Confidence *string `json:"confidence,omitempty"`
+
+	// Country ISO 3166 country code.
+	Country *string `json:"country,omitempty"`
+
+	// Mcc Its mobile country code.
+	Mcc *string `json:"mcc,omitempty"`
+
+	// Mnc Its mobile network code.
+	Mnc *string `json:"mnc,omitempty"`
+
+	// Name The mobile carrier.
+	Name *string `json:"name,omitempty"`
+}
+
+// ClassDetail defines model for ClassDetail.
+type ClassDetail struct {
+	// Confidence `high`, `medium` or `low`: how sure we are the range is what the flag says.
+	Confidence *string `json:"confidence,omitempty"`
+
+	// LastSeen The last day the range was seen as such.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Provider The provider's ID in its catalog; empty for an unattributed range, and on Tor.
+	Provider *string `json:"provider,omitempty"`
+
+	// ProviderName The name the catalog gives the provider, empty where it names none.
+	ProviderName *string `json:"provider_name,omitempty"`
+}
+
 // ClientRegistration defines model for ClientRegistration.
 type ClientRegistration struct {
 	ClientID string `json:"client_id"`
@@ -264,6 +515,21 @@ type ClientRegistrationRequest struct {
 
 	// TokenEndpointAuthMethod Read as `none`, whatever is sent.
 	TokenEndpointAuthMethod *string `json:"token_endpoint_auth_method,omitempty"`
+}
+
+// Company Who uses the address, from IP Company.
+type Company struct {
+	// Country ISO 3166 country code. Paid plans and the trial.
+	Country *string `json:"country,omitempty"`
+
+	// Domain Their domain.
+	Domain string `json:"domain"`
+
+	// Name Who uses the address.
+	Name string `json:"name"`
+
+	// Type What kind of organization: hosting, isp, business, education, government. Paid plans and the trial.
+	Type *string `json:"type,omitempty"`
 }
 
 // Database One database FAMILY, with your organization's license beside it. A
@@ -423,6 +689,159 @@ type DeviceAuthorizationRequest struct {
 	Scope *string `json:"scope,omitempty"`
 }
 
+// DisposableDetail defines model for DisposableDetail.
+type DisposableDetail struct {
+	// Confidence `high`, `medium` or `low`.
+	Confidence *string `json:"confidence,omitempty"`
+
+	// FirstSeen The first day seen in use.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// LastSeen The last day.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Providers The providers behind it.
+	Providers *[]string `json:"providers,omitempty"`
+}
+
+// DNSAddressRecord defines model for DnsAddressRecord.
+type DNSAddressRecord struct {
+	// IP The address.
+	IP string `json:"ip"`
+
+	// LastSeen The last day the snapshot saw it.
+	LastSeen string `json:"last_seen"`
+}
+
+// DNSCnameRecord defines model for DnsCnameRecord.
+type DNSCnameRecord struct {
+	// LastSeen The last day seen.
+	LastSeen string `json:"last_seen"`
+
+	// Target Where it points.
+	Target string `json:"target"`
+}
+
+// DNSMxRecord defines model for DnsMxRecord.
+type DNSMxRecord struct {
+	// Host The mail host.
+	Host string `json:"host"`
+
+	// LastSeen The last day seen.
+	LastSeen string `json:"last_seen"`
+
+	// Priority Its priority.
+	Priority int `json:"priority"`
+}
+
+// DNSNsRecord defines model for DnsNsRecord.
+type DNSNsRecord struct {
+	// Host The name server.
+	Host string `json:"host"`
+
+	// LastSeen The last day seen.
+	LastSeen string `json:"last_seen"`
+}
+
+// DNSResolverDetail defines model for DnsResolverDetail.
+type DNSResolverDetail struct {
+	// AnswerCorrect Its answer was right.
+	AnswerCorrect *bool `json:"answer_correct,omitempty"`
+
+	// FirstSeen The first day it answered.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// LastSeen The last day it did.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Port The port it answered on.
+	Port *int `json:"port,omitempty"`
+
+	// Rcode Its answer's response code.
+	Rcode *int `json:"rcode,omitempty"`
+
+	// RecursionAvailable It offered recursion.
+	RecursionAvailable *bool `json:"recursion_available,omitempty"`
+}
+
+// DomainDNS Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+type DomainDNS struct {
+	A     []DNSAddressRecord `json:"a"`
+	Aaaa  []DNSAddressRecord `json:"aaaa"`
+	Cname []DNSCnameRecord   `json:"cname"`
+	Mx    []DNSMxRecord      `json:"mx"`
+	Ns    []DNSNsRecord      `json:"ns"`
+}
+
+// DomainIPRange defines model for DomainIpRange.
+type DomainIPRange struct {
+	// Country ISO 3166 country code.
+	Country string `json:"country"`
+
+	// Name Its registry name.
+	Name string `json:"name"`
+
+	// Range The range.
+	Range string `json:"range"`
+}
+
+// DomainIPRanges The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+type DomainIPRanges struct {
+	// Domain The organization's domain.
+	Domain string `json:"domain"`
+
+	// Ipv4 IPv4 addresses across them.
+	Ipv4 int `json:"ipv4"`
+
+	// Ranges The first 1000, IPv4 before IPv6, the largest first.
+	Ranges []DomainIPRange `json:"ranges"`
+
+	// RedirectsTo Where its home page redirects, when that is how it was reached.
+	RedirectsTo string `json:"redirects_to"`
+
+	// Total How many ranges it holds.
+	Total int `json:"total"`
+}
+
+// DomainLookupResponse What every database says about one domain.
+type DomainLookupResponse struct {
+	// Disposable `{}` when `is_disposable` is false. Paid plans and the trial.
+	Disposable *DisposableDetail `json:"disposable,omitempty"`
+
+	// DNS Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+	DNS *DomainDNS `json:"dns,omitempty"`
+
+	// Domain The domain, lowercase and in punycode.
+	Domain string `json:"domain"`
+
+	// HasA It has A records.
+	HasA bool `json:"has_a"`
+
+	// HasAaaa AAAA records.
+	HasAaaa bool `json:"has_aaaa"`
+
+	// HasCname A CNAME record.
+	HasCname bool `json:"has_cname"`
+
+	// HasMx MX records.
+	HasMx bool `json:"has_mx"`
+
+	// HasNs NS records.
+	HasNs bool `json:"has_ns"`
+
+	// IPRanges The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+	IPRanges *DomainIPRanges `json:"ip_ranges,omitempty"`
+
+	// IsDisposable In Disposable Domain. Paid plans and the trial.
+	IsDisposable *bool `json:"is_disposable,omitempty"`
+
+	// IsRegistered In Domain List: a registered domain.
+	IsRegistered bool `json:"is_registered"`
+
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	TrialExpired *bool `json:"trial_expired,omitempty"`
+}
+
 // Download One download ATTEMPT, refusals included.
 type Download struct {
 	// ApikeyID The key that made the request. Null when it could not be resolved.
@@ -450,11 +869,90 @@ type Download struct {
 // DownloadOutcome defines model for Download.Outcome.
 type DownloadOutcome string
 
+// Entitlement defines model for Entitlement.
+type Entitlement struct {
+	// Apikey The credential itself. The key is never echoed - only its ID, which is
+	// what the console shows and what you can act on.
+	Apikey EntitlementApikey `json:"apikey"`
+
+	// OrgID The organization the key belongs to.
+	OrgID openapi_types.UUID `json:"org_id"`
+	Plan  EntitlementPlan    `json:"plan"`
+	Usage EntitlementUsage   `json:"usage"`
+}
+
+// EntitlementApikey The credential itself. The key is never echoed - only its ID, which is
+// what the console shows and what you can act on.
+type EntitlementApikey struct {
+	// AllowedCidrs The source addresses this key may be used from. EMPTY means
+	// unrestricted, never "deny all".
+	AllowedCidrs []string `json:"allowed_cidrs"`
+
+	// Expires Null for a key with no end date, which is the normal case.
+	Expires *time.Time         `json:"expires"`
+	ID      openapi_types.UUID `json:"id"`
+}
+
+// EntitlementError defines model for EntitlementError.
+type EntitlementError struct {
+	Error string `json:"error"`
+}
+
+// EntitlementPlan defines model for EntitlementPlan.
+type EntitlementPlan struct {
+	// Key The plan the organization is on: `free` for the free plan,
+	// Unlimited, or a paid plan's key. On `free`, usage counts the
+	// day's lookups answered with every field, its daily trial.
+	//
+	//
+	// Example: max
+	Key string `json:"key"`
+
+	// Tier The field tier, which decides how much of a lookup answer comes
+	// back; `free` is the free plan's. What each tier includes is documented
+	// on the lookup endpoint rather than repeated here, so there is one
+	// place it can be wrong.
+	Tier EntitlementPlanTier `json:"tier"`
+}
+
+// EntitlementPlanTier The field tier, which decides how much of a lookup answer comes
+// back; `free` is the free plan's. What each tier includes is documented
+// on the lookup endpoint rather than repeated here, so there is one
+// place it can be wrong.
+type EntitlementPlanTier string
+
+// EntitlementUsage defines model for EntitlementUsage.
+type EntitlementUsage struct {
+	// HardLimit Where we stop serving. NULL means never, which is the normal state
+	// of an uncapped paid plan and is not the same as zero. Above the
+	// quota and below this, requests are served and billed as overage.
+	HardLimit *int64 `json:"hard_limit"`
+
+	// Quota What the plan includes. Zero on a plan that includes none.
+	Quota int64 `json:"quota"`
+
+	// Requests Requests counted in the current window. The same number the lookup
+	// API gates on, and it can lag by a few seconds.
+	Requests int64 `json:"requests"`
+
+	// WindowEnd When the allowance next resets.
+	WindowEnd time.Time `json:"window_end"`
+
+	// WindowStart When the current allowance period began.
+	WindowStart time.Time `json:"window_start"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	// Rc A machine-readable result code. Deliberately not an enum: a code
 	// added later must stay parseable by a client generated today.
 	Rc string `json:"rc"`
+}
+
+// HostedDomains From IP Hosted Domains: a count, never the list. Paid plans and the trial.
+type HostedDomains struct {
+	// Total How many registered domains resolve to the address.
+	Total int `json:"total"`
 }
 
 // Identity defines model for Identity.
@@ -465,6 +963,210 @@ type Identity struct {
 	// Scopes What this credential may do right now.
 	Scopes []string    `json:"scopes"`
 	User   AccountUser `json:"user"`
+}
+
+// Location Where the address is.
+type Location struct {
+	// AccuracyRadius Radius in km holding the true location with 67% confidence. Paid plans and the trial.
+	AccuracyRadius *int `json:"accuracy_radius,omitempty"`
+
+	// City City. Paid plans and the trial.
+	City *string `json:"city,omitempty"`
+
+	// Continent Continent code.
+	Continent string `json:"continent"`
+
+	// ContinentName Continent name.
+	ContinentName string `json:"continent_name"`
+
+	// Country ISO 3166-1 alpha-2 country code.
+	Country string `json:"country"`
+
+	// CountryName Country name.
+	CountryName string `json:"country_name"`
+
+	// CurrencyCode ISO 4217 code.
+	CurrencyCode string `json:"currency_code"`
+
+	// CurrencyName Currency name.
+	CurrencyName string `json:"currency_name"`
+
+	// CurrencySymbol Currency symbol.
+	CurrencySymbol string `json:"currency_symbol"`
+
+	// DmaCode US TV market (DMA) code. Paid plans and the trial.
+	DmaCode *string `json:"dma_code,omitempty"`
+
+	// FlagEmoji The country's flag.
+	FlagEmoji string `json:"flag_emoji"`
+
+	// FlagUnicode Its code points, `U+1F1E6 U+1F1F9`.
+	FlagUnicode string `json:"flag_unicode"`
+
+	// GeonameID GeoNames ID of the city. Paid plans and the trial.
+	GeonameID *string `json:"geoname_id,omitempty"`
+
+	// LastChanged The day the range's location last changed. Paid plans and the trial.
+	LastChanged *string `json:"last_changed,omitempty"`
+
+	// Latitude Latitude of the city. Paid plans and the trial.
+	Latitude *float32 `json:"latitude,omitempty"`
+
+	// Longitude Longitude of the city. Paid plans and the trial.
+	Longitude *float32 `json:"longitude,omitempty"`
+
+	// PostalCode Postal code. Paid plans and the trial.
+	PostalCode *string `json:"postal_code,omitempty"`
+
+	// Region Region (state or province). Paid plans and the trial.
+	Region *string `json:"region,omitempty"`
+
+	// RegionCode ISO 3166-2 region code. Paid plans and the trial.
+	RegionCode *string `json:"region_code,omitempty"`
+
+	// Timezone IANA timezone.
+	Timezone string `json:"timezone"`
+}
+
+// LookupError defines model for LookupError.
+type LookupError struct {
+	// Error What went wrong.
+	Error string `json:"error"`
+}
+
+// LookupResponse What every database says about one address.
+type LookupResponse struct {
+	// Abuse Where to report abuse, from IP Abuse Contact.
+	Abuse AbuseContact `json:"abuse"`
+
+	// Asn The network announcing the address, from IP ASN.
+	Asn Asn `json:"asn"`
+
+	// Bittorrent `{}` when `is_bittorrent` is false. Paid plans and the trial.
+	Bittorrent *BitTorrentDetail `json:"bittorrent,omitempty"`
+
+	// Carrier `{}` when `is_carrier` is false. Paid plans and the trial.
+	Carrier *CarrierDetail `json:"carrier,omitempty"`
+
+	// Cdn `{}` when `is_cdn` is false. Paid plans and the trial.
+	Cdn *ClassDetail `json:"cdn,omitempty"`
+
+	// Company Who uses the address, from IP Company.
+	Company Company `json:"company"`
+
+	// Dcproxy `{}` when `is_dcproxy` is false. Paid plans and the trial.
+	Dcproxy *ProxyDetail `json:"dcproxy,omitempty"`
+
+	// DNSResolver `{}` when `is_dns_resolver` is false. Paid plans and the trial.
+	DNSResolver *DNSResolverDetail `json:"dns_resolver,omitempty"`
+
+	// HostedDomains From IP Hosted Domains: a count, never the list. Paid plans and the trial.
+	HostedDomains *HostedDomains `json:"hosted_domains,omitempty"`
+
+	// Hosting `{}` when `is_hosting` is false. Paid plans and the trial.
+	Hosting *ClassDetail `json:"hosting,omitempty"`
+
+	// Hostname The name the address's reverse DNS (PTR) record points to in IP RDNS, empty when it has none.
+	Hostname string `json:"hostname"`
+
+	// IP The address looked up, as parsed: `::ffff:a.b.c.d` answers as `a.b.c.d`.
+	IP string `json:"ip"`
+
+	// IsAnycast In Anycast IP: announced from many places at once.
+	IsAnycast bool `json:"is_anycast"`
+
+	// IsBittorrent In BitTorrent IP: a BitTorrent client was seen here in the last 90 days.
+	IsBittorrent bool `json:"is_bittorrent"`
+
+	// IsBogon Reserved space, answered from the address alone.
+	IsBogon bool `json:"is_bogon"`
+
+	// IsCarrier In Carrier IP: a mobile carrier's address space.
+	IsCarrier bool `json:"is_carrier"`
+
+	// IsCdn In CDN IP: a content delivery network. Paid plans and the trial.
+	IsCdn *bool `json:"is_cdn,omitempty"`
+
+	// IsDcproxy In Datacenter Proxy IP's 90-day window. Paid plans and the trial.
+	IsDcproxy *bool `json:"is_dcproxy,omitempty"`
+
+	// IsDNSResolver In DNS Resolver IP: an open DNS resolver answered here.
+	IsDNSResolver bool `json:"is_dns_resolver"`
+
+	// IsHosting In Hosting IP: a hosting or cloud network. Paid plans and the trial.
+	IsHosting *bool `json:"is_hosting,omitempty"`
+
+	// IsMobproxy In Mobile Proxy IP's 90-day window. Paid plans and the trial.
+	IsMobproxy *bool `json:"is_mobproxy,omitempty"`
+
+	// IsPubproxy In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid plans and the trial.
+	IsPubproxy *bool `json:"is_pubproxy,omitempty"`
+
+	// IsRelay In Relay IP: an anonymizing relay such as iCloud Private Relay.
+	IsRelay bool `json:"is_relay"`
+
+	// IsResproxy In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the trial.
+	IsResproxy *bool `json:"is_resproxy,omitempty"`
+
+	// IsSatellite In Satellite IP: a satellite operator's address space.
+	IsSatellite bool `json:"is_satellite"`
+
+	// IsSMTP In SMTP IP: a mail server answered here.
+	IsSMTP bool `json:"is_smtp"`
+
+	// IsSSH In SSH IP: an SSH server answered here.
+	IsSSH bool `json:"is_ssh"`
+
+	// IsTor In Tor IP: a Tor exit.
+	IsTor bool `json:"is_tor"`
+
+	// IsVpn In VPN IP: a VPN service's server. Paid plans and the trial.
+	IsVpn *bool `json:"is_vpn,omitempty"`
+
+	// IsWeb In Web IP: a web server answered here on port 80 or 443.
+	IsWeb bool `json:"is_web"`
+
+	// Location Where the address is.
+	Location Location `json:"location"`
+
+	// Mobproxy `{}` when `is_mobproxy` is false. Paid plans and the trial.
+	Mobproxy *ProxyDetail `json:"mobproxy,omitempty"`
+
+	// Pubproxy `{}` when `is_pubproxy` is false. Paid plans and the trial.
+	Pubproxy *PubproxyDetail `json:"pubproxy,omitempty"`
+
+	// Relay Relay IP's row, `{}` when `is_relay` is false.
+	Relay ClassDetail `json:"relay"`
+
+	// Resproxy `{}` when `is_resproxy` is false. Paid plans and the trial.
+	Resproxy *ProxyDetail `json:"resproxy,omitempty"`
+
+	// Rwhois IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+	Rwhois *Rwhois `json:"rwhois,omitempty"`
+
+	// Satellite `{}` when `is_satellite` is false. Paid plans and the trial.
+	Satellite *SatelliteDetail `json:"satellite,omitempty"`
+
+	// SMTP `{}` when `is_smtp` is false. Paid plans and the trial.
+	SMTP *SMTPDetail `json:"smtp,omitempty"`
+
+	// SSH `{}` when `is_ssh` is false. Paid plans and the trial.
+	SSH *SSHDetail `json:"ssh,omitempty"`
+
+	// Tor Tor IP's row, `{}` when `is_tor` is false.
+	Tor ClassDetail `json:"tor"`
+
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	TrialExpired *bool `json:"trial_expired,omitempty"`
+
+	// Vpn VPN IP's row, `{}` when `is_vpn` is false. Paid plans and the trial.
+	Vpn *ClassDetail `json:"vpn,omitempty"`
+
+	// Web A row per port that answered, lowest first; `[]` when `is_web` is false. Paid plans and the trial.
+	Web *[]WebDetail `json:"web,omitempty"`
+
+	// Whois IP Whois's most specific record covering the address. Paid plans and the trial.
+	Whois *Whois `json:"whois,omitempty"`
 }
 
 // OauthError defines model for OauthError.
@@ -499,6 +1201,54 @@ type OauthMetadata struct {
 	TokenEndpointAuthMethodsSupported *[]string `json:"token_endpoint_auth_methods_supported,omitempty"`
 }
 
+// ProxyDetail defines model for ProxyDetail.
+type ProxyDetail struct {
+	// FirstSeen The first day of the window the address was seen as an exit.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// Hits How many times it was seen in the window.
+	Hits *int `json:"hits,omitempty"`
+
+	// HitsDaysPct On what share of the window's days, in percent.
+	HitsDaysPct *int `json:"hits_days_pct,omitempty"`
+
+	// LastSeen The last day it was.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Provider The proxy pool's ID in its catalog, empty where unattributed.
+	Provider *string `json:"provider,omitempty"`
+
+	// ProviderName The name the catalog gives it.
+	ProviderName *string `json:"provider_name,omitempty"`
+
+	// ProvidersNum How many pools it was seen in.
+	ProvidersNum *int `json:"providers_num,omitempty"`
+}
+
+// PubproxyDetail defines model for PubproxyDetail.
+type PubproxyDetail struct {
+	// Entry A public proxy listens here.
+	Entry *bool `json:"entry,omitempty"`
+
+	// Exit Public proxies' traffic leaves from here.
+	Exit *bool `json:"exit,omitempty"`
+
+	// LastSeen The last day one was seen.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// LastUsable The last day one answered a request, empty when none did.
+	LastUsable *string `json:"last_usable,omitempty"`
+
+	// NumPorts How many ports a proxy listens on here.
+	NumPorts *int `json:"num_ports,omitempty"`
+
+	// NumProxies How many proxies' traffic left from here.
+	NumProxies *int `json:"num_proxies,omitempty"`
+
+	// Protocols The protocols at either end, `[]` when unknown.
+	Protocols *[]string `json:"protocols,omitempty"`
+}
+
 // RevokeRequest defines model for RevokeRequest.
 type RevokeRequest struct {
 	// ClientID Accepted and not checked.
@@ -506,6 +1256,90 @@ type RevokeRequest struct {
 
 	// Token An access token or a refresh token.
 	Token string `json:"token"`
+}
+
+// Rwhois IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+type Rwhois struct {
+	// AbuseEmail Its abuse contact.
+	AbuseEmail string `json:"abuse_email"`
+
+	// Country ISO 3166 country code.
+	Country string `json:"country"`
+
+	// Domain The contact emails' domain.
+	Domain string `json:"domain"`
+
+	// ID The network's identifier on the operator's RWHOIS server.
+	ID string `json:"id"`
+
+	// Name Its assignee.
+	Name string `json:"name"`
+
+	// Source The operator that published it.
+	Source string `json:"source"`
+}
+
+// SatelliteDetail defines model for SatelliteDetail.
+type SatelliteDetail struct {
+	// Asn The AS the operator announces it from.
+	Asn *int `json:"asn,omitempty"`
+
+	// Confidence `high`, `medium` or `low`.
+	Confidence *string `json:"confidence,omitempty"`
+
+	// Country ISO 3166 country code.
+	Country *string `json:"country,omitempty"`
+
+	// Orbit The orbit: `leo`, `meo` or `geo`.
+	Orbit *string `json:"orbit,omitempty"`
+
+	// Provider The operator's ID in Satellite IP Provider.
+	Provider *string `json:"provider,omitempty"`
+
+	// ProviderName The operator's name.
+	ProviderName *string `json:"provider_name,omitempty"`
+
+	// Segment Who the space serves, such as consumer or maritime.
+	Segment *string `json:"segment,omitempty"`
+}
+
+// SMTPDetail defines model for SmtpDetail.
+type SMTPDetail struct {
+	// Banner Its banner.
+	Banner *string `json:"banner,omitempty"`
+
+	// FirstSeen The first day it answered.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// LastSeen The last day it did.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Port The port the server answered on.
+	Port *int `json:"port,omitempty"`
+
+	// SessionOk A session was set up.
+	SessionOk *bool `json:"session_ok,omitempty"`
+}
+
+// SSHDetail defines model for SshDetail.
+type SSHDetail struct {
+	// Banner Its banner.
+	Banner *string `json:"banner,omitempty"`
+
+	// FirstSeen The first day it answered.
+	FirstSeen *string `json:"first_seen,omitempty"`
+
+	// HostKeyFp Its host key's fingerprint.
+	HostKeyFp *string `json:"host_key_fp,omitempty"`
+
+	// LastSeen The last day it did.
+	LastSeen *string `json:"last_seen,omitempty"`
+
+	// Port The port the server answered on.
+	Port *int `json:"port,omitempty"`
+
+	// SessionOk A session was set up.
+	SessionOk *bool `json:"session_ok,omitempty"`
 }
 
 // Standing Where your license for a database family stands today. `licensed` is a
@@ -572,6 +1406,81 @@ type TokenResponse struct {
 
 	// TokenType Always `Bearer`.
 	TokenType string `json:"token_type"`
+}
+
+// WebDetail defines model for WebDetail.
+type WebDetail struct {
+	// CertBrowserTrusted Browsers trust it.
+	CertBrowserTrusted bool `json:"cert_browser_trusted"`
+
+	// CertIssuerDn Its issuer.
+	CertIssuerDn string `json:"cert_issuer_dn"`
+
+	// CertSubjectCn The certificate's subject common name.
+	CertSubjectCn string `json:"cert_subject_cn"`
+
+	// CertSubjectO Its subject organization.
+	CertSubjectO string `json:"cert_subject_o"`
+
+	// FirstSeen The first day the port was open.
+	FirstSeen string `json:"first_seen"`
+
+	// LastSeen The last day it was.
+	LastSeen string `json:"last_seen"`
+
+	// Location Where it redirected.
+	Location string `json:"location"`
+
+	// Port 80 or 443.
+	Port int `json:"port"`
+
+	// Server Its `Server` header.
+	Server string `json:"server"`
+
+	// SessionOk An HTTP response came back.
+	SessionOk bool `json:"session_ok"`
+
+	// StatusCode Its status, 0 where none came.
+	StatusCode int `json:"status_code"`
+
+	// Title The page's title.
+	Title string `json:"title"`
+
+	// TLSOk A TLS handshake completed.
+	TLSOk bool `json:"tls_ok"`
+
+	// TLSVersion The TLS version negotiated, empty without TLS.
+	TLSVersion string `json:"tls_version"`
+}
+
+// Whois IP Whois's most specific record covering the address. Paid plans and the trial.
+type Whois struct {
+	// AbuseEmail The record's abuse contact.
+	AbuseEmail string `json:"abuse_email"`
+
+	// Asn The AS announcing the record's start address.
+	Asn int `json:"asn"`
+
+	// Country ISO 3166 country code.
+	Country string `json:"country"`
+
+	// Domain The holder's domain.
+	Domain string `json:"domain"`
+
+	// ID Network name of the most specific record covering the address.
+	ID string `json:"id"`
+
+	// Name Its holder.
+	Name string `json:"name"`
+
+	// Org The registry's handle for the holder.
+	Org string `json:"org"`
+
+	// Source The registry, or rwhois.
+	Source string `json:"source"`
+
+	// Status The registry's assignment status.
+	Status string `json:"status"`
 }
 
 // ApikeyIDParam defines model for ApikeyIdParam.
@@ -680,6 +1589,9 @@ type OauthAuthorizeParamsCodeChallengeMethod string
 // AccountCreateApikeyJSONRequestBody defines body for AccountCreateApikey for application/json ContentType.
 type AccountCreateApikeyJSONRequestBody = AccountCreateApikeyRequest
 
+// LookupBatchJSONRequestBody defines body for LookupBatch for application/json ContentType.
+type LookupBatchJSONRequestBody = BatchLookupRequest
+
 // OauthDeviceAuthorizationFormdataRequestBody defines body for OauthDeviceAuthorization for application/x-www-form-urlencoded ContentType.
 type OauthDeviceAuthorizationFormdataRequestBody = DeviceAuthorizationRequest
 
@@ -691,6 +1603,94 @@ type OauthRevokeFormdataRequestBody = RevokeRequest
 
 // OauthTokenFormdataRequestBody defines body for OauthToken for application/x-www-form-urlencoded ContentType.
 type OauthTokenFormdataRequestBody = TokenRequest
+
+// AsLookupResponse returns the union data inside the BatchLookupResponse_Results_AdditionalProperties as a LookupResponse
+func (t BatchLookupResponse_Results_AdditionalProperties) AsLookupResponse() (LookupResponse, error) {
+	var body LookupResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromLookupResponse overwrites any union data inside the BatchLookupResponse_Results_AdditionalProperties as the provided LookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) FromLookupResponse(v LookupResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeLookupResponse performs a merge with any union data inside the BatchLookupResponse_Results_AdditionalProperties, using the provided LookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) MergeLookupResponse(v LookupResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAsnLookupResponse returns the union data inside the BatchLookupResponse_Results_AdditionalProperties as a AsnLookupResponse
+func (t BatchLookupResponse_Results_AdditionalProperties) AsAsnLookupResponse() (AsnLookupResponse, error) {
+	var body AsnLookupResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAsnLookupResponse overwrites any union data inside the BatchLookupResponse_Results_AdditionalProperties as the provided AsnLookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) FromAsnLookupResponse(v AsnLookupResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAsnLookupResponse performs a merge with any union data inside the BatchLookupResponse_Results_AdditionalProperties, using the provided AsnLookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) MergeAsnLookupResponse(v AsnLookupResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDomainLookupResponse returns the union data inside the BatchLookupResponse_Results_AdditionalProperties as a DomainLookupResponse
+func (t BatchLookupResponse_Results_AdditionalProperties) AsDomainLookupResponse() (DomainLookupResponse, error) {
+	var body DomainLookupResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDomainLookupResponse overwrites any union data inside the BatchLookupResponse_Results_AdditionalProperties as the provided DomainLookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) FromDomainLookupResponse(v DomainLookupResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDomainLookupResponse performs a merge with any union data inside the BatchLookupResponse_Results_AdditionalProperties, using the provided DomainLookupResponse
+func (t *BatchLookupResponse_Results_AdditionalProperties) MergeDomainLookupResponse(v DomainLookupResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BatchLookupResponse_Results_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BatchLookupResponse_Results_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -777,6 +1777,14 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /.well-known/oauth-authorization-server (the `OauthMetadata` operationId).
 	OauthMetadata(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MyEntitlement Plan and usage
+	//
+	// Answers what the presented key is, what plan is behind it, and what has
+	// been spent against that plan's allowance in the current window.
+	//
+	// Corresponds with GET /api/v1/entitlement (the `MyEntitlement` operationId).
+	MyEntitlement(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AccountListApikeys List
 	//
@@ -932,6 +1940,58 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /api/v2/database/metadata (the `DatabaseMetadataV2` operationId).
 	DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadataV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupAsn ASN lookup
+	//
+	// Answers what InternetData knows about one autonomous system: its registration on every plan,
+	// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
+	// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
+	// its number with empty values.
+	//
+	// Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
+	LookupAsn(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupBatchWithBody Batch
+	//
+	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+	// lookup it is on any plan.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /batch (the `LookupBatch` operationId).
+	LookupBatchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupBatch Batch
+	//
+	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+	// lookup it is on any plan.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /batch (the `LookupBatch` operationId).
+	LookupBatch(ctx context.Context, body LookupBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupDomain Domain lookup
+	//
+	// Answers what InternetData knows about one domain from its latest snapshots: on every plan
+	// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
+	// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
+	// name is answered under its punycode spelling.
+	//
+	// Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
+	LookupDomain(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupMyIP My IP
+	//
+	// The address you are calling from, answered as `GET /{ip}` would answer it, and charged as
+	// that lookup is.
+	//
+	// Corresponds with GET /myip (the `LookupMyIP` operationId).
+	LookupMyIP(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// OauthAuthorize Authorize
 	//
@@ -1115,6 +2175,16 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /oauth/token (the `OauthToken` operationId).
 	OauthTokenWithFormdataBody(ctx context.Context, body OauthTokenFormdataRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LookupIP IP lookup
+	//
+	// Answers what every database says about one IPv4 or IPv6 address. Which fields come back is
+	// decided by the presented key; with no key, on Unlimited, the free plan, the answer carries the fields in
+	// the address table's unlimited column. The path also takes `AS15169` or a domain, as internetdata.io's
+	// pages do, and then answers as `GET /asn/{asn}` or `GET /domain/{domain}` would.
+	//
+	// Corresponds with GET /{ip} (the `LookupIP` operationId).
+	LookupIP(ctx context.Context, ip string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // OauthMetadata Discovery
@@ -1129,6 +2199,24 @@ type ClientInterface interface {
 // Corresponds with GET /.well-known/oauth-authorization-server (the `OauthMetadata` operationId).
 func (c *Client) OauthMetadata(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewOauthMetadataRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MyEntitlement Plan and usage
+//
+// Answers what the presented key is, what plan is behind it, and what has
+// been spent against that plan's allowance in the current window.
+//
+// Corresponds with GET /api/v1/entitlement (the `MyEntitlement` operationId).
+func (c *Client) MyEntitlement(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMyEntitlementRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1434,6 +2522,108 @@ func (c *Client) DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadat
 	return c.Client.Do(req)
 }
 
+// LookupAsn ASN lookup
+//
+// Answers what InternetData knows about one autonomous system: its registration on every plan,
+// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
+// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
+// its number with empty values.
+//
+// Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
+func (c *Client) LookupAsn(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupAsnRequest(c.Server, asn)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// LookupBatchWithBody Batch
+//
+// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+// lookup it is on any plan.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /batch (the `LookupBatch` operationId).
+func (c *Client) LookupBatchWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupBatchRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// LookupBatch Batch
+//
+// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+// lookup it is on any plan.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /batch (the `LookupBatch` operationId).
+func (c *Client) LookupBatch(ctx context.Context, body LookupBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupBatchRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// LookupDomain Domain lookup
+//
+// Answers what InternetData knows about one domain from its latest snapshots: on every plan
+// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
+// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
+// name is answered under its punycode spelling.
+//
+// Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
+func (c *Client) LookupDomain(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupDomainRequest(c.Server, domain)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// LookupMyIP My IP
+//
+// The address you are calling from, answered as `GET /{ip}` would answer it, and charged as
+// that lookup is.
+//
+// Corresponds with GET /myip (the `LookupMyIP` operationId).
+func (c *Client) LookupMyIP(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupMyIPRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // OauthAuthorize Authorize
 //
 // The browser entry point for the authorization-code flow. This is a
@@ -1707,6 +2897,26 @@ func (c *Client) OauthTokenWithFormdataBody(ctx context.Context, body OauthToken
 	return c.Client.Do(req)
 }
 
+// LookupIP IP lookup
+//
+// Answers what every database says about one IPv4 or IPv6 address. Which fields come back is
+// decided by the presented key; with no key, on Unlimited, the free plan, the answer carries the fields in
+// the address table's unlimited column. The path also takes `AS15169` or a domain, as internetdata.io's
+// pages do, and then answers as `GET /asn/{asn}` or `GET /domain/{domain}` would.
+//
+// Corresponds with GET /{ip} (the `LookupIP` operationId).
+func (c *Client) LookupIP(ctx context.Context, ip string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLookupIPRequest(c.Server, ip)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // NewOauthMetadataRequest constructs an http.Request for the OauthMetadata method
 func NewOauthMetadataRequest(server string) (*http.Request, error) {
 	var err error
@@ -1717,6 +2927,33 @@ func NewOauthMetadataRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/.well-known/oauth-authorization-server")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMyEntitlementRequest constructs an http.Request for the MyEntitlement method
+func NewMyEntitlementRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/entitlement")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2243,6 +3480,141 @@ func NewDatabaseMetadataV2Request(server string, params *DatabaseMetadataV2Param
 	return req, nil
 }
 
+// NewLookupAsnRequest constructs an http.Request for the LookupAsn method
+func NewLookupAsnRequest(server string, asn string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "asn", asn, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/asn/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLookupBatchRequest calls the generic LookupBatch builder with application/json body
+func NewLookupBatchRequest(server string, body LookupBatchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLookupBatchRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewLookupBatchRequestWithBody constructs an http.Request for the LookupBatch method, with any body, and a specified content type
+func NewLookupBatchRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/batch")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewLookupDomainRequest constructs an http.Request for the LookupDomain method
+func NewLookupDomainRequest(server string, domain string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "domain", domain, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/domain/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLookupMyIPRequest constructs an http.Request for the LookupMyIP method
+func NewLookupMyIPRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/myip")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewOauthAuthorizeRequest constructs an http.Request for the OauthAuthorize method
 func NewOauthAuthorizeRequest(server string, params *OauthAuthorizeParams) (*http.Request, error) {
 	var err error
@@ -2521,6 +3893,40 @@ func NewOauthTokenRequestWithBody(server string, contentType string, body io.Rea
 	return req, nil
 }
 
+// NewLookupIPRequest constructs an http.Request for the LookupIP method
+func NewLookupIPRequest(server string, ip string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "ip", ip, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -2578,6 +3984,16 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /.well-known/oauth-authorization-server (the `OauthMetadata` operationId).
 	OauthMetadataWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OauthMetadataResponse, error)
+
+	// MyEntitlementWithResponse Plan and usage
+	//
+	// Answers what the presented key is, what plan is behind it, and what has
+	// been spent against that plan's allowance in the current window.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/v1/entitlement (the `MyEntitlement` operationId).
+	MyEntitlementWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyEntitlementResponse, error)
 
 	// AccountListApikeysWithResponse List
 	//
@@ -2757,6 +4173,64 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /api/v2/database/metadata (the `DatabaseMetadataV2` operationId).
 	DatabaseMetadataV2WithResponse(ctx context.Context, params *DatabaseMetadataV2Params, reqEditors ...RequestEditorFn) (*DatabaseMetadataV2Response, error)
+
+	// LookupAsnWithResponse ASN lookup
+	//
+	// Answers what InternetData knows about one autonomous system: its registration on every plan,
+	// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
+	// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
+	// its number with empty values.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
+	LookupAsnWithResponse(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*LookupAsnResponse, error)
+
+	// LookupBatchWithBodyWithResponse Batch
+	//
+	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+	// lookup it is on any plan.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /batch (the `LookupBatch` operationId).
+	LookupBatchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LookupBatchResponse, error)
+
+	// LookupBatchWithResponse Batch
+	//
+	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+	// lookup it is on any plan.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /batch (the `LookupBatch` operationId).
+	LookupBatchWithResponse(ctx context.Context, body LookupBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*LookupBatchResponse, error)
+
+	// LookupDomainWithResponse Domain lookup
+	//
+	// Answers what InternetData knows about one domain from its latest snapshots: on every plan
+	// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
+	// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
+	// name is answered under its punycode spelling.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
+	LookupDomainWithResponse(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*LookupDomainResponse, error)
+
+	// LookupMyIPWithResponse My IP
+	//
+	// The address you are calling from, answered as `GET /{ip}` would answer it, and charged as
+	// that lookup is.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /myip (the `LookupMyIP` operationId).
+	LookupMyIPWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*LookupMyIPResponse, error)
 
 	// OauthAuthorizeWithResponse Authorize
 	//
@@ -2942,6 +4416,18 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /oauth/token (the `OauthToken` operationId).
 	OauthTokenWithFormdataBodyWithResponse(ctx context.Context, body OauthTokenFormdataRequestBody, reqEditors ...RequestEditorFn) (*OauthTokenResponse, error)
+
+	// LookupIPWithResponse IP lookup
+	//
+	// Answers what every database says about one IPv4 or IPv6 address. Which fields come back is
+	// decided by the presented key; with no key, on Unlimited, the free plan, the answer carries the fields in
+	// the address table's unlimited column. The path also takes `AS15169` or a domain, as internetdata.io's
+	// pages do, and then answers as `GET /asn/{asn}` or `GET /domain/{domain}` would.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /{ip} (the `LookupIP` operationId).
+	LookupIPWithResponse(ctx context.Context, ip string, reqEditors ...RequestEditorFn) (*LookupIPResponse, error)
 }
 
 type OauthMetadataResponse struct {
@@ -2979,6 +4465,68 @@ func (r OauthMetadataResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r OauthMetadataResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MyEntitlementResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Entitlement
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *EntitlementError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *EntitlementError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *EntitlementError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MyEntitlementResponse) GetJSON200() *Entitlement {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MyEntitlementResponse) GetJSON401() *EntitlementError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MyEntitlementResponse) GetJSON403() *EntitlementError {
+	return r.JSON403
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r MyEntitlementResponse) GetJSON503() *EntitlementError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r MyEntitlementResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MyEntitlementResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MyEntitlementResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MyEntitlementResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -3815,6 +5363,338 @@ func (r DatabaseMetadataV2Response) ContentType() string {
 	return ""
 }
 
+// LookupAsnResponse429Headers the declared response headers of an HTTP 429 response for LookupAsn
+type LookupAsnResponse429Headers struct {
+	RetryAfter *int
+}
+
+type LookupAsnResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *AsnLookupResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *LookupError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *LookupError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *LookupError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *LookupError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *LookupError
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *LookupAsnResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r LookupAsnResponse) GetJSON200() *AsnLookupResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r LookupAsnResponse) GetJSON400() *LookupError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r LookupAsnResponse) GetJSON401() *LookupError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r LookupAsnResponse) GetJSON403() *LookupError {
+	return r.JSON403
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r LookupAsnResponse) GetJSON429() *LookupError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r LookupAsnResponse) GetJSON500() *LookupError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r LookupAsnResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r LookupAsnResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LookupAsnResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r LookupAsnResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+// LookupBatchResponse429Headers the declared response headers of an HTTP 429 response for LookupBatch
+type LookupBatchResponse429Headers struct {
+	RetryAfter *int
+}
+
+type LookupBatchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *BatchLookupResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *LookupError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *LookupError
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *LookupError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *LookupError
+	// JSON413 the response for an HTTP 413 `application/json` response
+	JSON413 *LookupError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *LookupError
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *LookupBatchResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r LookupBatchResponse) GetJSON200() *BatchLookupResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r LookupBatchResponse) GetJSON400() *LookupError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r LookupBatchResponse) GetJSON401() *LookupError {
+	return r.JSON401
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r LookupBatchResponse) GetJSON402() *LookupError {
+	return r.JSON402
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r LookupBatchResponse) GetJSON403() *LookupError {
+	return r.JSON403
+}
+
+// GetJSON413 returns the response for an HTTP 413 `application/json` response
+func (r LookupBatchResponse) GetJSON413() *LookupError {
+	return r.JSON413
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r LookupBatchResponse) GetJSON429() *LookupError {
+	return r.JSON429
+}
+
+// GetBody returns the raw response body bytes
+func (r LookupBatchResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r LookupBatchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LookupBatchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r LookupBatchResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+// LookupDomainResponse429Headers the declared response headers of an HTTP 429 response for LookupDomain
+type LookupDomainResponse429Headers struct {
+	RetryAfter *int
+}
+
+type LookupDomainResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DomainLookupResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *LookupError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *LookupError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *LookupError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *LookupError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *LookupError
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *LookupDomainResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r LookupDomainResponse) GetJSON200() *DomainLookupResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r LookupDomainResponse) GetJSON400() *LookupError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r LookupDomainResponse) GetJSON401() *LookupError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r LookupDomainResponse) GetJSON403() *LookupError {
+	return r.JSON403
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r LookupDomainResponse) GetJSON429() *LookupError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r LookupDomainResponse) GetJSON500() *LookupError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r LookupDomainResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r LookupDomainResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LookupDomainResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r LookupDomainResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+// LookupMyIPResponse429Headers the declared response headers of an HTTP 429 response for LookupMyIP
+type LookupMyIPResponse429Headers struct {
+	RetryAfter *int
+}
+
+type LookupMyIPResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *LookupResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *LookupError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *LookupError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *LookupError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *LookupError
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *LookupMyIPResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r LookupMyIPResponse) GetJSON200() *LookupResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r LookupMyIPResponse) GetJSON401() *LookupError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r LookupMyIPResponse) GetJSON403() *LookupError {
+	return r.JSON403
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r LookupMyIPResponse) GetJSON429() *LookupError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r LookupMyIPResponse) GetJSON500() *LookupError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r LookupMyIPResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r LookupMyIPResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LookupMyIPResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r LookupMyIPResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type OauthAuthorizeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4048,6 +5928,89 @@ func (r OauthTokenResponse) ContentType() string {
 	return ""
 }
 
+// LookupIPResponse429Headers the declared response headers of an HTTP 429 response for LookupIP
+type LookupIPResponse429Headers struct {
+	RetryAfter *int
+}
+
+type LookupIPResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *LookupResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *LookupError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *LookupError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *LookupError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *LookupError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *LookupError
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *LookupIPResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r LookupIPResponse) GetJSON200() *LookupResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r LookupIPResponse) GetJSON400() *LookupError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r LookupIPResponse) GetJSON401() *LookupError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r LookupIPResponse) GetJSON403() *LookupError {
+	return r.JSON403
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r LookupIPResponse) GetJSON429() *LookupError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r LookupIPResponse) GetJSON500() *LookupError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r LookupIPResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r LookupIPResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LookupIPResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r LookupIPResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // OauthMetadataWithResponse Discovery
 //
 // RFC 8414 authorization server metadata: the endpoints, the grant types
@@ -4066,6 +6029,22 @@ func (c *ClientWithResponses) OauthMetadataWithResponse(ctx context.Context, req
 		return nil, err
 	}
 	return ParseOauthMetadataResponse(rsp)
+}
+
+// MyEntitlementWithResponse Plan and usage
+//
+// Answers what the presented key is, what plan is behind it, and what has
+// been spent against that plan's allowance in the current window.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/v1/entitlement (the `MyEntitlement` operationId).
+func (c *ClientWithResponses) MyEntitlementWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyEntitlementResponse, error) {
+	rsp, err := c.MyEntitlement(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMyEntitlementResponse(rsp)
 }
 
 // AccountListApikeysWithResponse List
@@ -4331,6 +6310,94 @@ func (c *ClientWithResponses) DatabaseMetadataV2WithResponse(ctx context.Context
 	return ParseDatabaseMetadataV2Response(rsp)
 }
 
+// LookupAsnWithResponse ASN lookup
+//
+// Answers what InternetData knows about one autonomous system: its registration on every plan,
+// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
+// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
+// its number with empty values.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
+func (c *ClientWithResponses) LookupAsnWithResponse(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*LookupAsnResponse, error) {
+	rsp, err := c.LookupAsn(ctx, asn, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupAsnResponse(rsp)
+}
+
+// LookupBatchWithBodyWithResponse Batch
+//
+// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+// lookup it is on any plan.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /batch (the `LookupBatch` operationId).
+func (c *ClientWithResponses) LookupBatchWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LookupBatchResponse, error) {
+	rsp, err := c.LookupBatchWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupBatchResponse(rsp)
+}
+
+// LookupBatchWithResponse Batch
+//
+// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
+// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
+// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
+// lookup it is on any plan.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /batch (the `LookupBatch` operationId).
+func (c *ClientWithResponses) LookupBatchWithResponse(ctx context.Context, body LookupBatchJSONRequestBody, reqEditors ...RequestEditorFn) (*LookupBatchResponse, error) {
+	rsp, err := c.LookupBatch(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupBatchResponse(rsp)
+}
+
+// LookupDomainWithResponse Domain lookup
+//
+// Answers what InternetData knows about one domain from its latest snapshots: on every plan
+// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
+// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
+// name is answered under its punycode spelling.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
+func (c *ClientWithResponses) LookupDomainWithResponse(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*LookupDomainResponse, error) {
+	rsp, err := c.LookupDomain(ctx, domain, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupDomainResponse(rsp)
+}
+
+// LookupMyIPWithResponse My IP
+//
+// The address you are calling from, answered as `GET /{ip}` would answer it, and charged as
+// that lookup is.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /myip (the `LookupMyIP` operationId).
+func (c *ClientWithResponses) LookupMyIPWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*LookupMyIPResponse, error) {
+	rsp, err := c.LookupMyIP(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupMyIPResponse(rsp)
+}
+
 // OauthAuthorizeWithResponse Authorize
 //
 // The browser entry point for the authorization-code flow. This is a
@@ -4570,6 +6637,24 @@ func (c *ClientWithResponses) OauthTokenWithFormdataBodyWithResponse(ctx context
 	return ParseOauthTokenResponse(rsp)
 }
 
+// LookupIPWithResponse IP lookup
+//
+// Answers what every database says about one IPv4 or IPv6 address. Which fields come back is
+// decided by the presented key; with no key, on Unlimited, the free plan, the answer carries the fields in
+// the address table's unlimited column. The path also takes `AS15169` or a domain, as internetdata.io's
+// pages do, and then answers as `GET /asn/{asn}` or `GET /domain/{domain}` would.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /{ip} (the `LookupIP` operationId).
+func (c *ClientWithResponses) LookupIPWithResponse(ctx context.Context, ip string, reqEditors ...RequestEditorFn) (*LookupIPResponse, error) {
+	rsp, err := c.LookupIP(ctx, ip, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLookupIPResponse(rsp)
+}
+
 // ParseOauthMetadataResponse parses an HTTP response from a OauthMetadataWithResponse call
 func ParseOauthMetadataResponse(rsp *http.Response) (*OauthMetadataResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -4590,6 +6675,53 @@ func ParseOauthMetadataResponse(rsp *http.Response) (*OauthMetadataResponse, err
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMyEntitlementResponse parses an HTTP response from a MyEntitlementWithResponse call
+func ParseMyEntitlementResponse(rsp *http.Response) (*MyEntitlementResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MyEntitlementResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Entitlement
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest EntitlementError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest EntitlementError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest EntitlementError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -5228,6 +7360,302 @@ func ParseDatabaseMetadataV2Response(rsp *http.Response) (*DatabaseMetadataV2Res
 	return response, nil
 }
 
+// ParseLookupAsnResponse parses an HTTP response from a LookupAsnWithResponse call
+func ParseLookupAsnResponse(rsp *http.Response) (*LookupAsnResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LookupAsnResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AsnLookupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers LookupAsnResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
+// ParseLookupBatchResponse parses an HTTP response from a LookupBatchWithResponse call
+func ParseLookupBatchResponse(rsp *http.Response) (*LookupBatchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LookupBatchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BatchLookupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers LookupBatchResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
+// ParseLookupDomainResponse parses an HTTP response from a LookupDomainWithResponse call
+func ParseLookupDomainResponse(rsp *http.Response) (*LookupDomainResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LookupDomainResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DomainLookupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers LookupDomainResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
+// ParseLookupMyIPResponse parses an HTTP response from a LookupMyIPWithResponse call
+func ParseLookupMyIPResponse(rsp *http.Response) (*LookupMyIPResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LookupMyIPResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest LookupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers LookupMyIPResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
 // ParseOauthAuthorizeResponse parses an HTTP response from a OauthAuthorizeWithResponse call
 func ParseOauthAuthorizeResponse(rsp *http.Response) (*OauthAuthorizeResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -5378,6 +7806,80 @@ func ParseOauthTokenResponse(rsp *http.Response) (*OauthTokenResponse, error) {
 		}
 		response.JSON401 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseLookupIPResponse parses an HTTP response from a LookupIPWithResponse call
+func ParseLookupIPResponse(rsp *http.Response) (*LookupIPResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LookupIPResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest LookupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest LookupError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers LookupIPResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		response.Headers429 = &headers
 	}
 
 	return response, nil

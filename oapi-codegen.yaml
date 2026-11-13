@@ -8,13 +8,19 @@ generate:
   client: true
 output-options:
   name-normalizer: ToCamelCaseWithInitialisms
-  # Database v2, IAM and OAuth, never v1. v1 is a separate, legacy vocabulary
-  # on the same host: a different credential (`?apikey=<uuid>`), a hardcoded
-  # customer list, and clients that do not follow redirects. Generating it would
-  # put a second way to do everything into a library whose whole job is the
-  # current one. IAM is generated and left unwrapped, as in the VPNDetection SDK;
-  # only OAuth has a public accessor.
+  # The lookups, Database v2, IAM and OAuth, never v1. v1 is a separate, legacy
+  # vocabulary on the same host: a different credential (`?apikey=<uuid>`), a
+  # hardcoded customer list, and clients that do not follow redirects.
+  # Generating it would put a second way to do everything into a library whose
+  # whole job is the current one. IAM is generated and left unwrapped, as in the
+  # VPNDetection SDK; only OAuth has a public accessor.
   include-operation-ids:
+    - lookupIp
+    - lookupMyIp
+    - lookupAsn
+    - lookupDomain
+    - lookupBatch
+    - myEntitlement
     - listDatabases
     - downloadDatabaseV2
     - databaseMetadataV2
