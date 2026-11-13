@@ -10,7 +10,11 @@ module github.com/internetdata/sdk-go/v2
 
 go 1.26.0
 
-require github.com/oapi-codegen/runtime v1.7.0
+require (
+	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/oapi-codegen/runtime v1.7.0
+	golang.org/x/sync v0.23.0
+)
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect

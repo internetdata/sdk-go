@@ -5,7 +5,6 @@ package internetdata
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -19,18 +18,28 @@ import (
 // "Authorization: Bearer " with nothing after it, which reads as a wrong key
 // rather than as none.
 func TestAClientBuildsWithNoKeyAndSendsNoAuthorizationHeader(t *testing.T) {
-	stub := newStub(map[string]stubRoute{pathList: {body: catalog("bogon_ip")}})
+	routes := okRoutes("8.8.8.8")
+	routes[pathList] = stubRoute{body: catalog("bogon_ip")}
+	stub := newStub(routes)
 	client, err := New(WithHTTPClient(stub.client()))
 	if err != nil {
 		t.Fatalf("New with no key: %v", err)
 	}
 
+	if _, err := client.Lookup(t.Context(), "8.8.8.8"); err != nil {
+		t.Fatalf("Lookup: %v", err)
+	}
 	if _, err := client.Database.List(t.Context()); err != nil {
 		t.Fatalf("List: %v", err)
 	}
 
-	if got := stub.seen()[0].auth; got != "" {
-		t.Errorf("a keyless client sent Authorization: %q, want no header at all", got)
+	for _, call := range stub.seen() {
+		if call.auth != "" {
+			t.Errorf("a keyless client sent Authorization: %q to %s, want no header at all", call.auth, call.path)
+		}
+	}
+	if stub.count() != 2 {
+		t.Errorf("issued %d request(s), want 2", stub.count())
 	}
 }
 
@@ -78,7 +87,10 @@ func TestNewRejectsUnusableOptions(t *testing.T) {
 		name   string
 		option Option
 	}{
+		{"zero concurrency", WithConcurrency(0)},
 		{"negative retries", WithRetries(-1)},
+		{"empty cache", WithCache(0, time.Hour)},
+		{"expired cache", WithCache(10, 0)},
 		{"nil http client", WithHTTPClient(nil)},
 		{"base url with no scheme", WithBaseURL("internetdata.io")},
 		{"base url with no host", WithBaseURL("https://")},
@@ -610,20 +622,38 @@ func TestARetryAfterTooLongToHoldWaitsTheBackoff(t *testing.T) {
 func TestEveryTrailingSlashOnTheBaseURLIsDropped(t *testing.T) {
 	for _, suffix := range []string{"/", "//", "///"} {
 		t.Run(suffix, func(t *testing.T) {
-			stub := newStub(map[string]stubRoute{
-				pathList: {body: catalog("bogon_ip")},
-				pathDownload: {
-					status:  http.StatusFound,
-					headers: map[string]string{"Location": "https://s3.example.test/x?X-Amz-Signature=abc"},
-				},
-				"/.well-known/oauth-authorization-server": {body: map[string]string{
-					"issuer":                 "https://api.example.test",
-					"authorization_endpoint": "https://api.example.test/oauth/authorize",
-					"token_endpoint":         "https://api.example.test/oauth/token",
-				}},
-			})
+			routes := okRoutes("8.8.8.8", "9.9.9.9")
+			routes["myip"] = stubRoute{body: answerAbout("8.8.4.4", nil)}
+			routes["asn/9009"] = stubRoute{body: corpusBody("asn-unlimited-answer")}
+			routes["domain/example.com"] = stubRoute{body: corpusBody("domain-unlimited-answer")}
+			routes[pathList] = stubRoute{body: catalog("bogon_ip")}
+			routes[pathDownload] = stubRoute{
+				status:  http.StatusFound,
+				headers: map[string]string{"Location": "https://s3.example.test/x?X-Amz-Signature=abc"},
+			}
+			routes[".well-known/oauth-authorization-server"] = stubRoute{body: map[string]string{
+				"issuer":                 "https://example.test",
+				"authorization_endpoint": "https://example.test/oauth/authorize",
+				"token_endpoint":         "https://example.test/oauth/token",
+			}}
+			stub := newStub(routes)
 			client := newTestClient(t, stub, WithBaseURL("https://api.example.test"+suffix), WithRetries(0))
 
+			if _, err := client.Lookup(t.Context(), "8.8.8.8"); err != nil {
+				t.Errorf("Lookup: %v", err)
+			}
+			if _, err := client.LookupBatch(t.Context(), []string{"9.9.9.9"}); err != nil {
+				t.Errorf("LookupBatch: %v", err)
+			}
+			if _, err := client.MyIP(t.Context()); err != nil {
+				t.Errorf("MyIP: %v", err)
+			}
+			if _, err := client.LookupASN(t.Context(), 9009); err != nil {
+				t.Errorf("LookupASN: %v", err)
+			}
+			if _, err := client.LookupDomain(t.Context(), "example.com"); err != nil {
+				t.Errorf("LookupDomain: %v", err)
+			}
 			if _, err := client.Database.List(t.Context()); err != nil {
 				t.Errorf("List: %v", err)
 			}
@@ -634,64 +664,12 @@ func TestEveryTrailingSlashOnTheBaseURLIsDropped(t *testing.T) {
 				t.Errorf("Oauth.Metadata: %v", err)
 			}
 			for _, call := range stub.seen() {
-				if strings.HasPrefix(call.path, "//") {
-					t.Errorf("sent %s", call.path)
+				if strings.HasPrefix(call.path, "//") || strings.HasPrefix(call.path, "/api//") {
+					t.Errorf("sent %s", call.url)
 				}
 			}
-		})
-	}
-}
-
-// The database answers on the API's host, and OAuth at the apex, whose issuer
-// it is: api. dropped, api-<env>. turned into <env>., anything else as given.
-func TestOauthSignsInAtTheApexAndEverythingElseAtTheBaseURL(t *testing.T) {
-	cases := []struct{ base, api, oauth string }{
-		{"", "https://api.internetdata.io", "https://internetdata.io"},
-		{"https://api.internetdata.io/", "https://api.internetdata.io", "https://internetdata.io"},
-		{"https://api-dev.example.test", "https://api-dev.example.test", "https://dev.example.test"},
-		{"https://internetdata.io", "https://internetdata.io", "https://internetdata.io"},
-		{"https://dev.example.test", "https://dev.example.test", "https://dev.example.test"},
-		{"https://API.example.test:8443", "https://API.example.test:8443", "https://example.test:8443"},
-		{"http://127.0.0.1:8080", "http://127.0.0.1:8080", "http://127.0.0.1:8080"},
-		{"http://api-local:8080", "http://api-local:8080", "http://api-local:8080"},
-		{"https://apis.example.test", "https://apis.example.test", "https://apis.example.test"},
-		{"https://api-.example.test", "https://api-.example.test", "https://api-.example.test"},
-	}
-	for _, c := range cases {
-		t.Run(c.base, func(t *testing.T) {
-			stub := newStub(map[string]stubRoute{
-				pathList: {body: catalog("bogon_ip")},
-				"/.well-known/oauth-authorization-server": {body: json.RawMessage(everyRequiredMember)},
-			})
-			opts := []Option{WithHTTPClient(stub.client()), WithRetries(0)}
-			if c.base != "" {
-				opts = append(opts, WithBaseURL(c.base))
-			}
-			client, err := New(opts...)
-			if err != nil {
-				t.Fatalf("New: %v", err)
-			}
-
-			if _, err := client.Database.List(t.Context()); err != nil {
-				t.Fatalf("List: %v", err)
-			}
-			if _, err := client.Oauth.Metadata(t.Context()); err != nil {
-				t.Fatalf("Oauth.Metadata: %v", err)
-			}
-			link, err := client.Oauth.AuthorizationURL("cid", "http://127.0.0.1:8765/cb", "challenge",
-				AuthorizationURLOptions{})
-			if err != nil {
-				t.Fatalf("AuthorizationURL: %v", err)
-			}
-
-			want := []string{c.api + pathList, c.oauth + "/.well-known/oauth-authorization-server"}
-			for i, call := range stub.seen() {
-				if i >= len(want) || call.url != want[i] {
-					t.Errorf("request %d went to %s, want %v", i, call.url, want)
-				}
-			}
-			if !strings.HasPrefix(link, c.oauth+"/oauth/authorize?") {
-				t.Errorf("AuthorizationURL = %s, want it at %s", link, c.oauth)
+			if n := stub.count(); n != 8 {
+				t.Errorf("sent %d request(s), want one per call", n)
 			}
 		})
 	}

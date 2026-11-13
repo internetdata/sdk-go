@@ -5,7 +5,7 @@
 
 The official Go client library for the [InternetData](https://internetdata.io) API.
 
-The library downloads the IP and network databases your organization is licensed for, in CSV.GZ or MMDB, and tells you what is inside each one before you fetch it.
+It tells you what InternetData's databases say about an IP address, an AS or a domain, and downloads the databases your organization is licensed for, in CSV.GZ or MMDB.
 
 ## Getting Started
 
@@ -21,13 +21,165 @@ import internetdata "github.com/internetdata/sdk-go/v2"
 
 ## Usage
 
-Every database published today is licensed, so start with an API key carrying the `db.download` scope. Create one in the [console](https://app.internetdata.io) and pass it to `New` as an option:
+**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, limited per address per minute.
 
 ```go
-client, err := internetdata.New(internetdata.WithAPIKey(os.Getenv("INTERNETDATA_API_KEY")))
+client, err := internetdata.New()
 if err != nil {
     log.Fatal(err)
 }
+
+result, err := client.Lookup(ctx, "146.70.116.130")
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(result.Location.Country)   // AT
+fmt.Println(result.Asn.Name)           // M247 Europe SRL
+fmt.Println(result.IsTor)              // false
+```
+
+### With an API key
+
+A paid plan answers every field: `is_vpn`, `is_hosting`, `is_cdn` and the four proxy flags as well, the provider and confidence behind each flag, the location down to the city, and the whois record. A free account tries every field, 100 lookups a day. Create a key in the [console](https://app.internetdata.io), then pass it in:
+
+```go
+client, err := internetdata.New(internetdata.WithAPIKey(os.Getenv("INTERNETDATA_API_KEY")))
+
+result, err := client.Lookup(ctx, "146.70.116.130")
+fmt.Println(internetdata.BoolValue(result.IsVpn))   // true, on a paid plan
+
+if vpn := result.Vpn; vpn != nil {
+    fmt.Println(vpn.ProviderName)       // Mullvad, on a paid plan
+}
+```
+
+### An AS or a domain
+
+```go
+asn, err := client.LookupASN(ctx, 9009)
+fmt.Println(asn.Name, asn.Country)     // M247 Europe SRL RO
+
+domain, err := client.LookupDomain(ctx, "example.com")
+fmt.Println(domain.IsRegistered)       // true
+```
+
+Every plan answers an AS's registration and whether a domain is registered and which record types it has. A paid plan adds the AS's whois record and its prefixes, and the domain's records, IP ranges and `is_disposable`. Neither is cached or batched, and `Lookup` takes an address alone: it refuses anything else as a `bad_request` before sending it.
+
+### Your own address
+
+```go
+result, err := client.MyIP(ctx)
+fmt.Println(result.IP)   // the address we saw this call come from
+```
+
+Same answer `Lookup` would give for that address, and the same cost against your allowance. It's deliberately not cached: which address you are is the whole question, and a machine that moves between networks would otherwise be told where it used to be.
+
+### Your plan and usage
+
+```go
+acct, err := client.MyEntitlement(ctx)
+fmt.Println(acct.Plan.Key)         // max
+fmt.Println(acct.Usage.Requests)   // 580
+fmt.Println(acct.Usage.WindowEnd)  // when the allowance resets
+```
+
+Usage is counted against the anniversary of your subscription on a paid plan, not the calendar month and not the billing period, and against the UTC day on the free plan; it's the same number a lookup is gated on. `HardLimit` is nil on an uncapped plan, which is not the same as zero.
+
+### Batch lookup
+
+Look up many addresses at once. Bogons and cached answers are handled locally, and everything else goes to the batch endpoint in chunks of up to 1000 addresses, in parallel. The batch endpoint needs a paid plan:
+
+```go
+results, err := client.LookupBatch(ctx, []string{"146.70.116.130", "8.8.8.8", "1.1.1.1"})
+
+for ip, result := range results {
+    if result.Err != nil {
+        fmt.Printf("%s: %v\n", ip, result.Err)
+        continue
+    }
+    fmt.Printf("%s: %s\n", ip, result.Result.Location.Country)
+}
+```
+
+Results are keyed by address, so duplicates in your list collapse into a single entry and one address failing never loses the rest: it carries its error as its value, with the status the API would have given that address on its own.
+
+Pass as many addresses as you like; splitting them into chunks is the library's job. How many chunks are in flight at once, how many times a failed chunk is retried, and how long each attempt may take are configurable per call:
+
+```go
+results, err := client.LookupBatch(ctx, manyIPs,
+    internetdata.Concurrency(4), internetdata.Retries(4), internetdata.Timeout(10*time.Second))
+```
+
+`Retries` and `Timeout` work on `Lookup`, `LookupASN`, `LookupDomain`, `MyIP` and `MyEntitlement` too. The timeout bounds each attempt rather than the whole call, and defaults to the HTTP client's: 30 seconds unless `WithHTTPClient` supplied another.
+
+### Caching
+
+Address lookups are cached by default, so repeat lookups of the same address are free:
+
+```go
+client, err := internetdata.New()
+
+result, err := client.Lookup(ctx, "146.70.116.130")
+fmt.Println(result.Asn.Asn)    // 9009, API request
+
+result2, err := client.Lookup(ctx, "146.70.116.130")
+fmt.Println(result2.Asn.Asn)   // 9009, no API request, result was cached
+```
+
+You can change the default cache variables (max size, TTL, etc) on initialization, or even disable it:
+
+```go
+client, err := internetdata.New(internetdata.WithCache(50_000, 6*time.Hour))
+clientNoCache, err := internetdata.New(internetdata.WithoutCache())
+```
+
+### Private and reserved addresses
+
+Private, loopback, link-local, documentation and multicast addresses (and their IPv6 equivalents, including the 6to4 and Teredo ranges) are answered locally, every flag false and every field empty, so they cost no request and no quota:
+
+```go
+result, err := client.Lookup(ctx, "192.168.1.1")
+result.IsBogon   // true, this answer was computed rather than served
+result.IsTor     // false
+```
+
+Because the answer is computed rather than served, it always carries every field, whatever plan you are on. Do not read your plan's shape off a private address.
+
+The check is available on the client, which is handy when your inputs are addresses anyway:
+
+```go
+client.IsBogon("10.0.0.1")   // true
+client.IsBogon("8.8.8.8")    // false
+```
+
+It is also callable on its own, if you want it without a client:
+
+```go
+internetdata.IsBogon("10.0.0.1")   // true
+```
+
+### Errors
+
+Failures return an `*internetdata.Error` carrying a `Kind`, the API's own message, and a `Retryable` flag:
+
+```go
+result, err := client.Lookup(ctx, "146.70.116.130")
+var apiErr *internetdata.Error
+if errors.As(err, &apiErr) {
+    fmt.Println(apiErr.Kind, apiErr.Message, apiErr.Retryable())
+}
+```
+
+`Kind` is one of `bad_request`, `unauthorized`, `forbidden`, `rate_limited`, `quota_exceeded`, `server_error` or `network`. A lookup's `Message` is the API's explanation. A database call's is its `rc`, which is what separates two refusals that share a status: `NOT_LICENSED` means buy it, `LICENSE_EXPIRED` means renew it, and `IP_NOT_ALLOWED` means the call came from an address the key or its organization does not allow, and all three are `403`.
+
+Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit carries `Retry-After`, and retrying later works; a spent quota needs your allowance raised or the window to roll over. The library retries rate limits for you, but not if your quota is exceeded.
+
+### Databases
+
+The databases your organization is licensed for are under `client.Database`, for a key carrying the `db.download` scope. Every database published today is licensed:
+
+```go
+client, err := internetdata.New(internetdata.WithAPIKey(os.Getenv("INTERNETDATA_API_KEY")))
 
 databases, err := client.Database.List(ctx)
 for _, db := range databases {
@@ -136,22 +288,6 @@ for _, attempt := range history {
 }
 ```
 
-### Errors
-
-Failures return an `*internetdata.Error` carrying a `Kind`, the API's own result code, and a `Retryable` flag:
-
-```go
-_, err := client.Database.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
-var apiErr *internetdata.Error
-if errors.As(err, &apiErr) {
-    fmt.Println(apiErr.Kind, apiErr.Message, apiErr.Retryable())
-}
-```
-
-`Kind` is one of `bad_request`, `unauthorized`, `forbidden`, `rate_limited`, `quota_exceeded`, `server_error` or `network`. `Message` is the API's `rc`, which is what separates two refusals that share a status: `NOT_LICENSED` means buy it, `LICENSE_EXPIRED` means renew it, and `IP_NOT_ALLOWED` means the call came from an address the key or its organization does not allow, and all three are `403`.
-
-`rate_limited` is a 429 that carries `Retry-After`, and the library retries it for you. `quota_exceeded` is a 429 without one, which it never retries. InternetData's database API has no quota, so you won't see `quota_exceeded` from it.
-
 ### Sign in with OAuth (device flow)
 
 A program running on the person's own machine can let them sign in with a browser and pick one of their API keys, instead of asking them to paste it:
@@ -199,6 +335,16 @@ registration, err := client.Oauth.Register(ctx, []string{"http://127.0.0.1:8765/
 ```
 
 Each redirect URI must be https on a public host name, or http on a loopback address, which then matches any port. Nothing is kept until a person approves the client, so an app with no client ID saved can simply register again.
+
+### Absent is not false
+
+Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its daily trial is spent. A `nil` pointer means "not in your plan", not "checked, and no".
+
+```go
+internetdata.BoolValue(result.IsVpn)        // when you only want the flag
+result.IsVpn == nil                         // on Unlimited: not in your plan
+internetdata.BoolValue(result.TrialExpired) // a free-plan key's daily trial is spent
+```
 
 ## Other Libraries
 

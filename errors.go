@@ -33,9 +33,10 @@ const (
 // errors.As and branch on Kind.
 type Error struct {
 	Kind ErrorKind
-	// Message is the API's own result code, or a transport failure's text. The
-	// codes are deliberately not an enum on the wire, so one added later stays
-	// readable to a client built today.
+	// Message is the API's own explanation for a lookup and its result code for
+	// a database call, or a transport failure's text. The codes are
+	// deliberately not an enum on the wire, so one added later stays readable
+	// to a client built today.
 	Message string
 	// StatusCode is the HTTP status, or 0 when no response was received.
 	StatusCode int
@@ -114,15 +115,29 @@ func errorFromTransport(err error) *Error {
 	return &Error{Kind: KindNetwork, Message: err.Error(), cause: err}
 }
 
-// Every refusal carries `{"rc": "<CODE>"}`, which is more use to a caller than
-// the status alone: NOT_LICENSED and LICENSE_EXPIRED are both 403 and mean
-// different things to do next.
+// A per-entry failure inside a successful batch: the status the single lookup
+// would have answered, and its message, with no headers at all - so a 429 here
+// is a spent allowance, which is the only kind the API puts in an entry.
+func errorFromEntry(status int, message string) *Error {
+	body, _ := json.Marshal(map[string]string{"error": message})
+	return errorFromResponse(status, http.Header{}, body)
+}
+
+// The two APIs behind this host answer with different envelopes: the lookups
+// use `error`, the database endpoints `rc`. Both are read here so a caller
+// never has to know which one they hit. An rc is more use than the status
+// alone: NOT_LICENSED and LICENSE_EXPIRED are both 403 and mean different
+// things to do next.
 func messageOf(body []byte) string {
 	var envelope struct {
-		Rc string `json:"rc"`
+		Error string `json:"error"`
+		Rc    string `json:"rc"`
 	}
 	if err := json.Unmarshal(body, &envelope); err != nil {
 		return ""
+	}
+	if envelope.Error != "" {
+		return envelope.Error
 	}
 	return envelope.Rc
 }
