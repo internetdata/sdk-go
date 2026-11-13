@@ -628,6 +628,10 @@ func WithRetries(n int) Option {
 // The client is copied rather than mutated, and the copy adds a CheckRedirect
 // that defers to yours (see DatabaseAPI.DownloadURL). A database transfer runs
 // on a second copy with Timeout cleared, and is bounded by its context instead.
+//
+// Every request reaches your transport already carrying User-Agent
+// internetdata-go/<version>, so a program built on the SDK can put its own name
+// first there.
 func WithHTTPClient(client *http.Client) Option {
 	return func(c *config) error {
 		if client == nil {
@@ -735,15 +739,16 @@ func (o timeoutOption) applyBatch(c *callConfig)  { c.timeout, c.timed = time.Du
 
 type timeoutKey struct{}
 
-// timedDoer sends every API request, and swaps a per-call Timeout in for the
-// client's own. The client-level bound IS http.Client.Timeout, so the override
-// sets that field on a copy: the same per-attempt meaning, the same coverage of
-// the body, the same error.
+// timedDoer sends every API request, naming this SDK on it, and swaps a per-call
+// Timeout in for the client's own. The client-level bound IS http.Client.Timeout,
+// so the override sets that field on a copy: the same per-attempt meaning, the
+// same coverage of the body, the same error.
 type timedDoer struct {
 	client *http.Client
 }
 
 func (t timedDoer) Do(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", userAgent())
 	timeout, ok := req.Context().Value(timeoutKey{}).(time.Duration)
 	if !ok {
 		return t.client.Do(req)

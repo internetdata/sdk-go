@@ -112,6 +112,8 @@ results, err := client.LookupBatch(ctx, manyIPs,
 
 `Retries` and `Timeout` work on `Lookup`, `LookupASN`, `LookupDomain`, `MyIP` and `MyEntitlement` too. The timeout bounds each attempt rather than the whole call, and defaults to the HTTP client's: 30 seconds unless `WithHTTPClient` supplied another.
 
+Every request names the SDK in its `User-Agent`, `internetdata-go/<version>`, object storage's included. A program built on the SDK can put its own name first in the transport it passes to `WithHTTPClient`, which sees that header already set.
+
 ### Caching
 
 Address lookups are cached by default, so repeat lookups of the same address are free:
