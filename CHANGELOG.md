@@ -2,6 +2,18 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.10.0 - 2026-11-13
+
+### Features
+
+- Look up an address, an AS or a domain: Lookup, LookupBatch, LookupASN and LookupDomain ([`18b3b9b`](https://github.com/internetdata/sdk-go/commit/18b3b9b8e776f5edbfd717dd83eb80b7afe2d32c))
+- Default to https://api.internetdata.io, and sign in at the apex ([`d782bf6`](https://github.com/internetdata/sdk-go/commit/d782bf69f48598dfdbdd7079f59533784d0b8bcc))
+- Name the SDK in every request's User-Agent ([`922a314`](https://github.com/internetdata/sdk-go/commit/922a314a01c5afe52ede424b8c6bb6ba4d4449f4))
+
+### Fixes
+
+- Re-pin the spec to 2026.11.13: the lookups ([`f3e3978`](https://github.com/internetdata/sdk-go/commit/f3e3978cb46e614667d4e99e65d772505cfa475d))
+
 ## 2.9.1 - 2026-11-09
 
 ### Fixes
