@@ -5515,6 +5515,5148 @@
       }
     }
   ],
+  "middleware": {
+    "why": "The framework middleware contract: how a block condition is evaluated, and which conditions must be refused outright. Field names are the WIRE names; each SDK maps them to its own idiom exactly as it maps a response. A missing member is a top-level one, or a paid one inside an object every plan gets, by its path (location.city); nothing inside an empty object is missing.",
+    "conditions": [
+      {
+        "name": "flag-true-matches",
+        "why": "The simplest condition there is: a served flag that is true.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "flag-true-against-false",
+        "why": "A served flag that is false does not match.",
+        "body": {
+          "ip": "1.1.1.1",
+          "is_bogon": false,
+          "is_vpn": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": false,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": false,
+          "is_hosting": true,
+          "is_cdn": true,
+          "is_anycast": true,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": true,
+          "is_dns_resolver": true,
+          "is_bittorrent": true,
+          "vpn": {},
+          "tor": {},
+          "relay": {},
+          "resproxy": {},
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {},
+          "hosting": {
+            "provider": "",
+            "provider_name": "",
+            "confidence": "medium",
+            "last_seen": "2026-11-12"
+          },
+          "cdn": {
+            "provider": "cloudflare",
+            "provider_name": "Cloudflare",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [
+            {
+              "port": 443,
+              "tls_ok": true,
+              "session_ok": true,
+              "status_code": 301,
+              "server": "cloudflare",
+              "location": "https://one.one.one.one/",
+              "title": "",
+              "cert_subject_cn": "cloudflare-dns.com",
+              "cert_subject_o": "Cloudflare, Inc.",
+              "cert_issuer_dn": "C=US, ST=Texas, L=Houston, O=SSL Corp, CN=SSL.com SSL Intermediate CA ECC R2",
+              "cert_browser_trusted": true,
+              "tls_version": "TLSv1.3",
+              "first_seen": "2026-08-12",
+              "last_seen": "2026-10-31"
+            }
+          ],
+          "dns_resolver": {
+            "port": 53,
+            "recursion_available": true,
+            "rcode": 0,
+            "answer_correct": true,
+            "first_seen": "2026-08-09",
+            "last_seen": "2026-11-07"
+          },
+          "bittorrent": {
+            "verified": true,
+            "id_matches_ip": false,
+            "first_seen": "2026-10-21",
+            "last_seen": "2026-11-12",
+            "last_reachable": "",
+            "days_seen": 19,
+            "num_ports": 84,
+            "peak_num_ports": 9,
+            "indexer": false,
+            "clients": []
+          },
+          "location": {
+            "continent": "OC",
+            "continent_name": "Oceania",
+            "country": "AU",
+            "country_name": "Australia",
+            "timezone": "Australia/Brisbane",
+            "currency_code": "AUD",
+            "currency_name": "Dollar",
+            "currency_symbol": "A$",
+            "flag_emoji": "🇦🇺",
+            "flag_unicode": "U+1F1E6 U+1F1FA",
+            "region": "Queensland",
+            "region_code": "AU-QLD",
+            "city": "Brisbane",
+            "postal_code": "4000",
+            "latitude": -27.46794,
+            "longitude": 153.02809,
+            "accuracy_radius": 20000,
+            "geoname_id": "2174003",
+            "dma_code": "",
+            "last_changed": "2026-10-13"
+          },
+          "asn": {
+            "asn": 13335,
+            "name": "Cloudflare, Inc.",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "prefix": "1.1.1.0/24",
+            "country": "US",
+            "rpki_status": "valid"
+          },
+          "company": {
+            "name": "APNIC and Cloudflare DNS Resolver project",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "country": "AU"
+          },
+          "hostname": "one.one.one.one",
+          "abuse": {
+            "email": "abuse@cloudflare.com",
+            "name": "Abuse",
+            "phone": "+1-650-319-8930",
+            "address": "101 Townsend Street, San Francisco, CA, 94107",
+            "country": "AU",
+            "network": "1.1.1.0-1.1.1.255",
+            "validated": false,
+            "unvalidated_since": "2025-09-04"
+          },
+          "whois": {
+            "id": "APNIC-LABS",
+            "name": "APNIC Research and Development",
+            "org": "ORG-ARAD1-AP",
+            "country": "AU",
+            "status": "ASSIGNED PORTABLE",
+            "source": "apnic",
+            "domain": "apnic.net",
+            "abuse_email": "helpdesk@apnic.net",
+            "asn": 13335
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 23427
+          }
+        },
+        "condition": {
+          "is_vpn": true
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "flag-absent-is-not-false",
+        "why": "The member is not in this plan, so the term can never match and must be reported. Absent means not-in-your-plan, never checked-and-no.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "is_hosting": true
+        },
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "is_hosting"
+          ]
+        }
+      },
+      {
+        "name": "flag-on-every-plan-is-not-a-gap",
+        "why": "Unlimited serves is_anycast, so a false one is a real answer and nothing is reported.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "is_anycast": true
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "nested-provider-exact",
+        "why": "A condition reaches the evidence fields, not just the flags.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true,
+          "vpn": {
+            "provider": "mullvad"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "nested-provider-case-insensitive",
+        "why": "Providers are lowercase slugs on the wire; a caller should not have to know that.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "vpn": {
+            "provider": "Mullvad"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "nested-provider-mismatch",
+        "why": "A different provider does not match.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "vpn": {
+            "provider": "nordvpn"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "and-across-members",
+        "why": "Every member named must hold.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true,
+          "is_hosting": true
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "and-one-fails",
+        "why": "One failing term fails the whole condition.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true,
+          "is_tor": true
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "or-list-second-matches",
+        "why": "A list is OR: any one entry blocking is enough.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": [
+          {
+            "is_tor": true
+          },
+          {
+            "vpn": {
+              "provider": "mullvad"
+            }
+          }
+        ],
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "or-list-none-match",
+        "why": "A list where nothing matches does not block.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": [
+          {
+            "is_tor": true
+          },
+          {
+            "vpn": {
+              "provider": "nordvpn"
+            }
+          }
+        ],
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "array-any-of",
+        "why": "An array of values is any-of.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "vpn": {
+            "confidence": [
+              "high",
+              "medium"
+            ]
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "array-none-of",
+        "why": "No value in the array matches.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "vpn": {
+            "confidence": [
+              "low"
+            ]
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-gte-inside",
+        "why": "A numeric bound the value meets.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gte": 5
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-gte-outside",
+        "why": "A numeric bound the value misses.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gte": 9
+            }
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-range-inside",
+        "why": "Two bounds are a range, and both must hold.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gte": 5,
+              "lt": 100
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-exclusive-bound",
+        "why": "gt is exclusive: 7 is not greater than 7.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gt": 7
+            }
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-inclusive-lower-bound",
+        "why": "gte is inclusive: 7 is at least 7.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gte": 7
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-inclusive-upper-bound",
+        "why": "lte is inclusive: 7 is at most 7.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "lte": 7
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-exclusive-upper-bound",
+        "why": "lt is exclusive: 7 is not less than 7.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "lt": 7
+            }
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "fractional-bound-on-an-integer-member",
+        "why": "A bound need not be a whole number to compare with one: 42 is at least 41.5.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits_days_pct": {
+              "gte": 41.5
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-bound-on-a-fractional-member",
+        "why": "location.latitude is the one member that is not a whole number, and a range reaches it.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "location": {
+            "latitude": {
+              "gte": 48.2,
+              "lt": 48.3
+            }
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "numeric-bound-on-absent-member",
+        "why": "A bound on a member this plan does not serve can never match, and is reported.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "resproxy": {
+            "hits": {
+              "gte": 1
+            }
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "resproxy"
+          ]
+        }
+      },
+      {
+        "name": "false-entry-is-ignored",
+        "why": "false is ignored rather than meaning \"block when false\".",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true,
+          "is_tor": false
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "null-entry-is-ignored",
+        "why": "null is ignored too.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_vpn": true,
+          "is_cdn": null
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "empty-detail-is-a-real-false",
+        "why": "tor is {} because is_tor is false: present, so not a plan gap, and nothing inside an empty object is reported.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "tor": {
+            "provider": "anything"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "bogon-is-exempt",
+        "why": "A bogon is answered locally in the widest shape, so nothing is ever reported missing for it.",
+        "bogon": "10.0.0.1",
+        "condition": {
+          "is_hosting": true
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "pubproxy-detail-term-matches",
+        "why": "A condition reaches Public Proxy IP's detail.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "is_pubproxy": true,
+          "pubproxy": {
+            "entry": true
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "pubproxy-detail-term-misses",
+        "why": "A detail member that is false does not match.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "pubproxy": {
+            "exit": true
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "location-country-matches",
+        "why": "Unlimited serves the country, so a country condition works without a key, and a code compares without regard to case.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "location": {
+            "country": "at"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "location-country-any-of",
+        "why": "Any of several countries.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "location": {
+            "country": [
+              "DE",
+              "AT"
+            ]
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "location-country-mismatch",
+        "why": "Another country does not match.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "location": {
+            "country": "DE"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "location-city-is-a-paid-member",
+        "why": "location is on every plan but its city is not: a paid member inside an object every plan gets is reported by its path, since the term can never match.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "location": {
+            "city": "Vienna"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "location.city"
+          ]
+        }
+      },
+      {
+        "name": "location-city-matches",
+        "why": "A paid plan serves the city.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "location": {
+            "city": "vienna"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "paid-members-of-shared-objects-are-reported",
+        "why": "Each paid member the condition names is reported by its path, across a list.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": [
+          {
+            "location": {
+              "region": "Vienna"
+            }
+          },
+          {
+            "asn": {
+              "rpki_status": "valid"
+            }
+          }
+        ],
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "asn.rpki_status",
+            "location.region"
+          ]
+        }
+      },
+      {
+        "name": "asn-type-matches",
+        "why": "The network's type, on every plan.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "asn": {
+            "type": "hosting"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "asn-number-matches",
+        "why": "The AS number, on every plan.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "asn": {
+            "asn": 9009
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "company-type-matches",
+        "why": "Who uses the address, on a paid plan.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_vpn": true,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": true,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": true,
+          "is_hosting": true,
+          "is_cdn": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "vpn": {
+            "provider": "mullvad",
+            "provider_name": "Mullvad",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "tor": {},
+          "relay": {},
+          "resproxy": {
+            "provider": "brightdata",
+            "provider_name": "Bright Data",
+            "first_seen": "2026-06-01",
+            "last_seen": "2026-11-12",
+            "hits": 7,
+            "hits_days_pct": 42,
+            "providers_num": 2
+          },
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {
+            "entry": true,
+            "exit": false,
+            "protocols": [
+              "socks5"
+            ],
+            "num_ports": 1,
+            "num_proxies": 0,
+            "last_seen": "2026-11-12",
+            "last_usable": "2026-11-12"
+          },
+          "hosting": {
+            "provider": "m247",
+            "provider_name": "M247",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "cdn": {},
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [],
+          "dns_resolver": {},
+          "bittorrent": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9",
+            "region": "Vienna",
+            "region_code": "AT-9",
+            "city": "Vienna",
+            "postal_code": "1230",
+            "latitude": 48.20849,
+            "longitude": 16.37208,
+            "accuracy_radius": 10,
+            "geoname_id": "2761369",
+            "dma_code": "",
+            "last_changed": "2026-10-06"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24",
+            "country": "RO",
+            "rpki_status": "not_found"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro",
+            "type": "hosting",
+            "country": "AT"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro",
+            "name": "M247 Europe",
+            "phone": "",
+            "address": "Sos. Fabrica de Glucoza, Nr 11B, etaj 1, Sector 2, Bucuresti Romania",
+            "country": "AT",
+            "network": "146.70.116.0-146.70.116.255",
+            "validated": false,
+            "unvalidated_since": ""
+          },
+          "whois": {
+            "id": "M247-LTD-Vienna",
+            "name": "M247 Vienna",
+            "org": "ORG-MES59-RIPE",
+            "country": "AT",
+            "status": "LEGACY",
+            "source": "ripe",
+            "domain": "m247.ro",
+            "abuse_email": "abuse@m247.ro",
+            "asn": 9009
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 0
+          }
+        },
+        "condition": {
+          "company": {
+            "type": "hosting"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "company-type-is-a-paid-member",
+        "why": "company is on every plan but its type is not.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "company": {
+            "type": "hosting"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "company.type"
+          ]
+        }
+      },
+      {
+        "name": "network-type-any-of",
+        "why": "A list of network types is OR: hosting, CDN or anycast space.",
+        "body": {
+          "ip": "1.1.1.1",
+          "is_bogon": false,
+          "is_vpn": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": false,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": false,
+          "is_hosting": true,
+          "is_cdn": true,
+          "is_anycast": true,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": true,
+          "is_dns_resolver": true,
+          "is_bittorrent": true,
+          "vpn": {},
+          "tor": {},
+          "relay": {},
+          "resproxy": {},
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {},
+          "hosting": {
+            "provider": "",
+            "provider_name": "",
+            "confidence": "medium",
+            "last_seen": "2026-11-12"
+          },
+          "cdn": {
+            "provider": "cloudflare",
+            "provider_name": "Cloudflare",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [
+            {
+              "port": 443,
+              "tls_ok": true,
+              "session_ok": true,
+              "status_code": 301,
+              "server": "cloudflare",
+              "location": "https://one.one.one.one/",
+              "title": "",
+              "cert_subject_cn": "cloudflare-dns.com",
+              "cert_subject_o": "Cloudflare, Inc.",
+              "cert_issuer_dn": "C=US, ST=Texas, L=Houston, O=SSL Corp, CN=SSL.com SSL Intermediate CA ECC R2",
+              "cert_browser_trusted": true,
+              "tls_version": "TLSv1.3",
+              "first_seen": "2026-08-12",
+              "last_seen": "2026-10-31"
+            }
+          ],
+          "dns_resolver": {
+            "port": 53,
+            "recursion_available": true,
+            "rcode": 0,
+            "answer_correct": true,
+            "first_seen": "2026-08-09",
+            "last_seen": "2026-11-07"
+          },
+          "bittorrent": {
+            "verified": true,
+            "id_matches_ip": false,
+            "first_seen": "2026-10-21",
+            "last_seen": "2026-11-12",
+            "last_reachable": "",
+            "days_seen": 19,
+            "num_ports": 84,
+            "peak_num_ports": 9,
+            "indexer": false,
+            "clients": []
+          },
+          "location": {
+            "continent": "OC",
+            "continent_name": "Oceania",
+            "country": "AU",
+            "country_name": "Australia",
+            "timezone": "Australia/Brisbane",
+            "currency_code": "AUD",
+            "currency_name": "Dollar",
+            "currency_symbol": "A$",
+            "flag_emoji": "🇦🇺",
+            "flag_unicode": "U+1F1E6 U+1F1FA",
+            "region": "Queensland",
+            "region_code": "AU-QLD",
+            "city": "Brisbane",
+            "postal_code": "4000",
+            "latitude": -27.46794,
+            "longitude": 153.02809,
+            "accuracy_radius": 20000,
+            "geoname_id": "2174003",
+            "dma_code": "",
+            "last_changed": "2026-10-13"
+          },
+          "asn": {
+            "asn": 13335,
+            "name": "Cloudflare, Inc.",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "prefix": "1.1.1.0/24",
+            "country": "US",
+            "rpki_status": "valid"
+          },
+          "company": {
+            "name": "APNIC and Cloudflare DNS Resolver project",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "country": "AU"
+          },
+          "hostname": "one.one.one.one",
+          "abuse": {
+            "email": "abuse@cloudflare.com",
+            "name": "Abuse",
+            "phone": "+1-650-319-8930",
+            "address": "101 Townsend Street, San Francisco, CA, 94107",
+            "country": "AU",
+            "network": "1.1.1.0-1.1.1.255",
+            "validated": false,
+            "unvalidated_since": "2025-09-04"
+          },
+          "whois": {
+            "id": "APNIC-LABS",
+            "name": "APNIC Research and Development",
+            "org": "ORG-ARAD1-AP",
+            "country": "AU",
+            "status": "ASSIGNED PORTABLE",
+            "source": "apnic",
+            "domain": "apnic.net",
+            "abuse_email": "helpdesk@apnic.net",
+            "asn": 13335
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 23427
+          }
+        },
+        "condition": [
+          {
+            "is_hosting": true
+          },
+          {
+            "is_cdn": true
+          },
+          {
+            "is_anycast": true
+          }
+        ],
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "cdn-provider-matches",
+        "why": "A CDN by its provider.",
+        "body": {
+          "ip": "1.1.1.1",
+          "is_bogon": false,
+          "is_vpn": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_resproxy": false,
+          "is_dcproxy": false,
+          "is_mobproxy": false,
+          "is_pubproxy": false,
+          "is_hosting": true,
+          "is_cdn": true,
+          "is_anycast": true,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": true,
+          "is_dns_resolver": true,
+          "is_bittorrent": true,
+          "vpn": {},
+          "tor": {},
+          "relay": {},
+          "resproxy": {},
+          "dcproxy": {},
+          "mobproxy": {},
+          "pubproxy": {},
+          "hosting": {
+            "provider": "",
+            "provider_name": "",
+            "confidence": "medium",
+            "last_seen": "2026-11-12"
+          },
+          "cdn": {
+            "provider": "cloudflare",
+            "provider_name": "Cloudflare",
+            "confidence": "high",
+            "last_seen": "2026-11-13"
+          },
+          "carrier": {},
+          "satellite": {},
+          "ssh": {},
+          "smtp": {},
+          "web": [
+            {
+              "port": 443,
+              "tls_ok": true,
+              "session_ok": true,
+              "status_code": 301,
+              "server": "cloudflare",
+              "location": "https://one.one.one.one/",
+              "title": "",
+              "cert_subject_cn": "cloudflare-dns.com",
+              "cert_subject_o": "Cloudflare, Inc.",
+              "cert_issuer_dn": "C=US, ST=Texas, L=Houston, O=SSL Corp, CN=SSL.com SSL Intermediate CA ECC R2",
+              "cert_browser_trusted": true,
+              "tls_version": "TLSv1.3",
+              "first_seen": "2026-08-12",
+              "last_seen": "2026-10-31"
+            }
+          ],
+          "dns_resolver": {
+            "port": 53,
+            "recursion_available": true,
+            "rcode": 0,
+            "answer_correct": true,
+            "first_seen": "2026-08-09",
+            "last_seen": "2026-11-07"
+          },
+          "bittorrent": {
+            "verified": true,
+            "id_matches_ip": false,
+            "first_seen": "2026-10-21",
+            "last_seen": "2026-11-12",
+            "last_reachable": "",
+            "days_seen": 19,
+            "num_ports": 84,
+            "peak_num_ports": 9,
+            "indexer": false,
+            "clients": []
+          },
+          "location": {
+            "continent": "OC",
+            "continent_name": "Oceania",
+            "country": "AU",
+            "country_name": "Australia",
+            "timezone": "Australia/Brisbane",
+            "currency_code": "AUD",
+            "currency_name": "Dollar",
+            "currency_symbol": "A$",
+            "flag_emoji": "🇦🇺",
+            "flag_unicode": "U+1F1E6 U+1F1FA",
+            "region": "Queensland",
+            "region_code": "AU-QLD",
+            "city": "Brisbane",
+            "postal_code": "4000",
+            "latitude": -27.46794,
+            "longitude": 153.02809,
+            "accuracy_radius": 20000,
+            "geoname_id": "2174003",
+            "dma_code": "",
+            "last_changed": "2026-10-13"
+          },
+          "asn": {
+            "asn": 13335,
+            "name": "Cloudflare, Inc.",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "prefix": "1.1.1.0/24",
+            "country": "US",
+            "rpki_status": "valid"
+          },
+          "company": {
+            "name": "APNIC and Cloudflare DNS Resolver project",
+            "domain": "cloudflare.com",
+            "type": "hosting",
+            "country": "AU"
+          },
+          "hostname": "one.one.one.one",
+          "abuse": {
+            "email": "abuse@cloudflare.com",
+            "name": "Abuse",
+            "phone": "+1-650-319-8930",
+            "address": "101 Townsend Street, San Francisco, CA, 94107",
+            "country": "AU",
+            "network": "1.1.1.0-1.1.1.255",
+            "validated": false,
+            "unvalidated_since": "2025-09-04"
+          },
+          "whois": {
+            "id": "APNIC-LABS",
+            "name": "APNIC Research and Development",
+            "org": "ORG-ARAD1-AP",
+            "country": "AU",
+            "status": "ASSIGNED PORTABLE",
+            "source": "apnic",
+            "domain": "apnic.net",
+            "abuse_email": "helpdesk@apnic.net",
+            "asn": 13335
+          },
+          "rwhois": {
+            "id": "",
+            "name": "",
+            "country": "",
+            "source": "",
+            "domain": "",
+            "abuse_email": ""
+          },
+          "hosted_domains": {
+            "total": 23427
+          }
+        },
+        "condition": {
+          "is_cdn": true,
+          "cdn": {
+            "provider": "Cloudflare"
+          }
+        },
+        "expect": {
+          "blocked": true,
+          "missing": []
+        }
+      },
+      {
+        "name": "carrier-detail-is-a-paid-member",
+        "why": "Unlimited serves is_carrier but not the carrier behind it: the flag is a real false and the detail is reported.",
+        "body": {
+          "ip": "146.70.116.130",
+          "is_bogon": false,
+          "is_tor": false,
+          "is_relay": false,
+          "is_anycast": false,
+          "is_carrier": false,
+          "is_satellite": false,
+          "is_ssh": false,
+          "is_smtp": false,
+          "is_web": false,
+          "is_dns_resolver": false,
+          "is_bittorrent": false,
+          "tor": {},
+          "relay": {},
+          "location": {
+            "continent": "EU",
+            "continent_name": "Europe",
+            "country": "AT",
+            "country_name": "Austria",
+            "timezone": "Europe/Vienna",
+            "currency_code": "EUR",
+            "currency_name": "Euro",
+            "currency_symbol": "€",
+            "flag_emoji": "🇦🇹",
+            "flag_unicode": "U+1F1E6 U+1F1F9"
+          },
+          "asn": {
+            "asn": 9009,
+            "name": "M247 Europe SRL",
+            "domain": "m247global.com",
+            "type": "hosting",
+            "prefix": "146.70.116.0/24"
+          },
+          "company": {
+            "name": "M247 LTD Vienna Infrastructure",
+            "domain": "m247.ro"
+          },
+          "hostname": "",
+          "abuse": {
+            "email": "abuse@m247.ro"
+          }
+        },
+        "condition": {
+          "is_carrier": true,
+          "carrier": {
+            "country": "AT"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": [
+            "carrier"
+          ]
+        }
+      },
+      {
+        "name": "bogon-location-is-present-and-empty",
+        "why": "A bogon carries location with every member empty: it matches no country and reports nothing.",
+        "bogon": "10.0.0.1",
+        "condition": {
+          "location": {
+            "country": "AT"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      },
+      {
+        "name": "bogon-carries-every-paid-member",
+        "why": "A bogon carries the paid members of every shared object too, empty, so none is reported.",
+        "bogon": "10.0.0.1",
+        "condition": {
+          "location": {
+            "city": "Vienna"
+          },
+          "company": {
+            "type": "hosting"
+          }
+        },
+        "expect": {
+          "blocked": false,
+          "missing": []
+        }
+      }
+    ],
+    "invalidConditions": [
+      {
+        "name": "empty-condition",
+        "why": "Nothing to satisfy means it matches every answer, which is a total outage.",
+        "condition": {}
+      },
+      {
+        "name": "every-entry-ignored",
+        "why": "Ignoring false leaves this constraining nothing, so it must be refused rather than silently blocking everybody.",
+        "condition": {
+          "is_vpn": false
+        }
+      },
+      {
+        "name": "empty-nested-object",
+        "why": "An empty nested object asserts only that the member is in your plan.",
+        "condition": {
+          "vpn": {}
+        }
+      }
+    ]
+  },
   "visibility": {
     "why": "A private family is one built for a single customer. It must be ABSENT from a listing for an org that does not license it, not present with standing 'unlicensed' - the standing field is the discovery surface for public datasets only. The server enforces this; an SDK must not reconstruct a catalog from any other source and must not assume the listing is the same for every key. The private IDs are deliberately NOT named here: this corpus is committed into twelve PUBLIC repositories, so naming them would publish the customer relationship the rule exists to keep private.",
     "clientRules": [
