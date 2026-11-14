@@ -1509,7 +1509,9 @@ paths:
                   value:
                     error: API key expired
         '403':
-          description: The key may not be used from this address, or was sent over plain HTTP.
+          description: |
+            The key may not be used from this address, lacks the `ip.lookup` scope (Lookups, in the
+            console's API keys), or was sent over plain HTTP.
           content:
             application/json:
               schema:
@@ -1523,6 +1525,10 @@ paths:
                   summary: API key sent over plain HTTP; use https://
                   value:
                     error: API key sent over plain HTTP; use https://
+                e3:
+                  summary: API key lacks the ip.lookup scope
+                  value:
+                    error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
             A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
@@ -1649,7 +1655,9 @@ paths:
                   value:
                     error: API key expired
         '403':
-          description: The key may not be used from this address, or was sent over plain HTTP.
+          description: |
+            The key may not be used from this address, lacks the `ip.lookup` scope (Lookups, in the
+            console's API keys), or was sent over plain HTTP.
           content:
             application/json:
               schema:
@@ -1663,6 +1671,10 @@ paths:
                   summary: API key sent over plain HTTP; use https://
                   value:
                     error: API key sent over plain HTTP; use https://
+                e3:
+                  summary: API key lacks the ip.lookup scope
+                  value:
+                    error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
             A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
@@ -1861,7 +1873,9 @@ paths:
                   value:
                     error: API key expired
         '403':
-          description: The key may not be used from this address, or was sent over plain HTTP.
+          description: |
+            The key may not be used from this address, lacks the `ip.lookup` scope (Lookups, in the
+            console's API keys), or was sent over plain HTTP.
           content:
             application/json:
               schema:
@@ -1875,6 +1889,10 @@ paths:
                   summary: API key sent over plain HTTP; use https://
                   value:
                     error: API key sent over plain HTTP; use https://
+                e3:
+                  summary: API key lacks the ip.lookup scope
+                  value:
+                    error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
             A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
@@ -2037,7 +2055,9 @@ paths:
                   value:
                     error: API key expired
         '403':
-          description: The key may not be used from this address, or was sent over plain HTTP.
+          description: |
+            The key may not be used from this address, lacks the `ip.lookup` scope (Lookups, in the
+            console's API keys), or was sent over plain HTTP.
           content:
             application/json:
               schema:
@@ -2051,6 +2071,10 @@ paths:
                   summary: API key sent over plain HTTP; use https://
                   value:
                     error: API key sent over plain HTTP; use https://
+                e3:
+                  summary: API key lacks the ip.lookup scope
+                  value:
+                    error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
             A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
@@ -2314,7 +2338,9 @@ paths:
                   value:
                     error: POST /batch needs a paid plan
         '403':
-          description: The key may not be used from this address, or was sent over plain HTTP.
+          description: |
+            The key may not be used from this address, lacks the `ip.lookup` scope (Lookups, in the
+            console's API keys), or was sent over plain HTTP.
           content:
             application/json:
               schema:
@@ -2328,6 +2354,10 @@ paths:
                   summary: API key sent over plain HTTP; use https://
                   value:
                     error: API key sent over plain HTTP; use https://
+                e3:
+                  summary: API key lacks the ip.lookup scope
+                  value:
+                    error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '413':
           description: The body is larger than 512 KB.
           content:
