@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.11.0 - 2026-11-14
+
+### Features
+
+- Add the framework middleware core ([`9c786f0`](https://github.com/internetdata/sdk-go/commit/9c786f09f88175aaedc7075a10d7c790bbfc1e49))
+
 ## 2.10.0 - 2026-11-13
 
 ### Features
