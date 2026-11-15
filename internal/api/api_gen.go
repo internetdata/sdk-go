@@ -949,8 +949,11 @@ type Error struct {
 	Rc string `json:"rc"`
 }
 
-// HostedDomains From IP Hosted Domains: a count, never the list. Paid plans and the trial.
+// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. Paid plans and the trial.
 type HostedDomains struct {
+	// Domains Up to 10 of them, the most popular first; `[]` when none does.
+	Domains *[]string `json:"domains,omitempty"`
+
 	// Total How many registered domains resolve to the address.
 	Total int `json:"total"`
 }
@@ -1060,7 +1063,7 @@ type LookupResponse struct {
 	// DNSResolver `{}` when `is_dns_resolver` is false. Paid plans and the trial.
 	DNSResolver *DNSResolverDetail `json:"dns_resolver,omitempty"`
 
-	// HostedDomains From IP Hosted Domains: a count, never the list. Paid plans and the trial.
+	// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. Paid plans and the trial.
 	HostedDomains *HostedDomains `json:"hosted_domains,omitempty"`
 
 	// Hosting `{}` when `is_hosting` is false. Paid plans and the trial.

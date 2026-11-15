@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.13
+  version: 2026.11.14
 servers:
   - url: https://internetdata.io
 tags:
@@ -951,8 +951,6 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
-                    tor: {}
-                    relay: {}
                     location:
                       continent: EU
                       continent_name: Europe
@@ -964,6 +962,8 @@ paths:
                       currency_symbol: €
                       flag_emoji: 🇦🇹
                       flag_unicode: U+1F1E6 U+1F1F9
+                    tor: {}
+                    relay: {}
                     asn:
                       asn: 9009
                       name: M247 Europe SRL
@@ -998,6 +998,27 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                      region: Vienna
+                      region_code: AT-9
+                      city: Vienna
+                      postal_code: '1230'
+                      latitude: 48.20849
+                      longitude: 16.37208
+                      accuracy_radius: 10
+                      geoname_id: '2761369'
+                      dma_code: ''
+                      last_changed: '2026-10-06'
                     vpn:
                       provider: mullvad
                       provider_name: Mullvad
@@ -1022,27 +1043,6 @@ paths:
                     web: []
                     dns_resolver: {}
                     bittorrent: {}
-                    location:
-                      continent: EU
-                      continent_name: Europe
-                      country: AT
-                      country_name: Austria
-                      timezone: Europe/Vienna
-                      currency_code: EUR
-                      currency_name: Euro
-                      currency_symbol: €
-                      flag_emoji: 🇦🇹
-                      flag_unicode: U+1F1E6 U+1F1F9
-                      region: Vienna
-                      region_code: AT-9
-                      city: Vienna
-                      postal_code: '1230'
-                      latitude: 48.20849
-                      longitude: 16.37208
-                      accuracy_radius: 10
-                      geoname_id: '2761369'
-                      dma_code: ''
-                      last_changed: '2026-10-06'
                     asn:
                       asn: 9009
                       name: M247 Europe SRL
@@ -1085,6 +1085,7 @@ paths:
                       abuse_email: ''
                     hosted_domains:
                       total: 0
+                      domains: []
                     trial_expired: false
                 trialExpired:
                   summary: A free-plan key past its day's trial, with Unlimited's fields
@@ -1101,8 +1102,6 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
-                    tor: {}
-                    relay: {}
                     location:
                       continent: EU
                       continent_name: Europe
@@ -1114,6 +1113,8 @@ paths:
                       currency_symbol: €
                       flag_emoji: 🇦🇹
                       flag_unicode: U+1F1E6 U+1F1F9
+                    tor: {}
+                    relay: {}
                     asn:
                       asn: 9009
                       name: M247 Europe SRL
@@ -1149,6 +1150,27 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                      region: Vienna
+                      region_code: AT-9
+                      city: Vienna
+                      postal_code: '1230'
+                      latitude: 48.20849
+                      longitude: 16.37208
+                      accuracy_radius: 10
+                      geoname_id: '2761369'
+                      dma_code: ''
+                      last_changed: '2026-10-06'
                     vpn:
                       provider: mullvad
                       provider_name: Mullvad
@@ -1173,27 +1195,6 @@ paths:
                     web: []
                     dns_resolver: {}
                     bittorrent: {}
-                    location:
-                      continent: EU
-                      continent_name: Europe
-                      country: AT
-                      country_name: Austria
-                      timezone: Europe/Vienna
-                      currency_code: EUR
-                      currency_name: Euro
-                      currency_symbol: €
-                      flag_emoji: 🇦🇹
-                      flag_unicode: U+1F1E6 U+1F1F9
-                      region: Vienna
-                      region_code: AT-9
-                      city: Vienna
-                      postal_code: '1230'
-                      latitude: 48.20849
-                      longitude: 16.37208
-                      accuracy_radius: 10
-                      geoname_id: '2761369'
-                      dma_code: ''
-                      last_changed: '2026-10-06'
                     asn:
                       asn: 9009
                       name: M247 Europe SRL
@@ -1236,6 +1237,7 @@ paths:
                       abuse_email: ''
                     hosted_domains:
                       total: 0
+                      domains: []
                 paidServices:
                   summary: 'A paid plan: an anycast resolver with its services'
                   value:
@@ -1258,6 +1260,27 @@ paths:
                     is_web: true
                     is_dns_resolver: true
                     is_bittorrent: true
+                    location:
+                      continent: OC
+                      continent_name: Oceania
+                      country: AU
+                      country_name: Australia
+                      timezone: Australia/Brisbane
+                      currency_code: AUD
+                      currency_name: Dollar
+                      currency_symbol: A$
+                      flag_emoji: 🇦🇺
+                      flag_unicode: U+1F1E6 U+1F1FA
+                      region: Queensland
+                      region_code: AU-QLD
+                      city: Brisbane
+                      postal_code: '4000'
+                      latitude: -27.46794
+                      longitude: 153.02809
+                      accuracy_radius: 20000
+                      geoname_id: '2174003'
+                      dma_code: ''
+                      last_changed: '2026-10-13'
                     vpn: {}
                     tor: {}
                     relay: {}
@@ -1314,27 +1337,6 @@ paths:
                       peak_num_ports: 9
                       indexer: false
                       clients: []
-                    location:
-                      continent: OC
-                      continent_name: Oceania
-                      country: AU
-                      country_name: Australia
-                      timezone: Australia/Brisbane
-                      currency_code: AUD
-                      currency_name: Dollar
-                      currency_symbol: A$
-                      flag_emoji: 🇦🇺
-                      flag_unicode: U+1F1E6 U+1F1FA
-                      region: Queensland
-                      region_code: AU-QLD
-                      city: Brisbane
-                      postal_code: '4000'
-                      latitude: -27.46794
-                      longitude: 153.02809
-                      accuracy_radius: 20000
-                      geoname_id: '2174003'
-                      dma_code: ''
-                      last_changed: '2026-10-13'
                     asn:
                       asn: 13335
                       name: Cloudflare, Inc.
@@ -1377,6 +1379,17 @@ paths:
                       abuse_email: ''
                     hosted_domains:
                       total: 23427
+                      domains:
+                        - lomalinda-ca.gov
+                        - vetusware.com
+                        - rentspb.com
+                        - getshifter.net
+                        - worldteach.org
+                        - anne-sexton.net
+                        - greatukrainians.com.ua
+                        - getusinfo.com
+                        - medicinanet.com.br
+                        - imgup.net
                 bogon:
                   summary: A private address on a paid plan
                   value:
@@ -1399,22 +1412,6 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
-                    vpn: {}
-                    tor: {}
-                    relay: {}
-                    resproxy: {}
-                    dcproxy: {}
-                    mobproxy: {}
-                    pubproxy: {}
-                    hosting: {}
-                    cdn: {}
-                    carrier: {}
-                    satellite: {}
-                    ssh: {}
-                    smtp: {}
-                    web: []
-                    dns_resolver: {}
-                    bittorrent: {}
                     location:
                       continent: ''
                       continent_name: ''
@@ -1436,6 +1433,22 @@ paths:
                       geoname_id: ''
                       dma_code: ''
                       last_changed: ''
+                    vpn: {}
+                    tor: {}
+                    relay: {}
+                    resproxy: {}
+                    dcproxy: {}
+                    mobproxy: {}
+                    pubproxy: {}
+                    hosting: {}
+                    cdn: {}
+                    carrier: {}
+                    satellite: {}
+                    ssh: {}
+                    smtp: {}
+                    web: []
+                    dns_resolver: {}
+                    bittorrent: {}
                     asn:
                       asn: 0
                       name: ''
@@ -1478,6 +1491,7 @@ paths:
                       abuse_email: ''
                     hosted_domains:
                       total: 0
+                      domains: []
         '400':
           description: Not an address, an AS number or a domain.
           content:
@@ -1610,8 +1624,6 @@ paths:
                     is_web: false
                     is_dns_resolver: false
                     is_bittorrent: false
-                    tor: {}
-                    relay: {}
                     location:
                       continent: EU
                       continent_name: Europe
@@ -1623,6 +1635,8 @@ paths:
                       currency_symbol: €
                       flag_emoji: 🇦🇹
                       flag_unicode: U+1F1E6 U+1F1F9
+                    tor: {}
+                    relay: {}
                     asn:
                       asn: 9009
                       name: M247 Europe SRL
@@ -2186,6 +2200,27 @@ paths:
                         is_web: false
                         is_dns_resolver: false
                         is_bittorrent: false
+                        location:
+                          continent: EU
+                          continent_name: Europe
+                          country: AT
+                          country_name: Austria
+                          timezone: Europe/Vienna
+                          currency_code: EUR
+                          currency_name: Euro
+                          currency_symbol: €
+                          flag_emoji: 🇦🇹
+                          flag_unicode: U+1F1E6 U+1F1F9
+                          region: Vienna
+                          region_code: AT-9
+                          city: Vienna
+                          postal_code: '1230'
+                          latitude: 48.20849
+                          longitude: 16.37208
+                          accuracy_radius: 10
+                          geoname_id: '2761369'
+                          dma_code: ''
+                          last_changed: '2026-10-06'
                         vpn:
                           provider: mullvad
                           provider_name: Mullvad
@@ -2210,27 +2245,6 @@ paths:
                         web: []
                         dns_resolver: {}
                         bittorrent: {}
-                        location:
-                          continent: EU
-                          continent_name: Europe
-                          country: AT
-                          country_name: Austria
-                          timezone: Europe/Vienna
-                          currency_code: EUR
-                          currency_name: Euro
-                          currency_symbol: €
-                          flag_emoji: 🇦🇹
-                          flag_unicode: U+1F1E6 U+1F1F9
-                          region: Vienna
-                          region_code: AT-9
-                          city: Vienna
-                          postal_code: '1230'
-                          latitude: 48.20849
-                          longitude: 16.37208
-                          accuracy_radius: 10
-                          geoname_id: '2761369'
-                          dma_code: ''
-                          last_changed: '2026-10-06'
                         asn:
                           asn: 9009
                           name: M247 Europe SRL
@@ -2273,6 +2287,7 @@ paths:
                           abuse_email: ''
                         hosted_domains:
                           total: 0
+                          domains: []
                     errors:
                       146.70.116:
                         status: 400
@@ -4079,9 +4094,16 @@ components:
         total:
           type: integer
           description: How many registered domains resolve to the address.
+        domains:
+          type: array
+          items:
+            type: string
+          description: Up to 10 of them, the most popular first; `[]` when none does.
       required:
         - total
-      description: 'From IP Hosted Domains: a count, never the list. Paid plans and the trial.'
+      description: >-
+        From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most
+        popular. Its database lists up to 1,000 an address. Paid plans and the trial.
     AsnLookupResponse:
       type: object
       properties:

@@ -48,7 +48,7 @@ func unmapped(ip string) string {
 // The answer a bogon gets, the one the API gives a bogon on a paid plan: every
 // flag present and false, every detail object present and empty (web an empty
 // list), location, asn, company, abuse, whois and rwhois with every key empty,
-// hostname empty, hosted_domains 0 and is_bogon true.
+// hostname empty, hosted_domains 0 with no domains and is_bogon true.
 //
 // Deliberately the WIDEST shape whatever plan you are on, so a caller must not
 // infer which fields their plan includes from a bogon answer.
@@ -84,7 +84,7 @@ func bogonResult(ip string) *Result {
 			Abuse:         *everyKey[AbuseContact](),
 			Whois:         everyKey[Whois](),
 			Rwhois:        everyKey[Rwhois](),
-			HostedDomains: &HostedDomains{},
+			HostedDomains: &HostedDomains{Domains: &[]string{}},
 		},
 	}
 }
