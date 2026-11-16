@@ -63,7 +63,7 @@ domain, err := client.LookupDomain(ctx, "example.com")
 fmt.Println(domain.IsRegistered)       // true
 ```
 
-Every plan answers an AS's registration and whether a domain is registered and which record types it has. A paid plan adds the AS's whois record and its prefixes, and the domain's records, IP ranges and `is_disposable`. Neither is cached or batched, and `Lookup` takes an address alone: it refuses anything else as a `bad_request` before sending it.
+Every plan answers an AS's registration and whether a domain is registered and which record types it has. A paid plan adds the AS's whois record, its prefixes, its rank, Tier 1 flag, upstreams, peers and downstreams, and the domains it hosts, and the domain's records, IP ranges and `is_disposable`. Neither is cached or batched, and `Lookup` takes an address alone: it refuses anything else as a `bad_request` before sending it.
 
 ### Your own address
 
@@ -79,6 +79,7 @@ Same answer `Lookup` would give for that address, and the same cost against your
 ```go
 acct, err := client.MyEntitlement(ctx)
 fmt.Println(acct.Plan.Key)         // max
+fmt.Println(acct.Plan.Name)        // Max, the name to show
 fmt.Println(acct.Usage.Requests)   // 580
 fmt.Println(acct.Usage.WindowEnd)  // when the allowance resets
 ```
@@ -268,7 +269,7 @@ The API answers a download with a redirect to a time-limited URL on object stora
 url, err := client.Database.DownloadURL(ctx, "vpn_ip_v1", internetdata.FormatMMDB)
 ```
 
-The link is presigned and so authorizes itself; it carries no API key of yours, and the library never sends your key to object storage. It authorizes the START of a transfer, so one already running is not interrupted when the link lapses.
+The link is presigned and so authorizes itself; it carries no API key of yours, and the library never sends your key to object storage. The link only has to be valid when a transfer starts, so one already running isn't cut off when it lapses.
 
 ### Verifying a download
 

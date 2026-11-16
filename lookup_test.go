@@ -523,7 +523,7 @@ var entitlementAnswer = map[string]any{
 	"apikey": map[string]any{
 		"id": "0ab424cc-7619-4dad-b027-afacdc2cedb0", "expires": nil, "allowed_cidrs": []string{},
 	},
-	"plan": map[string]any{"key": "max", "tier": "max"},
+	"plan": map[string]any{"key": "max", "name": "Max", "tier": "max"},
 	"usage": map[string]any{
 		"requests": 580, "quota": 5000000, "hard_limit": nil,
 		"window_start": "2026-09-04T07:00:00Z", "window_end": "2026-10-04T07:00:00Z",

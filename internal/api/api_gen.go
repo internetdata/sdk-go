@@ -301,6 +301,15 @@ type Asn struct {
 	Type string `json:"type"`
 }
 
+// AsnHostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. Paid plans and the trial.
+type AsnHostedDomains struct {
+	// Domains Up to 10 of them, the most popular first; `[]` when none does.
+	Domains *[]string `json:"domains,omitempty"`
+
+	// Total How many registered domains resolve to an address the AS announces.
+	Total int `json:"total"`
+}
+
 // AsnLookupResponse What every database says about one AS.
 type AsnLookupResponse struct {
 	// Allocated When.
@@ -315,11 +324,23 @@ type AsnLookupResponse struct {
 	// Domain Its operator's domain.
 	Domain string `json:"domain"`
 
+	// Downstreams Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	Downstreams *[]int `json:"downstreams,omitempty"`
+
+	// HostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. Paid plans and the trial.
+	HostedDomains *AsnHostedDomains `json:"hosted_domains,omitempty"`
+
 	// Name Its operator.
 	Name string `json:"name"`
 
+	// NumDownstreams How many AS numbers it provides transit to. Paid plans and the trial.
+	NumDownstreams *int `json:"num_downstreams,omitempty"`
+
 	// NumIps IPv4 addresses it announces. Paid plans and the trial.
 	NumIps *int `json:"num_ips,omitempty"`
+
+	// NumPeers How many AS numbers it exchanges its own and its customers' routes with. Paid plans and the trial.
+	NumPeers *int `json:"num_peers,omitempty"`
 
 	// NumPrefixes4 IPv4 prefixes it announces. Paid plans and the trial.
 	NumPrefixes4 *int `json:"num_prefixes4,omitempty"`
@@ -327,8 +348,17 @@ type AsnLookupResponse struct {
 	// NumPrefixes6 IPv6 prefixes it announces. Paid plans and the trial.
 	NumPrefixes6 *int `json:"num_prefixes6,omitempty"`
 
+	// NumUpstreams How many AS numbers it gets transit from. Paid plans and the trial.
+	NumUpstreams *int `json:"num_upstreams,omitempty"`
+
+	// Peers Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	Peers *[]int `json:"peers,omitempty"`
+
 	// Prefixes What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
 	Prefixes *[]AsnPrefix `json:"prefixes,omitempty"`
+
+	// Rank Its rank in ASN Extended, by customer cone, 1 the largest; `0` for an AS seen in no AS path. Paid plans and the trial.
+	Rank *int `json:"rank,omitempty"`
 
 	// Registry The registry that allocated it.
 	Registry string `json:"registry"`
@@ -342,11 +372,17 @@ type AsnLookupResponse struct {
 	// RpkiValid Its announcements RPKI calls valid. Paid plans and the trial.
 	RpkiValid *int `json:"rpki_valid,omitempty"`
 
+	// Tier1 Whether it is one of the transit-free networks at the top of the hierarchy, which get transit from no one and peer with each other. Paid plans and the trial.
+	Tier1 *bool `json:"tier1,omitempty"`
+
 	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 
 	// Type The kind of network it runs. Paid plans and the trial.
 	Type *string `json:"type,omitempty"`
+
+	// Upstreams Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	Upstreams *[]int `json:"upstreams,omitempty"`
 
 	// Whois Its ASN Whois record, every column, empty where the registry states nothing. Paid plans and the trial.
 	Whois *map[string]string `json:"whois,omitempty"`
@@ -900,23 +936,34 @@ type EntitlementError struct {
 
 // EntitlementPlan defines model for EntitlementPlan.
 type EntitlementPlan struct {
-	// Key The plan the organization is on: `free` for the free plan,
-	// Unlimited, or a paid plan's key. On `free`, usage counts the
+	// Key The plan the organization is on, as an identifier that is never
+	// renamed or reused: `free` for the free plan, or a paid plan's key.
+	// Compare against it and show `name`. On `free`, usage counts the
 	// day's lookups answered with every field, its daily trial.
 	//
 	//
 	// Example: max
 	Key string `json:"key"`
 
+	// Name The plan's name, as the site and console show it: `Unlimited` for
+	// the free plan. Show this rather than a name built from `key`: a
+	// plan's name can change, and its key never does.
+	//
+	//
+	// Example: Max
+	Name string `json:"name"`
+
 	// Tier The field tier, which decides how much of a lookup answer comes
-	// back; `free` is the free plan's. What each tier includes is documented
+	// back; `free` is the free plan's. This list never gains a value: a
+	// new plan reports one of these. What each tier includes is documented
 	// on the lookup endpoint rather than repeated here, so there is one
 	// place it can be wrong.
 	Tier EntitlementPlanTier `json:"tier"`
 }
 
 // EntitlementPlanTier The field tier, which decides how much of a lookup answer comes
-// back; `free` is the free plan's. What each tier includes is documented
+// back; `free` is the free plan's. This list never gains a value: a
+// new plan reports one of these. What each tier includes is documented
 // on the lookup endpoint rather than repeated here, so there is one
 // place it can be wrong.
 type EntitlementPlanTier string
@@ -1947,9 +1994,10 @@ type ClientInterface interface {
 	// LookupAsn ASN lookup
 	//
 	// Answers what InternetData knows about one autonomous system: its registration on every plan,
-	// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
-	// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
-	// its number with empty values.
+	// and on a paid one its ASN Whois record, every prefix it announces in global BGP, with RPKI status,
+	// up to 20000 per address family, its rank, Tier 1 flag, upstreams, peers and downstreams from ASN
+	// Extended, up to 20000 each (the counts beside them are always whole), and the domains it hosts. An AS no
+	// database knows answers its number with empty values.
 	//
 	// Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
 	LookupAsn(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2528,9 +2576,10 @@ func (c *Client) DatabaseMetadataV2(ctx context.Context, params *DatabaseMetadat
 // LookupAsn ASN lookup
 //
 // Answers what InternetData knows about one autonomous system: its registration on every plan,
-// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
-// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
-// its number with empty values.
+// and on a paid one its ASN Whois record, every prefix it announces in global BGP, with RPKI status,
+// up to 20000 per address family, its rank, Tier 1 flag, upstreams, peers and downstreams from ASN
+// Extended, up to 20000 each (the counts beside them are always whole), and the domains it hosts. An AS no
+// database knows answers its number with empty values.
 //
 // Corresponds with GET /asn/{asn} (the `LookupAsn` operationId).
 func (c *Client) LookupAsn(ctx context.Context, asn string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4180,9 +4229,10 @@ type ClientWithResponsesInterface interface {
 	// LookupAsnWithResponse ASN lookup
 	//
 	// Answers what InternetData knows about one autonomous system: its registration on every plan,
-	// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
-	// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
-	// its number with empty values.
+	// and on a paid one its ASN Whois record, every prefix it announces in global BGP, with RPKI status,
+	// up to 20000 per address family, its rank, Tier 1 flag, upstreams, peers and downstreams from ASN
+	// Extended, up to 20000 each (the counts beside them are always whole), and the domains it hosts. An AS no
+	// database knows answers its number with empty values.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -6316,9 +6366,10 @@ func (c *ClientWithResponses) DatabaseMetadataV2WithResponse(ctx context.Context
 // LookupAsnWithResponse ASN lookup
 //
 // Answers what InternetData knows about one autonomous system: its registration on every plan,
-// and on a paid one its ASN Whois record and every prefix it announces in global BGP, with RPKI status,
-// up to 20000 per address family (the counts beside them are always whole). An AS no database knows answers
-// its number with empty values.
+// and on a paid one its ASN Whois record, every prefix it announces in global BGP, with RPKI status,
+// up to 20000 per address family, its rank, Tier 1 flag, upstreams, peers and downstreams from ASN
+// Extended, up to 20000 each (the counts beside them are always whole), and the domains it hosts. An AS no
+// database knows answers its number with empty values.
 //
 // Returns a wrapper object for the known response body format(s).
 //

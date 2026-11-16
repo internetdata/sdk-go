@@ -186,11 +186,18 @@ func TestAnAnswerMissingARequiredMemberIsUnreadable(t *testing.T) {
 			`"allocated":"2005-06-06","domain":"m247global.com"}`},
 		{"LookupASN", "a prefix short of a key",
 			asn(map[string]any{"prefixes": []any{map[string]any{"prefix": "x"}}})},
+		{"LookupASN", "hosted_domains short of total",
+			asn(map[string]any{"hosted_domains": map[string]any{"domains": []any{}}})},
+		{"LookupASN", "upstreams holding a string", asn(map[string]any{"upstreams": []any{"174"}})},
 		{"LookupDomain", "has_mx missing", `{"domain":"example.com","is_registered":true,"has_a":true,` +
 			`"has_aaaa":true,"has_ns":true,"has_cname":false}`},
 		{"MyEntitlement", "usage missing", `{"org_id":"85bb51e4-2eb6-4a31-8e4d-02ba8b98fe61",` +
 			`"apikey":{"id":"0ab424cc-7619-4dad-b027-afacdc2cedb0","expires":null,"allowed_cidrs":[]},` +
-			`"plan":{"key":"max","tier":"max"}}`},
+			`"plan":{"key":"max","name":"Max","tier":"max"}}`},
+		{"MyEntitlement", "plan name missing", `{"org_id":"85bb51e4-2eb6-4a31-8e4d-02ba8b98fe61",` +
+			`"apikey":{"id":"0ab424cc-7619-4dad-b027-afacdc2cedb0","expires":null,"allowed_cidrs":[]},` +
+			`"plan":{"key":"max","tier":"max"},"usage":{"requests":1,"quota":5,"hard_limit":null,` +
+			`"window_start":"2026-11-01T00:00:00Z","window_end":"2026-12-01T00:00:00Z"}}`},
 	}
 	for _, c := range cases {
 		t.Run(c.call+" "+c.name, func(t *testing.T) {

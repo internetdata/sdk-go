@@ -29,6 +29,7 @@ type (
 	Whois            = api.Whois
 	Rwhois           = api.Rwhois
 	HostedDomains    = api.HostedDomains
+	AsnHostedDomains = api.AsnHostedDomains
 	AsnPrefix        = api.AsnPrefix
 	DomainDNS        = api.DomainDNS
 	DNSAddressRecord = api.DNSAddressRecord

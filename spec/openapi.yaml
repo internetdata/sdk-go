@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.14
+  version: 2026.11.15
 servers:
   - url: https://internetdata.io
 tags:
@@ -1747,13 +1747,16 @@ paths:
       description: >
         Answers what InternetData knows about one autonomous system: its registration on every plan,
 
-        and on a paid one its ASN Whois record and every prefix it announces in global BGP, with
-        RPKI status,
+        and on a paid one its ASN Whois record, every prefix it announces in global BGP, with RPKI
+        status,
 
-        up to 20000 per address family (the counts beside them are always whole). An AS no database
-        knows answers
+        up to 20000 per address family, its rank, Tier 1 flag, upstreams, peers and downstreams from
+        ASN
 
-        its number with empty values.
+        Extended, up to 20000 each (the counts beside them are always whole), and the domains it
+        hosts. An AS no
+
+        database knows answers its number with empty values.
       parameters:
         - in: path
           name: asn
@@ -1784,7 +1787,7 @@ paths:
                     allocated: '2005-06-06'
                     domain: m247global.com
                 paid:
-                  summary: A paid plan, two of its prefixes shown
+                  summary: A paid plan, two of each list shown
                   value:
                     asn: 9009
                     name: M247 Europe SRL
@@ -1856,6 +1859,25 @@ paths:
                         country: US
                         size: 0
                         other_origins: []
+                    rank: 341
+                    tier1: false
+                    num_upstreams: 18
+                    upstreams:
+                      - 174
+                      - 260
+                    num_peers: 1018
+                    peers:
+                      - 42
+                      - 286
+                    num_downstreams: 146
+                    downstreams:
+                      - 3210
+                      - 3503
+                    hosted_domains:
+                      total: 51759
+                      domains:
+                        - fotopedia.com
+                        - kissfm.ro
         '400':
           description: Not an address, an AS number or a domain.
           content:
@@ -2443,6 +2465,7 @@ paths:
                       allowed_cidrs: []
                     plan:
                       key: max
+                      name: Max
                       tier: max
                     usage:
                       requests: 580
@@ -2464,6 +2487,7 @@ paths:
                       allowed_cidrs: []
                     plan:
                       key: free
+                      name: Unlimited
                       tier: free
                     usage:
                       requests: 37
@@ -4104,6 +4128,22 @@ components:
       description: >-
         From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most
         popular. Its database lists up to 1,000 an address. Paid plans and the trial.
+    AsnHostedDomains:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: How many registered domains resolve to an address the AS announces.
+        domains:
+          type: array
+          items:
+            type: string
+          description: Up to 10 of them, the most popular first; `[]` when none does.
+      required:
+        - total
+      description: >-
+        From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular.
+        Its database lists up to 1,000 an AS. Paid plans and the trial.
     AsnLookupResponse:
       type: object
       properties:
@@ -4158,6 +4198,44 @@ components:
           items:
             $ref: '#/components/schemas/AsnPrefix'
           description: What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+        rank:
+          type: integer
+          description: >-
+            Its rank in ASN Extended, by customer cone, 1 the largest; `0` for an AS seen in no AS
+            path. Paid plans and the trial.
+        tier1:
+          type: boolean
+          description: >-
+            Whether it is one of the transit-free networks at the top of the hierarchy, which get
+            transit from no one and peer with each other. Paid plans and the trial.
+        num_upstreams:
+          type: integer
+          description: How many AS numbers it gets transit from. Paid plans and the trial.
+        upstreams:
+          type: array
+          items:
+            type: integer
+          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+        num_peers:
+          type: integer
+          description: >-
+            How many AS numbers it exchanges its own and its customers' routes with. Paid plans and
+            the trial.
+        peers:
+          type: array
+          items:
+            type: integer
+          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+        num_downstreams:
+          type: integer
+          description: How many AS numbers it provides transit to. Paid plans and the trial.
+        downstreams:
+          type: array
+          items:
+            type: integer
+          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+        hosted_domains:
+          $ref: '#/components/schemas/AsnHostedDomains'
         trial_expired:
           type: boolean
           description: >-
@@ -4501,15 +4579,24 @@ components:
       type: object
       required:
         - key
+        - name
         - tier
       properties:
         key:
           type: string
           description: |
-            The plan the organization is on: `free` for the free plan,
-            Unlimited, or a paid plan's key. On `free`, usage counts the
+            The plan the organization is on, as an identifier that is never
+            renamed or reused: `free` for the free plan, or a paid plan's key.
+            Compare against it and show `name`. On `free`, usage counts the
             day's lookups answered with every field, its daily trial.
           example: max
+        name:
+          type: string
+          description: |
+            The plan's name, as the site and console show it: `Unlimited` for
+            the free plan. Show this rather than a name built from `key`: a
+            plan's name can change, and its key never does.
+          example: Max
         tier:
           type: string
           enum:
@@ -4519,7 +4606,8 @@ components:
             - max
           description: |
             The field tier, which decides how much of a lookup answer comes
-            back; `free` is the free plan's. What each tier includes is documented
+            back; `free` is the free plan's. This list never gains a value: a
+            new plan reports one of these. What each tier includes is documented
             on the lookup endpoint rather than repeated here, so there is one
             place it can be wrong.
     EntitlementUsage:
