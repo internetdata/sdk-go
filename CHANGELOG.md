@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.14.0 - 2026-11-17
+
+### Features
+
+- Read cap_reached on a paid answer past its overage cap ([`d6e527c`](https://github.com/internetdata/sdk-go/commit/d6e527c9b9cb7552cc383297f1993d3518db342f))
+
 ## 2.13.0 - 2026-11-16
 
 ### Features
