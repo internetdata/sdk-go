@@ -175,7 +175,7 @@ if errors.As(err, &apiErr) {
 
 `Kind` is one of `bad_request`, `unauthorized`, `forbidden`, `rate_limited`, `quota_exceeded`, `server_error` or `network`. A lookup's `Message` is the API's explanation. A database call's is its `rc`, which is what separates two refusals that share a status: `NOT_LICENSED` means buy it, `LICENSE_EXPIRED` means renew it, and `IP_NOT_ALLOWED` means the call came from an address the key or its organization does not allow, and all three are `403`.
 
-Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit carries `Retry-After`, and retrying later works; a spent quota needs your allowance raised or the window to roll over. The library retries rate limits for you, but not if your quota is exceeded.
+Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit carries `Retry-After`, and retrying later works; one without it is `quota_exceeded`. The library retries rate limits for you, but never `quota_exceeded`. The API itself always sends `Retry-After` with a 429, so that one comes from something in between, such as a proxy; a paid key past its overage cap gets `CapReached` instead.
 
 ### Databases
 
@@ -341,12 +341,13 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its daily trial is spent. A `nil` pointer means "not in your plan", not "checked, and no".
+Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its daily trial is spent. A paid key's carries `CapReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A `nil` pointer means "not in your plan", not "checked, and no".
 
 ```go
 internetdata.BoolValue(result.IsVpn)        // when you only want the flag
 result.IsVpn == nil                         // on Unlimited: not in your plan
 internetdata.BoolValue(result.TrialExpired) // a free-plan key's daily trial is spent
+internetdata.BoolValue(result.CapReached)   // a paid key is past its overage cap
 ```
 
 ## Other Libraries

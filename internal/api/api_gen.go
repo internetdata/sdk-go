@@ -252,9 +252,9 @@ type AccountUser struct {
 	ID       openapi_types.UUID   `json:"id"`
 }
 
-// ApikeyDetail Key METADATA. Never the key itself.
+// ApikeyDetail Key metadata. Never the key itself.
 type ApikeyDetail struct {
-	// AllowedCidrs Source-IP allowlist. EMPTY MEANS UNRESTRICTED, not deny-all.
+	// AllowedCidrs Source-IP allowlist. Empty means unrestricted, not deny-all.
 	AllowedCidrs  *[]string          `json:"allowed_cidrs,omitempty"`
 	AllowedScopes *[]string          `json:"allowed_scopes,omitempty"`
 	Created       time.Time          `json:"created"`
@@ -317,6 +317,9 @@ type AsnLookupResponse struct {
 
 	// Asn The AS number.
 	Asn int `json:"asn"`
+
+	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
+	CapReached *bool `json:"cap_reached,omitempty"`
 
 	// Country The country its registry assigned it to.
 	Country string `json:"country"`
@@ -568,7 +571,7 @@ type Company struct {
 	Type *string `json:"type,omitempty"`
 }
 
-// Database One database FAMILY, with your organization's license beside it. A
+// Database One database family, with your organization's license beside it. A
 // license covers the family, while a download names a specific version,
 // so the IDs passed to `download` and `checksum` come from `versions`.
 type Database struct {
@@ -662,7 +665,7 @@ type DatabaseMetadataColumn struct {
 
 // DatabaseVersion defines model for DatabaseVersion.
 type DatabaseVersion struct {
-	// Formats The formats this version is BUILT in. Asking for another is a 400,
+	// Formats The formats this version is built in. Asking for another is a 400,
 	// not a gap - the `_provider` catalogs are keyed by provider ID, so no
 	// MMDB exists for them.
 	Formats []DatabaseFormat `json:"formats"`
@@ -841,6 +844,9 @@ type DomainIPRanges struct {
 
 // DomainLookupResponse What every database says about one domain.
 type DomainLookupResponse struct {
+	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
+	CapReached *bool `json:"cap_reached,omitempty"`
+
 	// Disposable `{}` when `is_disposable` is false. Paid plans and the trial.
 	Disposable *DisposableDetail `json:"disposable,omitempty"`
 
@@ -878,12 +884,12 @@ type DomainLookupResponse struct {
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 }
 
-// Download One download ATTEMPT, refusals included.
+// Download One download attempt, refusals included.
 type Download struct {
 	// ApikeyID The key that made the request. Null when it could not be resolved.
 	ApikeyID *string `json:"apikey_id"`
 
-	// Bytes Object size at redirect time, NOT bytes delivered: the transfer is a
+	// Bytes Object size at redirect time, not bytes delivered: the transfer is a
 	// presigned redirect straight to object storage, so we never observe
 	// how much of it was taken.
 	Bytes      *int64    `json:"bytes"`
@@ -920,7 +926,7 @@ type Entitlement struct {
 // EntitlementApikey The credential itself. The key is never echoed - only its ID, which is
 // what the console shows and what you can act on.
 type EntitlementApikey struct {
-	// AllowedCidrs The source addresses this key may be used from. EMPTY means
+	// AllowedCidrs The source addresses this key may be used from. Empty means
 	// unrestricted, never "deny all".
 	AllowedCidrs []string `json:"allowed_cidrs"`
 
@@ -970,9 +976,12 @@ type EntitlementPlanTier string
 
 // EntitlementUsage defines model for EntitlementUsage.
 type EntitlementUsage struct {
-	// HardLimit Where we stop serving. NULL means never, which is the normal state
-	// of an uncapped paid plan and is not the same as zero. Above the
-	// quota and below this, requests are served and billed as overage.
+	// HardLimit Where full answers stop: past it, a paid key is answered with
+	// Unlimited's fields and `cap_reached: true`, uncharged, until the
+	// window ends or the cap is raised. `null` means never, which is the
+	// normal state of an uncapped paid plan and is not the same as zero.
+	// Above the quota and below this, requests are served and billed as
+	// overage.
 	HardLimit *int64 `json:"hard_limit"`
 
 	// Quota What the plan includes. Zero on a plan that includes none.
@@ -1094,6 +1103,9 @@ type LookupResponse struct {
 
 	// Bittorrent `{}` when `is_bittorrent` is false. Paid plans and the trial.
 	Bittorrent *BitTorrentDetail `json:"bittorrent,omitempty"`
+
+	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
+	CapReached *bool `json:"cap_reached,omitempty"`
 
 	// Carrier `{}` when `is_carrier` is false. Paid plans and the trial.
 	Carrier *CarrierDetail `json:"carrier,omitempty"`
@@ -1854,7 +1866,7 @@ type ClientInterface interface {
 	//
 	// Creates a key and returns its secret.
 	//
-	// This is the ONLY response that ever carries the secret, and only
+	// This is the only response that ever carries the secret, and only
 	// because this is the moment it comes into existence. Store it now.
 	//
 	// Takes any type of body and a specified content type.
@@ -1866,7 +1878,7 @@ type ClientInterface interface {
 	//
 	// Creates a key and returns its secret.
 	//
-	// This is the ONLY response that ever carries the secret, and only
+	// This is the only response that ever carries the secret, and only
 	// because this is the moment it comes into existence. Store it now.
 	//
 	// Takes a body of the `application/json` content type.
@@ -1913,14 +1925,14 @@ type ClientInterface interface {
 	// The identity behind this credential: what it is, the organization it is
 	// scoped to, and the scopes it currently holds.
 	//
-	// `user` is present for an OAuth token and ABSENT for an API key, which
+	// `user` is present for an OAuth token and absent for an API key, which
 	// has an organization but no person behind it. `credential.kind` says
 	// which you are holding, so a client can branch without guessing from a
 	// missing field.
 	//
 	// Narrower than what the console shows its own user on purpose: an
 	// integration needs a name to display and an organization to address, not
-	// a profile. The `scopes` array is what the credential may do RIGHT NOW,
+	// a profile. The `scopes` array is what the credential may do right now,
 	// so a client can render its own capabilities rather than discovering
 	// them from a 403.
 	//
@@ -2007,7 +2019,8 @@ type ClientInterface interface {
 	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-	// lookup it is on any plan.
+	// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+	// Unlimited's fields and `cap_reached` `true`, in `results`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2019,7 +2032,8 @@ type ClientInterface interface {
 	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-	// lookup it is on any plan.
+	// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+	// Unlimited's fields and `cap_reached` `true`, in `results`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2306,7 +2320,7 @@ func (c *Client) AccountListApikeys(ctx context.Context, reqEditors ...RequestEd
 //
 // Creates a key and returns its secret.
 //
-// This is the ONLY response that ever carries the secret, and only
+// This is the only response that ever carries the secret, and only
 // because this is the moment it comes into existence. Store it now.
 //
 // Takes any type of body and a specified content type.
@@ -2328,7 +2342,7 @@ func (c *Client) AccountCreateApikeyWithBody(ctx context.Context, contentType st
 //
 // Creates a key and returns its secret.
 //
-// This is the ONLY response that ever carries the secret, and only
+// This is the only response that ever carries the secret, and only
 // because this is the moment it comes into existence. Store it now.
 //
 // Takes a body of the `application/json` content type.
@@ -2415,14 +2429,14 @@ func (c *Client) AccountRotateApikey(ctx context.Context, id ApikeyIDParam, reqE
 // The identity behind this credential: what it is, the organization it is
 // scoped to, and the scopes it currently holds.
 //
-// `user` is present for an OAuth token and ABSENT for an API key, which
+// `user` is present for an OAuth token and absent for an API key, which
 // has an organization but no person behind it. `credential.kind` says
 // which you are holding, so a client can branch without guessing from a
 // missing field.
 //
 // Narrower than what the console shows its own user on purpose: an
 // integration needs a name to display and an organization to address, not
-// a profile. The `scopes` array is what the credential may do RIGHT NOW,
+// a profile. The `scopes` array is what the credential may do right now,
 // so a client can render its own capabilities rather than discovering
 // them from a 403.
 //
@@ -2599,7 +2613,8 @@ func (c *Client) LookupAsn(ctx context.Context, asn string, reqEditors ...Reques
 // Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 // lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 // the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-// lookup it is on any plan.
+// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+// Unlimited's fields and `cap_reached` `true`, in `results`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2621,7 +2636,8 @@ func (c *Client) LookupBatchWithBody(ctx context.Context, contentType string, bo
 // Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 // lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 // the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-// lookup it is on any plan.
+// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+// Unlimited's fields and `cap_reached` `true`, in `results`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4067,7 +4083,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Creates a key and returns its secret.
 	//
-	// This is the ONLY response that ever carries the secret, and only
+	// This is the only response that ever carries the secret, and only
 	// because this is the moment it comes into existence. Store it now.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -4079,7 +4095,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Creates a key and returns its secret.
 	//
-	// This is the ONLY response that ever carries the secret, and only
+	// This is the only response that ever carries the secret, and only
 	// because this is the moment it comes into existence. Store it now.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
@@ -4132,14 +4148,14 @@ type ClientWithResponsesInterface interface {
 	// The identity behind this credential: what it is, the organization it is
 	// scoped to, and the scopes it currently holds.
 	//
-	// `user` is present for an OAuth token and ABSENT for an API key, which
+	// `user` is present for an OAuth token and absent for an API key, which
 	// has an organization but no person behind it. `credential.kind` says
 	// which you are holding, so a client can branch without guessing from a
 	// missing field.
 	//
 	// Narrower than what the console shows its own user on purpose: an
 	// integration needs a name to display and an organization to address, not
-	// a profile. The `scopes` array is what the credential may do RIGHT NOW,
+	// a profile. The `scopes` array is what the credential may do right now,
 	// so a client can render its own capabilities rather than discovering
 	// them from a 403.
 	//
@@ -4244,7 +4260,8 @@ type ClientWithResponsesInterface interface {
 	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-	// lookup it is on any plan.
+	// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+	// Unlimited's fields and `cap_reached` `true`, in `results`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -4256,7 +4273,8 @@ type ClientWithResponsesInterface interface {
 	// Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 	// lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 	// the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-	// lookup it is on any plan.
+	// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+	// Unlimited's fields and `cap_reached` `true`, in `results`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -6126,7 +6144,7 @@ func (c *ClientWithResponses) AccountListApikeysWithResponse(ctx context.Context
 //
 // Creates a key and returns its secret.
 //
-// This is the ONLY response that ever carries the secret, and only
+// This is the only response that ever carries the secret, and only
 // because this is the moment it comes into existence. Store it now.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -6144,7 +6162,7 @@ func (c *ClientWithResponses) AccountCreateApikeyWithBodyWithResponse(ctx contex
 //
 // Creates a key and returns its secret.
 //
-// This is the ONLY response that ever carries the secret, and only
+// This is the only response that ever carries the secret, and only
 // because this is the moment it comes into existence. Store it now.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
@@ -6221,14 +6239,14 @@ func (c *ClientWithResponses) AccountRotateApikeyWithResponse(ctx context.Contex
 // The identity behind this credential: what it is, the organization it is
 // scoped to, and the scopes it currently holds.
 //
-// `user` is present for an OAuth token and ABSENT for an API key, which
+// `user` is present for an OAuth token and absent for an API key, which
 // has an organization but no person behind it. `credential.kind` says
 // which you are holding, so a client can branch without guessing from a
 // missing field.
 //
 // Narrower than what the console shows its own user on purpose: an
 // integration needs a name to display and an organization to address, not
-// a profile. The `scopes` array is what the credential may do RIGHT NOW,
+// a profile. The `scopes` array is what the credential may do right now,
 // so a client can render its own capabilities rather than discovering
 // them from a 403.
 //
@@ -6387,7 +6405,8 @@ func (c *ClientWithResponses) LookupAsnWithResponse(ctx context.Context, asn str
 // Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 // lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 // the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-// lookup it is on any plan.
+// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+// Unlimited's fields and `cap_reached` `true`, in `results`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -6405,7 +6424,8 @@ func (c *ClientWithResponses) LookupBatchWithBodyWithResponse(ctx context.Contex
 // Up to 1000 addresses, AS numbers and domains in one call, each answered exactly as its own
 // lookup would be and each counted as one lookup. Answers and failures are keyed by the string you sent, in
 // the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is answered as the
-// lookup it is on any plan.
+// lookup it is on any plan. An overage cap reached part way through answers the remaining items with
+// Unlimited's fields and `cap_reached` `true`, in `results`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //

@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.15
+  version: 2026.11.17
 servers:
   - url: https://internetdata.io
 tags:
@@ -28,16 +28,16 @@ tags:
       the query parameter is there for curl and the browser, which is how a
       database is usually fetched.
 
-      Access is granted by CONTRACT, one dataset family at a time: there is no
+      Access is granted by contract, one dataset family at a time: there is no
       self-service purchase and no subscription behind it. The Open databases
       are licensed to every organization from the start, a `standard` license
       to each, and are free under CC BY-SA 4.0 besides. `list` marks them
       `open`.
 
       A successful download answers `302` with a time-limited URL pointing
-      straight at object storage. Follow the redirect (`curl -L`); the link
-      authorizes the START of a transfer, so a download already running is not
-      interrupted when it lapses.
+      straight at object storage. Follow the redirect (`curl -L`). The link only
+      has to be valid when a transfer starts, so one already running isn't cut
+      off when it lapses.
     x-displayName: Database v2
   - name: Account
     description: Who the credential belongs to, and what it may do.
@@ -368,14 +368,14 @@ paths:
         The identity behind this credential: what it is, the organization it is
         scoped to, and the scopes it currently holds.
 
-        `user` is present for an OAuth token and ABSENT for an API key, which
+        `user` is present for an OAuth token and absent for an API key, which
         has an organization but no person behind it. `credential.kind` says
         which you are holding, so a client can branch without guessing from a
         missing field.
 
         Narrower than what the console shows its own user on purpose: an
         integration needs a name to display and an organization to address, not
-        a profile. The `scopes` array is what the credential may do RIGHT NOW,
+        a profile. The `scopes` array is what the credential may do right now,
         so a client can render its own capabilities rather than discovering
         them from a 403.
       security:
@@ -493,7 +493,7 @@ paths:
       description: |
         Creates a key and returns its secret.
 
-        This is the ONLY response that ever carries the secret, and only
+        This is the only response that ever carries the secret, and only
         because this is the moment it comes into existence. Store it now.
       security:
         - BearerAuth:
@@ -1238,6 +1238,7 @@ paths:
                     hosted_domains:
                       total: 0
                       domains: []
+                    cap_reached: false
                 paidServices:
                   summary: 'A paid plan: an anycast resolver with its services'
                   value:
@@ -1390,6 +1391,50 @@ paths:
                         - getusinfo.com
                         - medicinanet.com.br
                         - imgup.net
+                    cap_reached: false
+                capReached:
+                  summary: >-
+                    A key on a paid plan past its organization's overage cap, with Unlimited's
+                    fields
+                  value:
+                    ip: 146.70.116.130
+                    is_bogon: false
+                    is_tor: false
+                    is_relay: false
+                    is_anycast: false
+                    is_carrier: false
+                    is_satellite: false
+                    is_ssh: false
+                    is_smtp: false
+                    is_web: false
+                    is_dns_resolver: false
+                    is_bittorrent: false
+                    location:
+                      continent: EU
+                      continent_name: Europe
+                      country: AT
+                      country_name: Austria
+                      timezone: Europe/Vienna
+                      currency_code: EUR
+                      currency_name: Euro
+                      currency_symbol: €
+                      flag_emoji: 🇦🇹
+                      flag_unicode: U+1F1E6 U+1F1F9
+                    tor: {}
+                    relay: {}
+                    asn:
+                      asn: 9009
+                      name: M247 Europe SRL
+                      domain: m247global.com
+                      type: hosting
+                      prefix: 146.70.116.0/24
+                    company:
+                      name: M247 LTD Vienna Infrastructure
+                      domain: m247.ro
+                    hostname: ''
+                    abuse:
+                      email: abuse@m247.ro
+                    cap_reached: true
                 bogon:
                   summary: A private address on a paid plan
                   value:
@@ -1492,6 +1537,7 @@ paths:
                     hosted_domains:
                       total: 0
                       domains: []
+                    cap_reached: false
         '400':
           description: Not an address, an AS number or a domain.
           content:
@@ -1545,8 +1591,9 @@ paths:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
-            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
-            limit), or, with none, a paid plan's overage cap.
+            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
+            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
+            Unlimited's fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1564,13 +1611,9 @@ paths:
                     error: >-
                       per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
                       plan
-                e3:
-                  summary: overage cap reached; raise or remove it in Billing
-                  value:
-                    error: overage cap reached; raise or remove it in Billing
           headers:
             Retry-After:
-              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              description: Seconds until a rate limit lets the request through.
               schema:
                 type: integer
         '500':
@@ -1691,8 +1734,9 @@ paths:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
-            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
-            limit), or, with none, a paid plan's overage cap.
+            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
+            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
+            Unlimited's fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1710,13 +1754,9 @@ paths:
                     error: >-
                       per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
                       plan
-                e3:
-                  summary: overage cap reached; raise or remove it in Billing
-                  value:
-                    error: overage cap reached; raise or remove it in Billing
           headers:
             Retry-After:
-              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              description: Seconds until a rate limit lets the request through.
               schema:
                 type: integer
         '500':
@@ -1878,6 +1918,19 @@ paths:
                       domains:
                         - fotopedia.com
                         - kissfm.ro
+                    cap_reached: false
+                capReached:
+                  summary: >-
+                    A key on a paid plan past its organization's overage cap, with Unlimited's
+                    fields
+                  value:
+                    asn: 9009
+                    name: M247 Europe SRL
+                    country: RO
+                    registry: ripe
+                    allocated: '2005-06-06'
+                    domain: m247global.com
+                    cap_reached: true
         '400':
           description: Not an address, an AS number or a domain.
           content:
@@ -1931,8 +1984,9 @@ paths:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
-            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
-            limit), or, with none, a paid plan's overage cap.
+            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
+            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
+            Unlimited's fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1950,13 +2004,9 @@ paths:
                     error: >-
                       per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
                       plan
-                e3:
-                  summary: overage cap reached; raise or remove it in Billing
-                  value:
-                    error: overage cap reached; raise or remove it in Billing
           headers:
             Retry-After:
-              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              description: Seconds until a rate limit lets the request through.
               schema:
                 type: integer
         '500':
@@ -2060,6 +2110,20 @@ paths:
                           name: EXAMPLE-NET
                           country: US
                     disposable: {}
+                    cap_reached: false
+                capReached:
+                  summary: >-
+                    A key on a paid plan past its organization's overage cap, with Unlimited's
+                    fields
+                  value:
+                    domain: example.com
+                    is_registered: true
+                    has_a: true
+                    has_aaaa: true
+                    has_mx: true
+                    has_ns: true
+                    has_cname: false
+                    cap_reached: true
         '400':
           description: Not an address, an AS number or a domain.
           content:
@@ -2113,8 +2177,9 @@ paths:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
           description: |
-            A rate limit, with `Retry-After` (this API protecting itself, or Unlimited's per-minute
-            limit), or, with none, a paid plan's overage cap.
+            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
+            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
+            Unlimited's fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -2132,13 +2197,9 @@ paths:
                     error: >-
                       per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
                       plan
-                e3:
-                  summary: overage cap reached; raise or remove it in Billing
-                  value:
-                    error: overage cap reached; raise or remove it in Billing
           headers:
             Retry-After:
-              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              description: Seconds until a rate limit lets the request through.
               schema:
                 type: integer
         '500':
@@ -2175,7 +2236,10 @@ paths:
         the order you sent them; duplicates collapse. Needs a paid plan: a batch of one item is
         answered as the
 
-        lookup it is on any plan.
+        lookup it is on any plan. An overage cap reached part way through answers the remaining
+        items with
+
+        Unlimited's fields and `cap_reached` `true`, in `results`.
       requestBody:
         required: true
         content:
@@ -2310,18 +2374,26 @@ paths:
                         hosted_domains:
                           total: 0
                           domains: []
+                        cap_reached: false
                     errors:
                       146.70.116:
                         status: 400
                         error: not a valid IP address, AS number or domain
                 failures:
-                  summary: Entries past the overage cap, and one our data could not answer
+                  summary: >-
+                    An AS answered past the overage cap with Unlimited's fields, and a domain our
+                    data could not answer
                   value:
-                    results: {}
-                    errors:
+                    results:
                       AS9009:
-                        status: 429
-                        error: overage cap reached; raise or remove it in Billing
+                        asn: 9009
+                        name: M247 Europe SRL
+                        country: RO
+                        registry: ripe
+                        allocated: '2005-06-06'
+                        domain: m247global.com
+                        cap_reached: true
+                    errors:
                       example.com:
                         status: 500
                         error: lookup failed
@@ -2410,7 +2482,7 @@ paths:
           description: A rate limit; retry after `Retry-After`.
           headers:
             Retry-After:
-              description: Seconds until a rate limit lets the request through. Absent on an overage cap.
+              description: Seconds until a rate limit lets the request through.
               schema:
                 type: integer
           content:
@@ -2517,13 +2589,19 @@ paths:
         '403':
           description: |
             The key restricts which source addresses may use it, and this
-            request did not come from one of them.
+            request did not come from one of them; or the key was sent over
+            plain HTTP, which is refused whatever the key.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EntitlementError'
-              example:
-                error: source address not allowed for this API key
+              examples:
+                source:
+                  value:
+                    error: source address not allowed for this API key
+                plain_http:
+                  value:
+                    error: API key sent over plain HTTP; use https://
         '503':
           description: |
             The usage counters could not be read. Reported rather than guessed
@@ -2657,7 +2735,7 @@ components:
     Database:
       type: object
       description: |
-        One database FAMILY, with your organization's license beside it. A
+        One database family, with your organization's license beside it. A
         license covers the family, while a download names a specific version,
         so the IDs passed to `download` and `checksum` come from `versions`.
       required:
@@ -2757,7 +2835,7 @@ components:
         formats:
           type: array
           description: |
-            The formats this version is BUILT in. Asking for another is a 400,
+            The formats this version is built in. Asking for another is a 400,
             not a gap - the `_provider` catalogs are keyed by provider ID, so no
             MMDB exists for them.
           items:
@@ -2769,7 +2847,7 @@ components:
             $ref: '#/components/schemas/DatabaseFormat'
     Download:
       type: object
-      description: One download ATTEMPT, refusals included.
+      description: One download attempt, refusals included.
       required:
         - dataset_id
         - format
@@ -2808,7 +2886,7 @@ components:
           format: int64
           nullable: true
           description: |
-            Object size at redirect time, NOT bytes delivered: the transfer is a
+            Object size at redirect time, not bytes delivered: the transfer is a
             presigned redirect straight to object storage, so we never observe
             how much of it was taken.
         http_status:
@@ -3102,7 +3180,7 @@ components:
         - rc
         - keys
     ApikeyDetail:
-      description: Key METADATA. Never the key itself.
+      description: Key metadata. Never the key itself.
       type: object
       properties:
         id:
@@ -3132,7 +3210,7 @@ components:
           type: array
           items:
             type: string
-          description: Source-IP allowlist. EMPTY MEANS UNRESTRICTED, not deny-all.
+          description: Source-IP allowlist. Empty means unrestricted, not deny-all.
         allowed_scopes:
           type: array
           items:
@@ -3602,6 +3680,13 @@ components:
           description: >-
             On every answer to a key on the free plan, and on no other: `false` while the day's
             trial of every field lasts, `true` once the answer has Unlimited's fields.
+        cap_reached:
+          type: boolean
+          description: >-
+            On every answer to a key on a paid plan, and on no other: `false` while the answer has
+            every field, `true` once its organization's overage cap is reached and the answer has
+            Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap
+            in Billing turns it `false` again.
       required:
         - ip
         - is_bogon
@@ -4241,6 +4326,13 @@ components:
           description: >-
             On every answer to a key on the free plan, and on no other: `false` while the day's
             trial of every field lasts, `true` once the answer has Unlimited's fields.
+        cap_reached:
+          type: boolean
+          description: >-
+            On every answer to a key on a paid plan, and on no other: `false` while the answer has
+            every field, `true` once its organization's overage cap is reached and the answer has
+            Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap
+            in Billing turns it `false` again.
       required:
         - asn
         - name
@@ -4323,6 +4415,13 @@ components:
           description: >-
             On every answer to a key on the free plan, and on no other: `false` while the day's
             trial of every field lasts, `true` once the answer has Unlimited's fields.
+        cap_reached:
+          type: boolean
+          description: >-
+            On every answer to a key on a paid plan, and on no other: `false` while the answer has
+            every field, `true` once its organization's overage cap is reached and the answer has
+            Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap
+            in Billing turns it `false` again.
       required:
         - domain
         - is_registered
@@ -4573,7 +4672,7 @@ components:
           items:
             type: string
           description: |
-            The source addresses this key may be used from. EMPTY means
+            The source addresses this key may be used from. Empty means
             unrestricted, never "deny all".
     EntitlementPlan:
       type: object
@@ -4634,9 +4733,12 @@ components:
           format: int64
           nullable: true
           description: |
-            Where we stop serving. NULL means never, which is the normal state
-            of an uncapped paid plan and is not the same as zero. Above the
-            quota and below this, requests are served and billed as overage.
+            Where full answers stop: past it, a paid key is answered with
+            Unlimited's fields and `cap_reached: true`, uncharged, until the
+            window ends or the cap is raised. `null` means never, which is the
+            normal state of an uncapped paid plan and is not the same as zero.
+            Above the quota and below this, requests are served and billed as
+            overage.
         window_start:
           type: string
           format: date-time
@@ -4667,8 +4769,9 @@ components:
       description: |
         The request comes from an address outside the key's or its
         organization's allowed addresses. Change the allowlist or call from an
-        allowed address: the key itself is fine.
-        `rc`: `IP_NOT_ALLOWED`.
+        allowed address: the key itself is fine. Or the key was sent over
+        plain HTTP, refused whatever the key: use `https://`.
+        `rc`: `IP_NOT_ALLOWED`, `KEY_OVER_HTTP`.
       content:
         application/json:
           schema:
@@ -4678,8 +4781,9 @@ components:
         Your organization holds no license for this database (`NOT_LICENSED`),
         or its term has ended (`LICENSE_EXPIRED`); or the request comes from an
         address outside the key's or its organization's allowed addresses
-        (`IP_NOT_ALLOWED`).
-        `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`, `IP_NOT_ALLOWED`.
+        (`IP_NOT_ALLOWED`); or the key was sent over plain HTTP, refused
+        whatever the key (`KEY_OVER_HTTP`): use `https://`.
+        `rc`: `NOT_LICENSED`, `LICENSE_EXPIRED`, `IP_NOT_ALLOWED`, `KEY_OVER_HTTP`.
       content:
         application/json:
           schema:
