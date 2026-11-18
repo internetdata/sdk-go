@@ -4840,8 +4840,11 @@ components:
             $ref: '#/components/schemas/AccountRc'
     AccountForbidden:
       description: |
-        The credential does not hold the scope this endpoint requires. The
-        missing scope is deliberately not named.
+        The credential does not hold the scope this endpoint requires
+        (`FORBIDDEN`); the missing scope is deliberately not named. Or the
+        credential was sent over plain HTTP, refused whatever it is
+        (`KEY_OVER_HTTP`): use `https://`.
+        `rc`: `FORBIDDEN`, `KEY_OVER_HTTP`.
       content:
         application/json:
           schema:
