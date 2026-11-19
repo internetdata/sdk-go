@@ -308,7 +308,7 @@ if token.Apikey == nil {
 keyed, err := internetdata.New(internetdata.WithAPIKey(*token.Apikey))
 ```
 
-A denied sign-in satisfies `errors.Is(err, internetdata.ErrOauthAccessDenied)` and a code that ran out `errors.Is(err, internetdata.ErrOauthExpiredToken)`, and client IDs are issued on request from support@internetdata.io. `client.Oauth.Revoke(ctx, "your-client-id", *token.RefreshToken)` signs the machine out again.
+A denied sign-in satisfies `errors.Is(err, internetdata.ErrOauthAccessDenied)` and a code that ran out `errors.Is(err, internetdata.ErrOauthExpiredToken)`. `client.Oauth.Revoke(ctx, "your-client-id", *token.RefreshToken)` signs the machine out again. Only a client we registered, such as our CLI, can use the device flow: an app of your own signs people in with the authorization code flow below.
 
 ### Sign in with OAuth (authorization code)
 
