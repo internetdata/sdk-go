@@ -19,7 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/golang-lru/v2/expirable"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/internetdata/sdk-go/v2/internal/api"
@@ -63,7 +62,7 @@ type Client struct {
 	Oauth *OauthAPI
 
 	api   *api.ClientWithResponses
-	cache *expirable.LRU[string, Result]
+	cache *answerCache
 	// The addresses with a request in flight, shared by Lookup and LookupBatch.
 	// Only a client that caches shares them: without a cache every lookup is
 	// served, as WithoutCache promises.
@@ -114,7 +113,7 @@ func New(opts ...Option) (*Client, error) {
 		retries:     cfg.retries,
 	}
 	if !cfg.cacheOff {
-		client.cache = expirable.NewLRU[string, Result](cfg.cacheSize, nil, cfg.cacheTTL)
+		client.cache = newAnswerCache(cfg.cacheSize, cfg.cacheTTL)
 	}
 	return client, nil
 }
@@ -575,7 +574,8 @@ func WithBaseURL(rawURL string) Option {
 }
 
 // WithCache sizes the per-client answer cache. Defaults are 10000 addresses and
-// a one hour TTL.
+// a one hour TTL. An answer marked TrialExpired or CapReached stays a minute at
+// most.
 func WithCache(size int, ttl time.Duration) Option {
 	return func(c *config) error {
 		if size < 1 {
