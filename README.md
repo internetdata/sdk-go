@@ -21,7 +21,7 @@ import internetdata "github.com/internetdata/sdk-go/v2"
 
 ## Usage
 
-**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, limited per address per minute.
+**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, with no daily or monthly cap.
 
 ```go
 client, err := internetdata.New()
