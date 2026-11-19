@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.14.2 - 2026-11-19
+
+### Fixes
+
+- Cache a spent trial's or a reached cap's answer for a minute at most ([`0f62fa3`](https://github.com/internetdata/sdk-go/commit/0f62fa3709f1943e68426f3d08f8424992c4e9bf))
+
 ## 2.14.1 - 2026-11-18
 
 ### Fixes
