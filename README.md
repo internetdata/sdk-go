@@ -63,7 +63,7 @@ domain, err := client.LookupDomain(ctx, "example.com")
 fmt.Println(domain.IsRegistered)       // true
 ```
 
-Every plan answers an AS's registration and whether a domain is registered and which record types it has. A paid plan adds the AS's whois record, its prefixes, its rank, Tier 1 flag, upstreams, peers and downstreams, and the domains it hosts, and the domain's records, IP ranges and `is_disposable`. Neither is cached or batched, and `Lookup` takes an address alone: it refuses anything else as a `bad_request` before sending it.
+Every plan answers an AS's registration and whether a domain is registered and which record types it has. A paid plan adds the AS's whois record, its prefixes, its rank, Tier 1 flag, upstreams, peers and downstreams, and the domains it hosts, and the domain's records, the network announcing each of its addresses, the other domains on its first IPv4 address, its IP ranges, `is_disposable`, what its home page says and links to, and the domains whose home page redirects or links to it. Neither is cached or batched, and `Lookup` takes an address alone: it refuses anything else as a `bad_request` before sending it.
 
 ### Your own address
 
@@ -84,7 +84,7 @@ fmt.Println(acct.Usage.Requests)   // 580
 fmt.Println(acct.Usage.WindowEnd)  // when the allowance resets
 ```
 
-Usage is counted against the anniversary of your subscription on a paid plan, not the calendar month and not the billing period, and against the UTC day on the free plan; it's the same number a lookup is gated on. `HardLimit` is nil on an uncapped plan, which is not the same as zero.
+Usage is counted against the anniversary of your subscription on a paid plan, not the calendar month and not the billing period; it's the same number a lookup is gated on. `HardLimit` is nil on an uncapped plan, which is not the same as zero.
 
 ### Batch lookup
 
