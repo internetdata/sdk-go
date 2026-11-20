@@ -3,8 +3,8 @@
 // domain, and the licensed databases themselves, downloaded as CSV.GZ or MMDB.
 //
 // Start with New and Client.Lookup. No API key is needed: without one a lookup
-// is on Unlimited, the free plan, limited per address per minute. A batch needs
-// a paid plan, and Client.Database a key carrying the db.download scope.
+// is on Unlimited, the free plan, with no daily or monthly cap. A batch needs a
+// paid plan, and Client.Database a key carrying the db.download scope.
 package internetdata
 
 import (

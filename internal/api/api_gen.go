@@ -282,7 +282,7 @@ type Asn struct {
 	// Asn The AS announcing the address, 0 where none does.
 	Asn int `json:"asn"`
 
-	// Country The country its registry assigned it to. Paid plans and the trial.
+	// Country The country its registry assigned it to.
 	Country *string `json:"country,omitempty"`
 
 	// Domain Its operator's domain.
@@ -294,7 +294,7 @@ type Asn struct {
 	// Prefix The announced prefix covering the address.
 	Prefix string `json:"prefix"`
 
-	// RpkiStatus The announcement's RPKI status. Paid plans and the trial.
+	// RpkiStatus The announcement's RPKI status.
 	RpkiStatus *string `json:"rpki_status,omitempty"`
 
 	// Type The kind of network it runs.
@@ -378,7 +378,7 @@ type AsnLookupResponse struct {
 	// Tier1 Whether it is one of the transit-free networks at the top of the hierarchy, which get transit from no one and peer with each other. Paid plans and the trial.
 	Tier1 *bool `json:"tier1,omitempty"`
 
-	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 
 	// Type The kind of network it runs. Paid plans and the trial.
@@ -880,7 +880,7 @@ type DomainLookupResponse struct {
 	// IsRegistered In Domain List: a registered domain.
 	IsRegistered bool `json:"is_registered"`
 
-	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 }
 
@@ -944,8 +944,8 @@ type EntitlementError struct {
 type EntitlementPlan struct {
 	// Key The plan the organization is on, as an identifier that is never
 	// renamed or reused: `free` for the free plan, or a paid plan's key.
-	// Compare against it and show `name`. On `free`, usage counts the
-	// day's lookups answered with every field, its daily trial.
+	// Compare against it and show `name`. On `free`, usage counts its
+	// trial, the lookups answered with every field.
 	//
 	//
 	// Example: max
@@ -1218,7 +1218,7 @@ type LookupResponse struct {
 	// Tor Tor IP's row, `{}` when `is_tor` is false.
 	Tor ClassDetail `json:"tor"`
 
-	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while the day's trial of every field lasts, `true` once the answer has Unlimited's fields.
+	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 
 	// Vpn VPN IP's row, `{}` when `is_vpn` is false. Paid plans and the trial.
@@ -1850,9 +1850,11 @@ type ClientInterface interface {
 
 	// AccountListApikeys List
 	//
-	// Metadata only. A key's secret is never in a list - not here and not in
-	// the console - because a list is the response that ends up in logs,
-	// caches and support tickets.
+	// Lists your organization's API keys with their metadata, never a secret:
+	// only Create, Rotate and Reveal return one.
+	//
+	// A secret is never in a list, here or in the console, because a list is
+	// the response that ends up in logs, caches and support tickets.
 	//
 	// `retrievable` says whether the secret could still be read back at all.
 	// A key issued before this product stored secrets recoverably was never
@@ -1864,10 +1866,8 @@ type ClientInterface interface {
 
 	// AccountCreateApikeyWithBody Create
 	//
-	// Creates a key and returns its secret.
-	//
-	// This is the only response that ever carries the secret, and only
-	// because this is the moment it comes into existence. Store it now.
+	// Creates an API key and returns its secret, which no list ever shows:
+	// keep it, or reveal it again later.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1876,10 +1876,8 @@ type ClientInterface interface {
 
 	// AccountCreateApikey Create
 	//
-	// Creates a key and returns its secret.
-	//
-	// This is the only response that ever carries the secret, and only
-	// because this is the moment it comes into existence. Store it now.
+	// Creates an API key and returns its secret, which no list ever shows:
+	// keep it, or reveal it again later.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -1941,20 +1939,20 @@ type ClientInterface interface {
 
 	// AccountOrg Organization
 	//
-	// The organization this credential is scoped to.
+	// Returns the organization the presented credential is scoped to. A
+	// credential belongs to exactly one, so there is no ID to pass.
 	//
-	// There is no way to name a different one. A credential describes exactly
-	// one organization, so an identifier in the path could only ever be your
-	// own or a refusal.
+	// An identifier in the path could only ever be your own or a refusal.
 	//
 	// Corresponds with GET /api/v1/iam/org (the `AccountOrg` operationId).
 	AccountOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AccountOrgMembers Members
 	//
-	// Read-only. Adding or removing a member is an invitation flow with email
-	// in the middle rather than a POST, and modeling it as one here would
-	// promise something this API does not do.
+	// Lists the members of your organization. Adding or removing one is an
+	// emailed invitation in the console, not an API call.
+	//
+	// Modeling it as one here would promise something this API does not do.
 	//
 	// Corresponds with GET /api/v1/iam/org/members (the `AccountOrgMembers` operationId).
 	AccountOrgMembers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1968,16 +1966,18 @@ type ClientInterface interface {
 
 	// DownloadDatabaseV2 Download
 	//
-	// Answers `302`; the bytes come straight from object storage rather than
-	// through this API. Follow the redirect.
+	// Downloads one file of a database: the answer is a `302` to time-limited
+	// object storage, so follow the redirect.
+	//
+	// The bytes come straight from object storage rather than through this API.
 	//
 	// Corresponds with GET /api/v2/database/download (the `DownloadDatabaseV2` operationId).
 	DownloadDatabaseV2(ctx context.Context, params *DownloadDatabaseV2Params, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDownloads History
 	//
-	// Refusals are listed too: a denial is what answers "it stopped working",
-	// and its absence answers nothing.
+	// Lists your organization's recent database downloads, newest first,
+	// refused ones included, so a download that stopped working shows why.
 	//
 	// Corresponds with GET /api/v2/database/downloads (the `ListDownloads` operationId).
 	ListDownloads(ctx context.Context, params *ListDownloadsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2294,9 +2294,11 @@ func (c *Client) MyEntitlement(ctx context.Context, reqEditors ...RequestEditorF
 
 // AccountListApikeys List
 //
-// Metadata only. A key's secret is never in a list - not here and not in
-// the console - because a list is the response that ends up in logs,
-// caches and support tickets.
+// Lists your organization's API keys with their metadata, never a secret:
+// only Create, Rotate and Reveal return one.
+//
+// A secret is never in a list, here or in the console, because a list is
+// the response that ends up in logs, caches and support tickets.
 //
 // `retrievable` says whether the secret could still be read back at all.
 // A key issued before this product stored secrets recoverably was never
@@ -2318,10 +2320,8 @@ func (c *Client) AccountListApikeys(ctx context.Context, reqEditors ...RequestEd
 
 // AccountCreateApikeyWithBody Create
 //
-// Creates a key and returns its secret.
-//
-// This is the only response that ever carries the secret, and only
-// because this is the moment it comes into existence. Store it now.
+// Creates an API key and returns its secret, which no list ever shows:
+// keep it, or reveal it again later.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2340,10 +2340,8 @@ func (c *Client) AccountCreateApikeyWithBody(ctx context.Context, contentType st
 
 // AccountCreateApikey Create
 //
-// Creates a key and returns its secret.
-//
-// This is the only response that ever carries the secret, and only
-// because this is the moment it comes into existence. Store it now.
+// Creates an API key and returns its secret, which no list ever shows:
+// keep it, or reveal it again later.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -2455,11 +2453,10 @@ func (c *Client) AccountIdentity(ctx context.Context, reqEditors ...RequestEdito
 
 // AccountOrg Organization
 //
-// The organization this credential is scoped to.
+// Returns the organization the presented credential is scoped to. A
+// credential belongs to exactly one, so there is no ID to pass.
 //
-// There is no way to name a different one. A credential describes exactly
-// one organization, so an identifier in the path could only ever be your
-// own or a refusal.
+// An identifier in the path could only ever be your own or a refusal.
 //
 // Corresponds with GET /api/v1/iam/org (the `AccountOrg` operationId).
 func (c *Client) AccountOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2476,9 +2473,10 @@ func (c *Client) AccountOrg(ctx context.Context, reqEditors ...RequestEditorFn) 
 
 // AccountOrgMembers Members
 //
-// Read-only. Adding or removing a member is an invitation flow with email
-// in the middle rather than a POST, and modeling it as one here would
-// promise something this API does not do.
+// Lists the members of your organization. Adding or removing one is an
+// emailed invitation in the console, not an API call.
+//
+// Modeling it as one here would promise something this API does not do.
 //
 // Corresponds with GET /api/v1/iam/org/members (the `AccountOrgMembers` operationId).
 func (c *Client) AccountOrgMembers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2512,8 +2510,10 @@ func (c *Client) DatabaseChecksumV2(ctx context.Context, params *DatabaseChecksu
 
 // DownloadDatabaseV2 Download
 //
-// Answers `302`; the bytes come straight from object storage rather than
-// through this API. Follow the redirect.
+// Downloads one file of a database: the answer is a `302` to time-limited
+// object storage, so follow the redirect.
+//
+// The bytes come straight from object storage rather than through this API.
 //
 // Corresponds with GET /api/v2/database/download (the `DownloadDatabaseV2` operationId).
 func (c *Client) DownloadDatabaseV2(ctx context.Context, params *DownloadDatabaseV2Params, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2530,8 +2530,8 @@ func (c *Client) DownloadDatabaseV2(ctx context.Context, params *DownloadDatabas
 
 // ListDownloads History
 //
-// Refusals are listed too: a denial is what answers "it stopped working",
-// and its absence answers nothing.
+// Lists your organization's recent database downloads, newest first,
+// refused ones included, so a download that stopped working shows why.
 //
 // Corresponds with GET /api/v2/database/downloads (the `ListDownloads` operationId).
 func (c *Client) ListDownloads(ctx context.Context, params *ListDownloadsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4065,9 +4065,11 @@ type ClientWithResponsesInterface interface {
 
 	// AccountListApikeysWithResponse List
 	//
-	// Metadata only. A key's secret is never in a list - not here and not in
-	// the console - because a list is the response that ends up in logs,
-	// caches and support tickets.
+	// Lists your organization's API keys with their metadata, never a secret:
+	// only Create, Rotate and Reveal return one.
+	//
+	// A secret is never in a list, here or in the console, because a list is
+	// the response that ends up in logs, caches and support tickets.
 	//
 	// `retrievable` says whether the secret could still be read back at all.
 	// A key issued before this product stored secrets recoverably was never
@@ -4081,10 +4083,8 @@ type ClientWithResponsesInterface interface {
 
 	// AccountCreateApikeyWithBodyWithResponse Create
 	//
-	// Creates a key and returns its secret.
-	//
-	// This is the only response that ever carries the secret, and only
-	// because this is the moment it comes into existence. Store it now.
+	// Creates an API key and returns its secret, which no list ever shows:
+	// keep it, or reveal it again later.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -4093,10 +4093,8 @@ type ClientWithResponsesInterface interface {
 
 	// AccountCreateApikeyWithResponse Create
 	//
-	// Creates a key and returns its secret.
-	//
-	// This is the only response that ever carries the secret, and only
-	// because this is the moment it comes into existence. Store it now.
+	// Creates an API key and returns its secret, which no list ever shows:
+	// keep it, or reveal it again later.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -4166,11 +4164,10 @@ type ClientWithResponsesInterface interface {
 
 	// AccountOrgWithResponse Organization
 	//
-	// The organization this credential is scoped to.
+	// Returns the organization the presented credential is scoped to. A
+	// credential belongs to exactly one, so there is no ID to pass.
 	//
-	// There is no way to name a different one. A credential describes exactly
-	// one organization, so an identifier in the path could only ever be your
-	// own or a refusal.
+	// An identifier in the path could only ever be your own or a refusal.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -4179,9 +4176,10 @@ type ClientWithResponsesInterface interface {
 
 	// AccountOrgMembersWithResponse Members
 	//
-	// Read-only. Adding or removing a member is an invitation flow with email
-	// in the middle rather than a POST, and modeling it as one here would
-	// promise something this API does not do.
+	// Lists the members of your organization. Adding or removing one is an
+	// emailed invitation in the console, not an API call.
+	//
+	// Modeling it as one here would promise something this API does not do.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -4199,8 +4197,10 @@ type ClientWithResponsesInterface interface {
 
 	// DownloadDatabaseV2WithResponse Download
 	//
-	// Answers `302`; the bytes come straight from object storage rather than
-	// through this API. Follow the redirect.
+	// Downloads one file of a database: the answer is a `302` to time-limited
+	// object storage, so follow the redirect.
+	//
+	// The bytes come straight from object storage rather than through this API.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -4209,8 +4209,8 @@ type ClientWithResponsesInterface interface {
 
 	// ListDownloadsWithResponse History
 	//
-	// Refusals are listed too: a denial is what answers "it stopped working",
-	// and its absence answers nothing.
+	// Lists your organization's recent database downloads, newest first,
+	// refused ones included, so a download that stopped working shows why.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -6120,9 +6120,11 @@ func (c *ClientWithResponses) MyEntitlementWithResponse(ctx context.Context, req
 
 // AccountListApikeysWithResponse List
 //
-// Metadata only. A key's secret is never in a list - not here and not in
-// the console - because a list is the response that ends up in logs,
-// caches and support tickets.
+// Lists your organization's API keys with their metadata, never a secret:
+// only Create, Rotate and Reveal return one.
+//
+// A secret is never in a list, here or in the console, because a list is
+// the response that ends up in logs, caches and support tickets.
 //
 // `retrievable` says whether the secret could still be read back at all.
 // A key issued before this product stored secrets recoverably was never
@@ -6142,10 +6144,8 @@ func (c *ClientWithResponses) AccountListApikeysWithResponse(ctx context.Context
 
 // AccountCreateApikeyWithBodyWithResponse Create
 //
-// Creates a key and returns its secret.
-//
-// This is the only response that ever carries the secret, and only
-// because this is the moment it comes into existence. Store it now.
+// Creates an API key and returns its secret, which no list ever shows:
+// keep it, or reveal it again later.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -6160,10 +6160,8 @@ func (c *ClientWithResponses) AccountCreateApikeyWithBodyWithResponse(ctx contex
 
 // AccountCreateApikeyWithResponse Create
 //
-// Creates a key and returns its secret.
-//
-// This is the only response that ever carries the secret, and only
-// because this is the moment it comes into existence. Store it now.
+// Creates an API key and returns its secret, which no list ever shows:
+// keep it, or reveal it again later.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -6263,11 +6261,10 @@ func (c *ClientWithResponses) AccountIdentityWithResponse(ctx context.Context, r
 
 // AccountOrgWithResponse Organization
 //
-// The organization this credential is scoped to.
+// Returns the organization the presented credential is scoped to. A
+// credential belongs to exactly one, so there is no ID to pass.
 //
-// There is no way to name a different one. A credential describes exactly
-// one organization, so an identifier in the path could only ever be your
-// own or a refusal.
+// An identifier in the path could only ever be your own or a refusal.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -6282,9 +6279,10 @@ func (c *ClientWithResponses) AccountOrgWithResponse(ctx context.Context, reqEdi
 
 // AccountOrgMembersWithResponse Members
 //
-// Read-only. Adding or removing a member is an invitation flow with email
-// in the middle rather than a POST, and modeling it as one here would
-// promise something this API does not do.
+// Lists the members of your organization. Adding or removing one is an
+// emailed invitation in the console, not an API call.
+//
+// Modeling it as one here would promise something this API does not do.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -6314,8 +6312,10 @@ func (c *ClientWithResponses) DatabaseChecksumV2WithResponse(ctx context.Context
 
 // DownloadDatabaseV2WithResponse Download
 //
-// Answers `302`; the bytes come straight from object storage rather than
-// through this API. Follow the redirect.
+// Downloads one file of a database: the answer is a `302` to time-limited
+// object storage, so follow the redirect.
+//
+// The bytes come straight from object storage rather than through this API.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -6330,8 +6330,8 @@ func (c *ClientWithResponses) DownloadDatabaseV2WithResponse(ctx context.Context
 
 // ListDownloadsWithResponse History
 //
-// Refusals are listed too: a denial is what answers "it stopped working",
-// and its absence answers nothing.
+// Lists your organization's recent database downloads, newest first,
+// refused ones included, so a download that stopped working shows why.
 //
 // Returns a wrapper object for the known response body format(s).
 //

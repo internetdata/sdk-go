@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.17
+  version: 2026.11.20
 servers:
   - url: https://internetdata.io
 tags:
@@ -97,8 +97,10 @@ paths:
       operationId: downloadDatabaseV2
       summary: Download
       description: |
-        Answers `302`; the bytes come straight from object storage rather than
-        through this API. Follow the redirect.
+        Downloads one file of a database: the answer is a `302` to time-limited
+        object storage, so follow the redirect.
+
+        The bytes come straight from object storage rather than through this API.
       security:
         - ApiKeyQueryAuth: []
         - ApiKeyHeaderAuth: []
@@ -226,8 +228,8 @@ paths:
       operationId: listDownloads
       summary: History
       description: |
-        Refusals are listed too: a denial is what answers "it stopped working",
-        and its absence answers nothing.
+        Lists your organization's recent database downloads, newest first,
+        refused ones included, so a download that stopped working shows why.
       security:
         - ApiKeyQueryAuth: []
         - ApiKeyHeaderAuth: []
@@ -413,11 +415,10 @@ paths:
         - Organization
       summary: Organization
       description: |
-        The organization this credential is scoped to.
+        Returns the organization the presented credential is scoped to. A
+        credential belongs to exactly one, so there is no ID to pass.
 
-        There is no way to name a different one. A credential describes exactly
-        one organization, so an identifier in the path could only ever be your
-        own or a refusal.
+        An identifier in the path could only ever be your own or a refusal.
       security:
         - BearerAuth:
             - org.read
@@ -439,9 +440,10 @@ paths:
         - Organization
       summary: Members
       description: |
-        Read-only. Adding or removing a member is an invitation flow with email
-        in the middle rather than a POST, and modeling it as one here would
-        promise something this API does not do.
+        Lists the members of your organization. Adding or removing one is an
+        emailed invitation in the console, not an API call.
+
+        Modeling it as one here would promise something this API does not do.
       security:
         - BearerAuth:
             - org.read
@@ -463,9 +465,11 @@ paths:
         - API keys
       summary: List
       description: |
-        Metadata only. A key's secret is never in a list - not here and not in
-        the console - because a list is the response that ends up in logs,
-        caches and support tickets.
+        Lists your organization's API keys with their metadata, never a secret:
+        only Create, Rotate and Reveal return one.
+
+        A secret is never in a list, here or in the console, because a list is
+        the response that ends up in logs, caches and support tickets.
 
         `retrievable` says whether the secret could still be read back at all.
         A key issued before this product stored secrets recoverably was never
@@ -491,10 +495,8 @@ paths:
         - API keys
       summary: Create
       description: |
-        Creates a key and returns its secret.
-
-        This is the only response that ever carries the secret, and only
-        because this is the moment it comes into existence. Store it now.
+        Creates an API key and returns its secret, which no list ever shows:
+        keep it, or reveal it again later.
       security:
         - BearerAuth:
             - apikeys.manage
@@ -970,6 +972,8 @@ paths:
                       domain: m247global.com
                       type: hosting
                       prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
                     company:
                       name: M247 LTD Vienna Infrastructure
                       domain: m247.ro
@@ -977,7 +981,7 @@ paths:
                     abuse:
                       email: abuse@m247.ro
                 trial:
-                  summary: A free-plan key within its day's trial of every field
+                  summary: A free-plan key within its trial of every field
                   value:
                     ip: 146.70.116.130
                     is_bogon: false
@@ -1088,7 +1092,7 @@ paths:
                       domains: []
                     trial_expired: false
                 trialExpired:
-                  summary: A free-plan key past its day's trial, with Unlimited's fields
+                  summary: A free-plan key past its trial, with Unlimited's fields
                   value:
                     ip: 146.70.116.130
                     is_bogon: false
@@ -1121,6 +1125,8 @@ paths:
                       domain: m247global.com
                       type: hosting
                       prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
                     company:
                       name: M247 LTD Vienna Infrastructure
                       domain: m247.ro
@@ -1428,6 +1434,8 @@ paths:
                       domain: m247global.com
                       type: hosting
                       prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
                     company:
                       name: M247 LTD Vienna Infrastructure
                       domain: m247.ro
@@ -1590,10 +1598,13 @@ paths:
                   value:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
-          description: |
-            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
-            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
-            Unlimited's fields and `cap_reached` `true`.
+          description: >
+            A rate limit, always with `Retry-After`: this API protecting itself, or a burst of
+            Unlimited
+
+            lookups. A paid plan's overage cap is never a `429`: it answers `200` with Unlimited's
+
+            fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1604,13 +1615,9 @@ paths:
                   value:
                     error: rate limit exceeded
                 e2:
-                  summary: >-
-                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                    plan
+                  summary: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
                   value:
-                    error: >-
-                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                      plan
+                    error: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
           headers:
             Retry-After:
               description: Seconds until a rate limit lets the request through.
@@ -1686,6 +1693,8 @@ paths:
                       domain: m247global.com
                       type: hosting
                       prefix: 146.70.116.0/24
+                      country: RO
+                      rpki_status: not_found
                     company:
                       name: M247 LTD Vienna Infrastructure
                       domain: m247.ro
@@ -1733,10 +1742,13 @@ paths:
                   value:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
-          description: |
-            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
-            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
-            Unlimited's fields and `cap_reached` `true`.
+          description: >
+            A rate limit, always with `Retry-After`: this API protecting itself, or a burst of
+            Unlimited
+
+            lookups. A paid plan's overage cap is never a `429`: it answers `200` with Unlimited's
+
+            fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1747,13 +1759,9 @@ paths:
                   value:
                     error: rate limit exceeded
                 e2:
-                  summary: >-
-                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                    plan
+                  summary: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
                   value:
-                    error: >-
-                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                      plan
+                    error: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
           headers:
             Retry-After:
               description: Seconds until a rate limit lets the request through.
@@ -1983,10 +1991,13 @@ paths:
                   value:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
-          description: |
-            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
-            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
-            Unlimited's fields and `cap_reached` `true`.
+          description: >
+            A rate limit, always with `Retry-After`: this API protecting itself, or a burst of
+            Unlimited
+
+            lookups. A paid plan's overage cap is never a `429`: it answers `200` with Unlimited's
+
+            fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -1997,13 +2008,9 @@ paths:
                   value:
                     error: rate limit exceeded
                 e2:
-                  summary: >-
-                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                    plan
+                  summary: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
                   value:
-                    error: >-
-                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                      plan
+                    error: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
           headers:
             Retry-After:
               description: Seconds until a rate limit lets the request through.
@@ -2176,10 +2183,13 @@ paths:
                   value:
                     error: API key lacks the ip.lookup scope; add Lookups to it in the console
         '429':
-          description: |
-            A rate limit, always with `Retry-After`: this API protecting itself, or Unlimited's
-            per-minute limit. A paid plan's overage cap is never a `429`: it answers `200` with
-            Unlimited's fields and `cap_reached` `true`.
+          description: >
+            A rate limit, always with `Retry-After`: this API protecting itself, or a burst of
+            Unlimited
+
+            lookups. A paid plan's overage cap is never a `429`: it answers `200` with Unlimited's
+
+            fields and `cap_reached` `true`.
           content:
             application/json:
               schema:
@@ -2190,13 +2200,9 @@ paths:
                   value:
                     error: rate limit exceeded
                 e2:
-                  summary: >-
-                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                    plan
+                  summary: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
                   value:
-                    error: >-
-                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                      plan
+                    error: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
           headers:
             Retry-After:
               description: Seconds until a rate limit lets the request through.
@@ -2495,13 +2501,9 @@ paths:
                   value:
                     error: rate limit exceeded
                 e2:
-                  summary: >-
-                    per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                    plan
+                  summary: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
                   value:
-                    error: >-
-                      per-minute limit for Unlimited lookups exceeded; retry shortly, or use a paid
-                      plan
+                    error: rate limit for Unlimited lookups exceeded; retry shortly, or use a paid plan
       security:
         - {}
         - apiKeyQuery: []
@@ -2547,10 +2549,10 @@ paths:
                       window_end: '2026-10-04T07:00:00Z'
                 free:
                   summary: >-
-                    A key of an organization on the free plan, Unlimited: its usage is the day's
-                    lookups answered with every field, out of the 100 a day its trial has. Nothing
+                    A key of an organization on the free plan, Unlimited: its usage is its trial,
+                    the lookups answered with every field, out of the quota the trial has. Nothing
                     stops it past them, its lookups answering with Unlimited's fields, so there is
-                    no hard limit, and the window is the UTC day.
+                    no hard limit.
                   value:
                     org_id: f32191d0-ef02-450e-a505-eb5814c35cab
                     apikey:
@@ -3678,8 +3680,9 @@ components:
         trial_expired:
           type: boolean
           description: >-
-            On every answer to a key on the free plan, and on no other: `false` while the day's
-            trial of every field lasts, `true` once the answer has Unlimited's fields.
+            On every answer to a key on the free plan, and on no other: `false` while its
+            organization's trial of every field lasts, `true` once the answer has Unlimited's
+            fields.
         cap_reached:
           type: boolean
           description: >-
@@ -4065,10 +4068,10 @@ components:
           description: The announced prefix covering the address.
         country:
           type: string
-          description: The country its registry assigned it to. Paid plans and the trial.
+          description: The country its registry assigned it to.
         rpki_status:
           type: string
-          description: The announcement's RPKI status. Paid plans and the trial.
+          description: The announcement's RPKI status.
       required:
         - asn
         - name
@@ -4324,8 +4327,9 @@ components:
         trial_expired:
           type: boolean
           description: >-
-            On every answer to a key on the free plan, and on no other: `false` while the day's
-            trial of every field lasts, `true` once the answer has Unlimited's fields.
+            On every answer to a key on the free plan, and on no other: `false` while its
+            organization's trial of every field lasts, `true` once the answer has Unlimited's
+            fields.
         cap_reached:
           type: boolean
           description: >-
@@ -4413,8 +4417,9 @@ components:
         trial_expired:
           type: boolean
           description: >-
-            On every answer to a key on the free plan, and on no other: `false` while the day's
-            trial of every field lasts, `true` once the answer has Unlimited's fields.
+            On every answer to a key on the free plan, and on no other: `false` while its
+            organization's trial of every field lasts, `true` once the answer has Unlimited's
+            fields.
         cap_reached:
           type: boolean
           description: >-
@@ -4686,8 +4691,8 @@ components:
           description: |
             The plan the organization is on, as an identifier that is never
             renamed or reused: `free` for the free plan, or a paid plan's key.
-            Compare against it and show `name`. On `free`, usage counts the
-            day's lookups answered with every field, its daily trial.
+            Compare against it and show `name`. On `free`, usage counts its
+            trial, the lookups answered with every field.
           example: max
         name:
           type: string

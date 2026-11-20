@@ -346,7 +346,7 @@ func TestALookupsRateLimitIsRetriedAfterTheServerSuppliedWait(t *testing.T) {
 	stub := newStub(map[string]stubRoute{
 		"9.9.9.9": {
 			status:  http.StatusTooManyRequests,
-			body:    map[string]string{"error": "per-minute limit for Unlimited lookups exceeded"},
+			body:    map[string]string{"error": "rate limit for Unlimited lookups exceeded"},
 			headers: map[string]string{"Retry-After": "1"},
 		},
 	})

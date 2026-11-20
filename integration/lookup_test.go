@@ -168,8 +168,8 @@ func TestABogonIsAnsweredWithoutTouchingTheNetwork(t *testing.T) {
 	}
 }
 
-// The staging key is on the free plan: its organization's first 100 lookups a
-// UTC day answer every member, and the rest Unlimited's, each saying which.
+// The staging key is on the free plan: its organization's trial answers every
+// member, and the rest Unlimited's, each saying which.
 func TestAFreePlanKeysAnswerIsAPaidOneOrUnlimitedsAndSaysWhich(t *testing.T) {
 	client, rec := keyedClient(t)
 
