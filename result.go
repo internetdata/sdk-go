@@ -38,6 +38,12 @@ type (
 	DNSCnameRecord   = api.DNSCnameRecord
 	DomainIPRanges   = api.DomainIPRanges
 	DomainIPRange    = api.DomainIPRange
+	DomainHost       = api.DomainHost
+	CohostedDomains  = api.CohostedDomains
+	DomainWeb        = api.DomainWeb
+	DomainWebLinks   = api.DomainWebLinks
+	DomainRedirects  = api.DomainRedirects
+	DomainBacklinks  = api.DomainBacklinks
 	// AsnLookupResponse is what LookupASN answers.
 	AsnLookupResponse = api.AsnLookupResponse
 	// DomainLookupResponse is what LookupDomain answers.

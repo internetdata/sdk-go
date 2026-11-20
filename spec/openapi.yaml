@@ -2047,10 +2047,16 @@ paths:
         whether it is registered and which DNS record types it has; on a paid one the records
         themselves, up to
 
-        100 a type, the organization's IP ranges and whether it is a disposable email domain. An
-        internationalized
+        100 a type, the network announcing each address, the other domains on its first IPv4
+        address, the
 
-        name is answered under its punycode spelling.
+        organization's IP ranges, whether it is a disposable email domain, what its home page says
+        of itself and
+
+        links to, and the domains whose home page redirects or links to it. An internationalized
+        name is answered
+
+        under its punycode spelling.
       parameters:
         - in: path
           name: domain
@@ -2107,6 +2113,32 @@ paths:
                         - host: ns2.example.com
                           last_seen: '2026-11-08'
                       cname: []
+                    hosting:
+                      - ip: 192.0.2.10
+                        asn:
+                          asn: 64496
+                          name: EXAMPLE-AS
+                          domain: example.net
+                          type: hosting
+                          prefix: 192.0.2.0/24
+                          country: US
+                          rpki_status: valid
+                      - ip: 2001:db8::10
+                        asn:
+                          asn: 64496
+                          name: EXAMPLE-AS
+                          domain: example.net
+                          type: hosting
+                          prefix: 2001:db8::/32
+                          country: US
+                          rpki_status: valid
+                    cohosted_domains:
+                      ip: 192.0.2.10
+                      total: 3
+                      domains:
+                        - example.net
+                        - example.org
+                        - shop.example
                     ip_ranges:
                       domain: example.com
                       redirects_to: ''
@@ -2117,6 +2149,26 @@ paths:
                           name: EXAMPLE-NET
                           country: US
                     disposable: {}
+                    web:
+                      url: https://example.com/
+                      title: Example Domain
+                      description: ''
+                      last_seen: '2026-11-18'
+                      links:
+                        total: 1
+                        hosts:
+                          - www.iana.org
+                    redirects:
+                      total: 2
+                      domains:
+                        - example.net
+                        - example.org
+                    backlinks:
+                      total: 3
+                      domains:
+                        - docs.example
+                        - news.example
+                        - wiki.example
                     cap_reached: false
                 capReached:
                   summary: >-
@@ -4408,12 +4460,27 @@ components:
           description: A CNAME record.
         dns:
           $ref: '#/components/schemas/DomainDns'
+        hosting:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainHost'
+          description: >-
+            The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]`
+            where it resolves to none. Paid plans and the trial.
+        cohosted_domains:
+          $ref: '#/components/schemas/CohostedDomains'
         ip_ranges:
           $ref: '#/components/schemas/DomainIpRanges'
         disposable:
           allOf:
             - $ref: '#/components/schemas/DisposableDetail'
           description: '`{}` when `is_disposable` is false. Paid plans and the trial.'
+        web:
+          $ref: '#/components/schemas/DomainWeb'
+        redirects:
+          $ref: '#/components/schemas/DomainRedirects'
+        backlinks:
+          $ref: '#/components/schemas/DomainBacklinks'
         trial_expired:
           type: boolean
           description: >-
@@ -4436,6 +4503,120 @@ components:
         - has_ns
         - has_cname
       description: What every database says about one domain.
+    DomainHost:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: One address the domain resolves to.
+        asn:
+          allOf:
+            - $ref: '#/components/schemas/Asn'
+          description: >-
+            The network announcing it, as an address lookup's `asn`; every member empty where IP ASN
+            holds none.
+      required:
+        - ip
+        - asn
+      description: An address the domain resolves to and the network announcing it.
+    CohostedDomains:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: The domain's first IPv4 address, `''` where it has none.
+        total:
+          type: integer
+          description: How many other registered domains resolve to it.
+        domains:
+          type: array
+          items:
+            type: string
+          description: >-
+            Up to 10 of them, the most popular first, the domain itself left out; `[]` when none
+            does.
+      required:
+        - ip
+        - total
+        - domains
+      description: >-
+        From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how
+        many and the 10 most popular. Paid plans and the trial.
+    DomainWeb:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL of the home page read.
+        title:
+          type: string
+          description: An English page's title.
+        description:
+          type: string
+          description: An English page's description.
+        last_seen:
+          type: string
+          description: The day it was last read.
+        links:
+          $ref: '#/components/schemas/DomainWebLinks'
+      required:
+        - url
+        - title
+        - description
+        - last_seen
+        - links
+      description: >-
+        What our crawl last read of the domain's own home page, every member empty where it holds
+        none. Paid plans and the trial.
+    DomainWebLinks:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: How many external hosts the home page links to.
+        hosts:
+          type: array
+          items:
+            type: string
+          description: Up to 10 of them; `[]` when it links to none.
+      required:
+        - total
+        - hosts
+      description: The external hosts the home page links to.
+    DomainRedirects:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: How many registered domains have a home page that redirects to this domain.
+        domains:
+          type: array
+          items:
+            type: string
+          description: Up to 10 of them, the most popular first; `[]` when none does.
+      required:
+        - total
+        - domains
+      description: >-
+        The registered domains whose home page redirects to this one, how many and the 10 most
+        popular. Paid plans and the trial.
+    DomainBacklinks:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: How many registered domains have a home page that links to this domain.
+        domains:
+          type: array
+          items:
+            type: string
+          description: Up to 10 of them, the most popular first; `[]` when none does.
+      required:
+        - total
+        - domains
+      description: >-
+        The registered domains whose home page links to this one, how many and the 10 most popular.
+        Paid plans and the trial.
     DomainDns:
       type: object
       properties:

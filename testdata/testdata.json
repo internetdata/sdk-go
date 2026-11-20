@@ -3184,7 +3184,7 @@
     },
     {
       "name": "domain-unlimited-answer",
-      "why": "A domain on Unlimited: whether it is registered and which record types it has; the records themselves, its IP ranges and Disposable Domain are absent.",
+      "why": "A domain on Unlimited: whether it is registered and which record types it has; the records themselves, the network on each address, its co-hosted domains, its IP ranges, Disposable Domain, its home page, redirects and backlinks are absent.",
       "call": "lookupDomain",
       "target": "example.com",
       "status": 200,
@@ -3212,15 +3212,20 @@
         "absent": [
           "is_disposable",
           "dns",
+          "hosting",
+          "cohosted_domains",
           "ip_ranges",
           "disposable",
+          "web",
+          "redirects",
+          "backlinks",
           "cap_reached"
         ]
       }
     },
     {
       "name": "domain-paid-answer",
-      "why": "A domain on a paid plan: the records, its organization's IP ranges and is_disposable.",
+      "why": "A domain on a paid plan: the records, the network announcing each address, the other domains on its first IPv4 address, its organization's IP ranges, is_disposable, its home page, and the domains whose home page redirects or links to it.",
       "call": "lookupDomain",
       "target": "example.com",
       "status": 200,
@@ -3265,6 +3270,41 @@
           ],
           "cname": []
         },
+        "hosting": [
+          {
+            "ip": "192.0.2.10",
+            "asn": {
+              "asn": 64496,
+              "name": "EXAMPLE-AS",
+              "domain": "example.net",
+              "type": "hosting",
+              "prefix": "192.0.2.0/24",
+              "country": "US",
+              "rpki_status": "valid"
+            }
+          },
+          {
+            "ip": "2001:db8::10",
+            "asn": {
+              "asn": 64496,
+              "name": "EXAMPLE-AS",
+              "domain": "example.net",
+              "type": "hosting",
+              "prefix": "2001:db8::/32",
+              "country": "US",
+              "rpki_status": "valid"
+            }
+          }
+        ],
+        "cohosted_domains": {
+          "ip": "192.0.2.10",
+          "total": 3,
+          "domains": [
+            "example.net",
+            "example.org",
+            "shop.example"
+          ]
+        },
         "ip_ranges": {
           "domain": "example.com",
           "redirects_to": "",
@@ -3279,6 +3319,33 @@
           ]
         },
         "disposable": {},
+        "web": {
+          "url": "https://example.com/",
+          "title": "Example Domain",
+          "description": "",
+          "last_seen": "2026-11-18",
+          "links": {
+            "total": 1,
+            "hosts": [
+              "www.iana.org"
+            ]
+          }
+        },
+        "redirects": {
+          "total": 2,
+          "domains": [
+            "example.net",
+            "example.org"
+          ]
+        },
+        "backlinks": {
+          "total": 3,
+          "domains": [
+            "docs.example",
+            "news.example",
+            "wiki.example"
+          ]
+        },
         "cap_reached": false
       },
       "expect": {
@@ -3295,8 +3362,13 @@
         },
         "objects": [
           "dns",
+          "hosting",
+          "cohosted_domains",
           "ip_ranges",
-          "disposable"
+          "disposable",
+          "web",
+          "redirects",
+          "backlinks"
         ],
         "empty": [
           "disposable"
@@ -3336,8 +3408,13 @@
         "absent": [
           "is_disposable",
           "dns",
+          "hosting",
+          "cohosted_domains",
           "ip_ranges",
           "disposable",
+          "web",
+          "redirects",
+          "backlinks",
           "trial_expired"
         ]
       }

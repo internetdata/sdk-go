@@ -556,6 +556,18 @@ type ClientRegistrationRequest struct {
 	TokenEndpointAuthMethod *string `json:"token_endpoint_auth_method,omitempty"`
 }
 
+// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. Paid plans and the trial.
+type CohostedDomains struct {
+	// Domains Up to 10 of them, the most popular first, the domain itself left out; `[]` when none does.
+	Domains []string `json:"domains"`
+
+	// IP The domain's first IPv4 address, `''` where it has none.
+	IP string `json:"ip"`
+
+	// Total How many other registered domains resolve to it.
+	Total int `json:"total"`
+}
+
 // Company Who uses the address, from IP Company.
 type Company struct {
 	// Country ISO 3166 country code. Paid plans and the trial.
@@ -803,6 +815,15 @@ type DNSResolverDetail struct {
 	RecursionAvailable *bool `json:"recursion_available,omitempty"`
 }
 
+// DomainBacklinks The registered domains whose home page links to this one, how many and the 10 most popular. Paid plans and the trial.
+type DomainBacklinks struct {
+	// Domains Up to 10 of them, the most popular first; `[]` when none does.
+	Domains []string `json:"domains"`
+
+	// Total How many registered domains have a home page that links to this domain.
+	Total int `json:"total"`
+}
+
 // DomainDNS Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
 type DomainDNS struct {
 	A     []DNSAddressRecord `json:"a"`
@@ -810,6 +831,15 @@ type DomainDNS struct {
 	Cname []DNSCnameRecord   `json:"cname"`
 	Mx    []DNSMxRecord      `json:"mx"`
 	Ns    []DNSNsRecord      `json:"ns"`
+}
+
+// DomainHost An address the domain resolves to and the network announcing it.
+type DomainHost struct {
+	// Asn The network announcing it, as an address lookup's `asn`; every member empty where IP ASN holds none.
+	Asn Asn `json:"asn"`
+
+	// IP One address the domain resolves to.
+	IP string `json:"ip"`
 }
 
 // DomainIPRange defines model for DomainIpRange.
@@ -844,8 +874,14 @@ type DomainIPRanges struct {
 
 // DomainLookupResponse What every database says about one domain.
 type DomainLookupResponse struct {
+	// Backlinks The registered domains whose home page links to this one, how many and the 10 most popular. Paid plans and the trial.
+	Backlinks *DomainBacklinks `json:"backlinks,omitempty"`
+
 	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
 	CapReached *bool `json:"cap_reached,omitempty"`
+
+	// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. Paid plans and the trial.
+	CohostedDomains *CohostedDomains `json:"cohosted_domains,omitempty"`
 
 	// Disposable `{}` when `is_disposable` is false. Paid plans and the trial.
 	Disposable *DisposableDetail `json:"disposable,omitempty"`
@@ -871,6 +907,9 @@ type DomainLookupResponse struct {
 	// HasNs NS records.
 	HasNs bool `json:"has_ns"`
 
+	// Hosting The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where it resolves to none. Paid plans and the trial.
+	Hosting *[]DomainHost `json:"hosting,omitempty"`
+
 	// IPRanges The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
 	IPRanges *DomainIPRanges `json:"ip_ranges,omitempty"`
 
@@ -880,8 +919,50 @@ type DomainLookupResponse struct {
 	// IsRegistered In Domain List: a registered domain.
 	IsRegistered bool `json:"is_registered"`
 
+	// Redirects The registered domains whose home page redirects to this one, how many and the 10 most popular. Paid plans and the trial.
+	Redirects *DomainRedirects `json:"redirects,omitempty"`
+
 	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
+
+	// Web What our crawl last read of the domain's own home page, every member empty where it holds none. Paid plans and the trial.
+	Web *DomainWeb `json:"web,omitempty"`
+}
+
+// DomainRedirects The registered domains whose home page redirects to this one, how many and the 10 most popular. Paid plans and the trial.
+type DomainRedirects struct {
+	// Domains Up to 10 of them, the most popular first; `[]` when none does.
+	Domains []string `json:"domains"`
+
+	// Total How many registered domains have a home page that redirects to this domain.
+	Total int `json:"total"`
+}
+
+// DomainWeb What our crawl last read of the domain's own home page, every member empty where it holds none. Paid plans and the trial.
+type DomainWeb struct {
+	// Description An English page's description.
+	Description string `json:"description"`
+
+	// LastSeen The day it was last read.
+	LastSeen string `json:"last_seen"`
+
+	// Links The external hosts the home page links to.
+	Links DomainWebLinks `json:"links"`
+
+	// Title An English page's title.
+	Title string `json:"title"`
+
+	// URL The URL of the home page read.
+	URL string `json:"url"`
+}
+
+// DomainWebLinks The external hosts the home page links to.
+type DomainWebLinks struct {
+	// Hosts Up to 10 of them; `[]` when it links to none.
+	Hosts []string `json:"hosts"`
+
+	// Total How many external hosts the home page links to.
+	Total int `json:"total"`
 }
 
 // Download One download attempt, refusals included.
@@ -2044,8 +2125,10 @@ type ClientInterface interface {
 	//
 	// Answers what InternetData knows about one domain from its latest snapshots: on every plan
 	// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
-	// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
-	// name is answered under its punycode spelling.
+	// 100 a type, the network announcing each address, the other domains on its first IPv4 address, the
+	// organization's IP ranges, whether it is a disposable email domain, what its home page says of itself and
+	// links to, and the domains whose home page redirects or links to it. An internationalized name is answered
+	// under its punycode spelling.
 	//
 	// Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
 	LookupDomain(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2658,8 +2741,10 @@ func (c *Client) LookupBatch(ctx context.Context, body LookupBatchJSONRequestBod
 //
 // Answers what InternetData knows about one domain from its latest snapshots: on every plan
 // whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
-// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
-// name is answered under its punycode spelling.
+// 100 a type, the network announcing each address, the other domains on its first IPv4 address, the
+// organization's IP ranges, whether it is a disposable email domain, what its home page says of itself and
+// links to, and the domains whose home page redirects or links to it. An internationalized name is answered
+// under its punycode spelling.
 //
 // Corresponds with GET /domain/{domain} (the `LookupDomain` operationId).
 func (c *Client) LookupDomain(ctx context.Context, domain string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4285,8 +4370,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Answers what InternetData knows about one domain from its latest snapshots: on every plan
 	// whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
-	// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
-	// name is answered under its punycode spelling.
+	// 100 a type, the network announcing each address, the other domains on its first IPv4 address, the
+	// organization's IP ranges, whether it is a disposable email domain, what its home page says of itself and
+	// links to, and the domains whose home page redirects or links to it. An internationalized name is answered
+	// under its punycode spelling.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -6442,8 +6529,10 @@ func (c *ClientWithResponses) LookupBatchWithResponse(ctx context.Context, body 
 //
 // Answers what InternetData knows about one domain from its latest snapshots: on every plan
 // whether it is registered and which DNS record types it has; on a paid one the records themselves, up to
-// 100 a type, the organization's IP ranges and whether it is a disposable email domain. An internationalized
-// name is answered under its punycode spelling.
+// 100 a type, the network announcing each address, the other domains on its first IPv4 address, the
+// organization's IP ranges, whether it is a disposable email domain, what its home page says of itself and
+// links to, and the domains whose home page redirects or links to it. An internationalized name is answered
+// under its punycode spelling.
 //
 // Returns a wrapper object for the known response body format(s).
 //

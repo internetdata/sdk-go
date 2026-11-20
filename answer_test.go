@@ -172,6 +172,12 @@ func TestAnAnswerMissingARequiredMemberIsUnreadable(t *testing.T) {
 		encoded, _ := json.Marshal(answer)
 		return string(encoded)
 	}
+	domain := func(members map[string]any) string {
+		answer := corpusBody("domain-paid-answer")
+		maps.Copy(answer, members)
+		encoded, _ := json.Marshal(answer)
+		return string(encoded)
+	}
 	cases := []struct {
 		call, name, body string
 	}{
@@ -191,6 +197,20 @@ func TestAnAnswerMissingARequiredMemberIsUnreadable(t *testing.T) {
 		{"LookupASN", "upstreams holding a string", asn(map[string]any{"upstreams": []any{"174"}})},
 		{"LookupDomain", "has_mx missing", `{"domain":"example.com","is_registered":true,"has_a":true,` +
 			`"has_aaaa":true,"has_ns":true,"has_cname":false}`},
+		{"LookupDomain", "a hosting entry short of its asn",
+			domain(map[string]any{"hosting": []any{map[string]any{"ip": "192.0.2.10"}}})},
+		{"LookupDomain", "a hosting entry's asn short of a key", domain(map[string]any{"hosting": []any{
+			map[string]any{"ip": "192.0.2.10", "asn": map[string]any{"asn": 64496}}}})},
+		{"LookupDomain", "cohosted_domains total a string", domain(map[string]any{"cohosted_domains": map[string]any{
+			"ip": "192.0.2.10", "total": "3", "domains": []any{}}})},
+		{"LookupDomain", "web short of its links", domain(map[string]any{"web": map[string]any{
+			"url": "https://example.com/", "title": "", "description": "", "last_seen": "2026-11-18"}})},
+		{"LookupDomain", "web links hosts null", domain(map[string]any{"web": map[string]any{
+			"url": "https://example.com/", "title": "", "description": "", "last_seen": "2026-11-18",
+			"links": map[string]any{"total": 0, "hosts": nil}}})},
+		{"LookupDomain", "redirects short of domains", domain(map[string]any{"redirects": map[string]any{"total": 2}})},
+		{"LookupDomain", "backlinks holding a number", domain(map[string]any{"backlinks": map[string]any{
+			"total": 1, "domains": []any{7}}})},
 		{"MyEntitlement", "usage missing", `{"org_id":"85bb51e4-2eb6-4a31-8e4d-02ba8b98fe61",` +
 			`"apikey":{"id":"0ab424cc-7619-4dad-b027-afacdc2cedb0","expires":null,"allowed_cidrs":[]},` +
 			`"plan":{"key":"max","name":"Max","tier":"max"}}`},
@@ -266,5 +286,45 @@ func TestA4xxWhoseBodyIsNotTheAPIsIsClassifiedByItsStatus(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+// A paid domain answer's network on each address, co-hosted domains, home page,
+// redirects and backlinks are read as served, and each is nil on Unlimited,
+// never an empty value standing for one the plan leaves out.
+func TestAPaidDomainAnswersHostingPageAndLinksAreRead(t *testing.T) {
+	paid, _ := json.Marshal(corpusBody("domain-paid-answer"))
+	transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: string(paid)}
+	answer, err := fixedClient(t, transport).LookupDomain(t.Context(), "example.com")
+	if err != nil {
+		t.Fatalf("LookupDomain: %v", err)
+	}
+	if answer.Hosting == nil || len(*answer.Hosting) != 2 || (*answer.Hosting)[1].IP != "2001:db8::10" ||
+		(*answer.Hosting)[1].Asn.Prefix != "2001:db8::/32" || (*answer.Hosting)[0].Asn.Asn != 64496 {
+		t.Errorf("Hosting = %+v, want both addresses with their network", answer.Hosting)
+	}
+	if c := answer.CohostedDomains; c == nil || c.IP != "192.0.2.10" || c.Total != 3 || len(c.Domains) != 3 {
+		t.Errorf("CohostedDomains = %+v", c)
+	}
+	if w := answer.Web; w == nil || w.URL != "https://example.com/" || w.Title != "Example Domain" ||
+		w.LastSeen != "2026-11-18" || w.Links.Total != 1 || len(w.Links.Hosts) != 1 || w.Links.Hosts[0] != "www.iana.org" {
+		t.Errorf("Web = %+v", w)
+	}
+	if r := answer.Redirects; r == nil || r.Total != 2 || len(r.Domains) != 2 {
+		t.Errorf("Redirects = %+v", r)
+	}
+	if b := answer.Backlinks; b == nil || b.Total != 3 || len(b.Domains) != 3 || b.Domains[2] != "wiki.example" {
+		t.Errorf("Backlinks = %+v", b)
+	}
+
+	unlimited, _ := json.Marshal(corpusBody("domain-unlimited-answer"))
+	transport = &fixedTransport{status: http.StatusOK, contentType: "application/json", body: string(unlimited)}
+	answer, err = fixedClient(t, transport).LookupDomain(t.Context(), "example.com")
+	if err != nil {
+		t.Fatalf("LookupDomain: %v", err)
+	}
+	if answer.Hosting != nil || answer.CohostedDomains != nil || answer.Web != nil || answer.Redirects != nil ||
+		answer.Backlinks != nil {
+		t.Errorf("Unlimited answer = %+v, want the five paid members nil", answer)
 	}
 }
