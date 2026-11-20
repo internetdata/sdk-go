@@ -2036,7 +2036,7 @@
     },
     {
       "name": "trial-full-answer",
-      "why": "A free-plan key within its 100 lookups of the UTC day answers as a paid plan, trial_expired false.",
+      "why": "A free-plan key within its trial answers as a paid plan, trial_expired false.",
       "call": "lookup",
       "target": "146.70.116.130",
       "status": 200,
