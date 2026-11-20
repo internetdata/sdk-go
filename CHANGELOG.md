@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.14.3 - 2026-11-20
+
+### Fixes
+
+- Re-pin the spec to 2026.11.20: the trial without a count, and no per-minute limit ([`405b3fc`](https://github.com/internetdata/sdk-go/commit/405b3fcc1fce19cdbfb7faf1ffd216abebef1b5f))
+
 ## 2.14.2 - 2026-11-19
 
 ### Fixes
