@@ -2,6 +2,16 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.15.0 - 2026-11-20
+
+### Features
+
+- Read a paid domain answer's hosting, co-hosted domains, home page, redirects and backlinks ([`b834503`](https://github.com/internetdata/sdk-go/commit/b834503addddb4cf40d804548458c9b118a69929))
+
+### Fixes
+
+- README: what a paid domain answer adds, and the free plan's usage without a period ([`86f4d1d`](https://github.com/internetdata/sdk-go/commit/86f4d1daf9c3bc1226b0e8f142f698e8de0be072))
+
 ## 2.14.3 - 2026-11-20
 
 ### Fixes
