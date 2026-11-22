@@ -21,7 +21,7 @@ import internetdata "github.com/internetdata/sdk-go/v2"
 
 ## Usage
 
-**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, with no daily or monthly cap.
+**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, a bot, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, with no daily or monthly cap.
 
 ```go
 client, err := internetdata.New()
@@ -40,7 +40,7 @@ fmt.Println(result.IsTor)              // false
 
 ### With an API key
 
-A paid plan answers every field: `is_vpn`, `is_hosting`, `is_cdn` and the four proxy flags as well, the provider and confidence behind each flag, the location down to the city, and the whois record. A free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
+A paid plan answers every field: `is_vpn`, `is_hosting`, `is_cdn` and the four proxy flags as well, the provider and confidence behind each flag, whose bot uses the address, the location down to the city, and the whois record. A free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
 
 ```go
 client, err := internetdata.New(internetdata.WithAPIKey(os.Getenv("INTERNETDATA_API_KEY")))
@@ -50,6 +50,9 @@ fmt.Println(internetdata.BoolValue(result.IsVpn))   // true, on a paid plan
 
 if vpn := result.Vpn; vpn != nil {
     fmt.Println(vpn.ProviderName)       // Mullvad, on a paid plan
+}
+if bot := result.Bot; bot != nil && result.IsBot {
+    fmt.Println(*bot.Agents)            // [Googlebot] for a crawler's address, on a paid plan
 }
 ```
 
@@ -341,7 +344,7 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its trial is spent. A paid key's carries `CapReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A `nil` pointer means "not in your plan", not "checked, and no".
+Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited answers `IsBot` without `Bot`, and leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its trial is spent. A paid key's carries `CapReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A `nil` pointer means "not in your plan", not "checked, and no".
 
 ```go
 internetdata.BoolValue(result.IsVpn)        // when you only want the flag
