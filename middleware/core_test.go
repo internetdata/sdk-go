@@ -126,6 +126,30 @@ func TestAPaidMemberInsideAnObjectEveryPlanGetsIsWarnedAboutByItsPath(t *testing
 	}
 }
 
+// is_bot is on every plan, so a bot condition decides on a keyless answer too.
+func TestAnIsBotConditionBlocksABotsAddressAndPassesAnother(t *testing.T) {
+	for name, blocked := range map[string]bool{"paid-bot": true, "unlimited-answer": false} {
+		origin := serving(t, lookupBody(t, name), nil)
+		core, err := middleware.New(middleware.Options[string]{
+			BaseURL:        origin.URL,
+			BlockCondition: middleware.Conditions{{"is_bot": true}},
+		}, selectorOf(publicIP))
+		if err != nil {
+			t.Fatalf("New: %v", err)
+		}
+		lookup, err := core.Evaluate(t.Context(), "request")
+		if err != nil || lookup.Err != nil {
+			t.Fatalf("%s: Evaluate: %v, %v", name, err, lookup.Err)
+		}
+		if lookup.Result.IsBot != blocked {
+			t.Errorf("%s: attached IsBot = %v, want %v", name, lookup.Result.IsBot, blocked)
+		}
+		if lookup.Blocked != blocked {
+			t.Errorf("%s: Blocked = %v, want %v", name, lookup.Blocked, blocked)
+		}
+	}
+}
+
 // The client refuses what is not an address before sending it, so a header that
 // carried something else is a failed lookup like any other: let through.
 func TestASelectorAnsweringSomethingThatIsNotAnAddressFailsOpen(t *testing.T) {
@@ -175,6 +199,12 @@ func serving(t *testing.T, body map[string]any, requests *atomic.Int32) *httptes
 // member the spec requires, so {"ip": ...} alone is no answer here.
 func unlimitedAnswer(t *testing.T) map[string]any {
 	t.Helper()
+	return lookupBody(t, "unlimited-answer")
+}
+
+// The body of the corpus's lookup case of that name.
+func lookupBody(t *testing.T, name string) map[string]any {
+	t.Helper()
 	var data struct {
 		Lookup []struct {
 			Name string         `json:"name"`
@@ -185,10 +215,10 @@ func unlimitedAnswer(t *testing.T) map[string]any {
 		t.Fatalf("parsing the corpus: %v", err)
 	}
 	for _, c := range data.Lookup {
-		if c.Name == "unlimited-answer" {
+		if c.Name == name {
 			return c.Body
 		}
 	}
-	t.Fatal("no unlimited-answer in the corpus's lookup cases")
+	t.Fatalf("no %s in the corpus's lookup cases", name)
 	return nil
 }

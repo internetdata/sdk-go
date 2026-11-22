@@ -18,6 +18,8 @@ type (
 	WebDetail         = api.WebDetail
 	DNSResolverDetail = api.DNSResolverDetail
 	BitTorrentDetail  = api.BitTorrentDetail
+	BotDetail         = api.BotDetail
+	UserAgentVerdict  = api.UserAgentVerdict
 	// Location is where the address is, on every answer, with or without a
 	// key. The members beyond the country and its currency are a paid plan's.
 	Location = api.Location

@@ -192,7 +192,7 @@ func (c *Client) fly(ctx context.Context, ip string, fl *flight, retries int) {
 
 func (c *Client) serve(ctx context.Context, ip string, retries int) (*Result, error) {
 	return withRetry(ctx, retries, func() (*Result, error) {
-		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupIP(ctx, ip))
+		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupIP(ctx, ip, nil))
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +220,7 @@ func (c *Client) MyIP(ctx context.Context, opts ...LookupOption) (*Result, error
 	}
 	ctx = call.carry(ctx)
 	return withRetry(ctx, call.retries, func() (*Result, error) {
-		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupMyIP(ctx))
+		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupMyIP(ctx, nil))
 		if err != nil {
 			return nil, err
 		}

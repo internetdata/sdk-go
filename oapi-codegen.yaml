@@ -8,6 +8,8 @@ generate:
   client: true
 output-options:
   name-normalizer: ToCamelCaseWithInitialisms
+  overlay:
+    path: overlay.yaml
   # The lookups, Database v2, IAM and OAuth, never v1. v1 is a separate, legacy
   # vocabulary on the same host: a different credential (`?apikey=<uuid>`), a
   # hardcoded customer list, and clients that do not follow redirects.

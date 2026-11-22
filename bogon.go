@@ -71,6 +71,7 @@ func bogonResult(ip string) *Result {
 			Pubproxy:      &PubproxyDetail{},
 			Hosting:       &ClassDetail{},
 			Cdn:           &ClassDetail{},
+			Bot:           &BotDetail{},
 			Carrier:       &CarrierDetail{},
 			Satellite:     &SatelliteDetail{},
 			SSH:           &SSHDetail{},
