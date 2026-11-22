@@ -2,6 +2,17 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.16.0 - 2026-11-22
+
+### Features
+
+- Read is_bot and the bot row, on spec 2026.11.21 ([`26342f7`](https://github.com/internetdata/sdk-go/commit/26342f7c3a5744d7d9d8d2487d88afd79e67183e))
+- README: the bot flag on every plan, and whose bot it is on a paid plan ([`b8c3661`](https://github.com/internetdata/sdk-go/commit/b8c366166d70d0025615ba272c4a9b913030468e))
+
+### Fixes
+
+- Comments: the free plan counts its trial by the UTC month ([`fe1a949`](https://github.com/internetdata/sdk-go/commit/fe1a9491ec1d29abbbcbd7ed4fe7b851c0b432f9))
+
 ## 2.15.0 - 2026-11-20
 
 ### Features
