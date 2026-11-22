@@ -33,7 +33,7 @@ type (
 //
 // Usage is counted against the ALLOWANCE WINDOW - on a paid plan the
 // anniversary of the subscription, not the calendar month and not the
-// billing period, and on the free plan the UTC day - and the number is the
+// billing period, and on the free plan the UTC month - and the number is the
 // same one a lookup is gated on. It can lag by a few seconds, because
 // requests are counted in memory and flushed in aggregate.
 //
