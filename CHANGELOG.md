@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.16.1 - 2026-11-23
+
+### Fixes
+
+- Refuse an AS answered without its country or RPKI status ([`1876486`](https://github.com/internetdata/sdk-go/commit/1876486895bb7000782b38403e07d2f1dc7183a4))
+- Tests: a value added to an answer's vocabulary is handed back ([`fc0fe15`](https://github.com/internetdata/sdk-go/commit/fc0fe15cae0f40925096b8a061c44f4925fb2626))
+
 ## 2.16.0 - 2026-11-22
 
 ### Features
