@@ -16,6 +16,7 @@ import (
 	"os"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -865,4 +866,82 @@ type corpusBatch struct {
 		KeyCount     int               `json:"keyCount"`
 		ErrorKinds   map[string]string `json:"errorKinds"`
 	} `json:"expect"`
+}
+
+// A value the API adds to a closed vocabulary in an answer (a tier, a
+// standing, a license type, a format, an outcome) is handed back as served,
+// never a failed call. Each corpus case serves its answer, and each expect
+// path is read through the wire names of the typed result, re-encoded.
+func TestAValueTheAPIAddsToAVocabularyIsHandedBackAsServed(t *testing.T) {
+	raw, err := os.ReadFile("testdata/testdata.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var data struct {
+		Vocabulary struct {
+			Cases []struct {
+				Name   string          `json:"name"`
+				Call   string          `json:"call"`
+				Answer json.RawMessage `json:"answer"`
+				Expect map[string]any  `json:"expect"`
+			} `json:"cases"`
+		} `json:"vocabulary"`
+	}
+	if err := json.Unmarshal(raw, &data); err != nil {
+		t.Fatal(err)
+	}
+	calls := map[string]func(ctx context.Context, c *Client) (any, error){
+		"myEntitlement": func(ctx context.Context, c *Client) (any, error) { return c.MyEntitlement(ctx) },
+		"listDatabases": func(ctx context.Context, c *Client) (any, error) {
+			databases, err := c.Database.List(ctx)
+			return map[string]any{"databases": databases}, err
+		},
+		"listDownloads": func(ctx context.Context, c *Client) (any, error) {
+			downloads, err := c.Database.Downloads(ctx, 5)
+			return map[string]any{"downloads": downloads}, err
+		},
+	}
+	if len(data.Vocabulary.Cases) == 0 {
+		t.Fatal("the corpus has no vocabulary cases")
+	}
+	for _, c := range data.Vocabulary.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			call, ok := calls[c.Call]
+			if !ok {
+				t.Fatalf("no call for the corpus's %q", c.Call)
+			}
+			transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: string(c.Answer)}
+			got, err := call(t.Context(), fixedClient(t, transport))
+			if err != nil {
+				t.Fatalf("%s: %v", c.Call, err)
+			}
+			encoded, err := json.Marshal(got)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var tree any
+			if err := json.Unmarshal(encoded, &tree); err != nil {
+				t.Fatal(err)
+			}
+			for path, want := range c.Expect {
+				node := tree
+				for step := range strings.SplitSeq(path, ".") {
+					if i, err := strconv.Atoi(step); err == nil {
+						list, _ := node.([]any)
+						if i >= len(list) {
+							node = nil
+							break
+						}
+						node = list[i]
+						continue
+					}
+					object, _ := node.(map[string]any)
+					node = object[step]
+				}
+				if node != want {
+					t.Errorf("%s = %v, want %v", path, node, want)
+				}
+			}
+		})
+	}
 }
