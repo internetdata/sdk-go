@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.16.2 - 2026-11-23
+
+### Fixes
+
+- Comments: whose bot an unverified address claims, on spec 2026.11.22 ([`b713679`](https://github.com/internetdata/sdk-go/commit/b7136797eb0c3665b2bcd64c2bf76d17364a3cf9))
+
 ## 2.16.1 - 2026-11-23
 
 ### Fixes
