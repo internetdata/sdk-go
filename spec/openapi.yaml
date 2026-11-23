@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.21
+  version: 2026.11.22
 servers:
   - url: https://internetdata.io
 tags:
@@ -4134,10 +4134,14 @@ components:
       properties:
         provider:
           type: string
-          description: The bot operator's ID in Bot Provider, empty where no operator is known.
+          description: >-
+            The bot operator's ID in Bot Provider; for an address that is not verified, the operator
+            its claim named. Empty where no operator is known.
         provider_name:
           type: string
-          description: The operator's name, empty where no operator is known.
+          description: >-
+            The operator's name, the one its claim named for an address that is not verified; empty
+            where no operator is known.
         agents:
           type: array
           items:

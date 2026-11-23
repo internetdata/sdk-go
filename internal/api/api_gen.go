@@ -530,10 +530,10 @@ type BotDetail struct {
 	// LastSeen The last day it was.
 	LastSeen *string `json:"last_seen,omitempty"`
 
-	// Provider The bot operator's ID in Bot Provider, empty where no operator is known.
+	// Provider The bot operator's ID in Bot Provider; for an address that is not verified, the operator its claim named. Empty where no operator is known.
 	Provider *string `json:"provider,omitempty"`
 
-	// ProviderName The operator's name, empty where no operator is known.
+	// ProviderName The operator's name, the one its claim named for an address that is not verified; empty where no operator is known.
 	ProviderName *string `json:"provider_name,omitempty"`
 
 	// Verified Whether the operator vouches for the address, so the bots in `agents` really are its.
