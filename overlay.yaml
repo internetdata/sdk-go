@@ -1,17 +1,22 @@
-# Keeps the public types a minor release may not change. Spec 2026.11.20 made
-# the AS's country and rpki_status required and every asn an int64; generated
-# as served, Asn.Country would stop being a *string and Asn.Asn an int, so
-# every caller that reads either would stop compiling.
+# Keeps the public types a minor release may not change, at generation time:
+# the pin in spec/ stays the published spec, and oapi-codegen reads it through
+# these edits. Applied strictly, so an action that matches nothing fails
+# generation.
+#
+# Spec 2026.11.20 made the AS's country and rpki_status required and every asn
+# an int64; generated as served, Asn.Country would stop being a *string and
+# Asn.Asn an int, so every caller that reads either would stop compiling. The
+# decoder still refuses an answer without either member (heldRequired,
+# decode.go). Drop this file at v3.
 overlay: 1.0.0
 info:
   title: Public types held at their v2 shape
   version: 1.0.0
 actions:
-  - target: $.components.schemas.Asn.required
+  - target: $.components.schemas.Asn.required[?(@ == 'country')]
     remove: true
-  - target: $.components.schemas.Asn
-    update:
-      required: [asn, name, domain, type, prefix]
+  - target: $.components.schemas.Asn.required[?(@ == 'rpki_status')]
+    remove: true
   - target: $.components.schemas.Asn.properties.asn.format
     remove: true
   - target: $.components.schemas.AsnLookupResponse.properties.asn.format

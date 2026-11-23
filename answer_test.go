@@ -5,9 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"maps"
 	"net/http"
+	"os"
+	"regexp"
+	"slices"
 	"sync"
 	"testing"
 )
@@ -229,6 +233,86 @@ func TestAnAnswerMissingARequiredMemberIsUnreadable(t *testing.T) {
 				t.Errorf("sent %d requests, want 2", got)
 			}
 		})
+	}
+}
+
+// The AS's country and RPKI status are on every answer the API serves, so one
+// without either, or with either null, is unreadable, though overlay.yaml keeps
+// both pointers in the public Asn. The members are read off overlay.yaml, so a
+// member it holds that way that the decoder does not refuse fails here.
+// Through v2.16.0 each such answer was read, the member nil.
+func TestAnAnswerWithoutTheASsCountryOrRPKIStatusIsUnreadable(t *testing.T) {
+	overlay, err := os.ReadFile("overlay.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var held []string
+	for _, m := range regexp.MustCompile(`schemas\.Asn\.required\[\?\(@ == '(\w+)'\)\]`).FindAllStringSubmatch(string(overlay), -1) {
+		held = append(held, m[1])
+	}
+	if !slices.Equal(held, []string{"country", "rpki_status"}) {
+		t.Fatalf("overlay.yaml holds Asn's %v as optional, want country and rpki_status", held)
+	}
+	withAS := func(asn map[string]any) map[string]any {
+		return answerAbout("45.83.91.1", map[string]any{"asn": asn})
+	}
+	whole := func() map[string]any {
+		return map[string]any{"asn": 9009, "name": "M247 Europe SRL", "domain": "m247global.com",
+			"type": "hosting", "prefix": "45.83.91.0/24", "country": "RO", "rpki_status": "valid"}
+	}
+	encode := func(v any) string {
+		encoded, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(encoded)
+	}
+	domainWith := func(asn map[string]any) string {
+		answer := corpusBody("domain-paid-answer")
+		answer["hosting"] = []any{map[string]any{"ip": "192.0.2.10", "asn": asn}}
+		return encode(answer)
+	}
+	for _, call := range []string{"Lookup", "MyIP"} {
+		transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: encode(withAS(whole()))}
+		if err := answeringCalls[call](t.Context(), fixedClient(t, transport)); err != nil {
+			t.Fatalf("%s of a whole AS: %v", call, err)
+		}
+	}
+	transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: domainWith(whole())}
+	if err := answeringCalls["LookupDomain"](t.Context(), fixedClient(t, transport)); err != nil {
+		t.Fatalf("LookupDomain of a whole AS: %v", err)
+	}
+	for _, member := range held {
+		for _, value := range []any{"absent", nil} {
+			asn := whole()
+			if value == "absent" {
+				delete(asn, member)
+			} else {
+				asn[member] = value
+			}
+			t.Run(fmt.Sprintf("%s %v", member, value), func(t *testing.T) {
+				bodies := map[string]string{"Lookup": encode(withAS(asn)), "MyIP": encode(withAS(asn)),
+					"LookupDomain": domainWith(asn)}
+				for call, body := range bodies {
+					transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: body}
+					assertKind(t, answeringCalls[call](t.Context(), fixedClient(t, transport)), KindServerError, http.StatusOK)
+					if got := transport.sent(); got != 2 {
+						t.Errorf("%s sent %d requests, want 2", call, got)
+					}
+				}
+				good := answerAbout("45.83.91.2", map[string]any{"asn": whole()})
+				transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: `{"results":{` +
+					`"45.83.91.1":` + encode(withAS(asn)) + `,"45.83.91.2":` + encode(good) + `},"errors":{}}`}
+				answers, err := fixedClient(t, transport).LookupBatch(t.Context(), []string{"45.83.91.1", "45.83.91.2"})
+				if err != nil {
+					t.Fatalf("LookupBatch: %v", err)
+				}
+				assertKind(t, answers["45.83.91.1"].Err, KindServerError, http.StatusOK)
+				if got := answers["45.83.91.2"]; got.Err != nil || *got.Result.Asn.Country != "RO" {
+					t.Errorf("45.83.91.2 = %+v, want its answer", got)
+				}
+			})
+		}
 	}
 }
 

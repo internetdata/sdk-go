@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -62,6 +63,13 @@ var (
 	unmarshaler = reflect.TypeFor[json.Unmarshaler]()
 	timeType    = reflect.TypeFor[time.Time]()
 )
+
+// The members the spec requires that overlay.yaml generates as pointers, so a
+// v2 minor keeps their public types, by the Go type holding them. Each is still
+// refused absent or null, as any required member is.
+var heldRequired = map[reflect.Type][]string{
+	reflect.TypeFor[Asn](): {"country", "rpki_status"},
+}
 
 // RFC 3339's date-time, its T and Z in either case. time.Time reads a one-digit
 // hour and a comma before the fraction too, and refuses a lowercase t or z, so
@@ -126,7 +134,8 @@ func complete(t reflect.Type, raw any) (any, bool) {
 			}
 			value, present := object[name]
 			required := field.Type.Kind() != reflect.Pointer && !strings.Contains(options, "omitempty")
-			if required && !present {
+			held := slices.Contains(heldRequired[t], name)
+			if (required || held) && !present || held && value == nil {
 				return raw, false
 			}
 			if present {
