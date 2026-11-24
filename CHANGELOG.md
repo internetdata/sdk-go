@@ -2,6 +2,16 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.17.0 - 2026-11-24
+
+### Features
+
+- Match a condition on a list member when any element matches ([`f08af5f`](https://github.com/internetdata/sdk-go/commit/f08af5ff9f5b882384fbb964a0151b1d6ad897e8))
+
+### Fixes
+
+- Hold every first_seen and last_seen to a full date, on spec 2026.11.23 ([`af8cc98`](https://github.com/internetdata/sdk-go/commit/af8cc9809f411ae84e18c76ac0b9b885f5719c3c))
+
 ## 2.16.2 - 2026-11-23
 
 ### Fixes
