@@ -1003,7 +1003,7 @@ type DomainWeb struct {
 	// Description An English page's description.
 	Description string `json:"description"`
 
-	// LastSeen The day it was last read.
+	// LastSeen The day it was last read, empty when the crawl holds no page.
 	LastSeen string `json:"last_seen"`
 
 	// Links The external hosts the home page links to.

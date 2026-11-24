@@ -10,8 +10,10 @@ import (
 	"maps"
 	"net/http"
 	"os"
+	"reflect"
 	"regexp"
 	"slices"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -410,5 +412,119 @@ func TestAPaidDomainAnswersHostingPageAndLinksAreRead(t *testing.T) {
 	if answer.Hosting != nil || answer.CohostedDomains != nil || answer.Web != nil || answer.Redirects != nil ||
 		answer.Backlinks != nil {
 		t.Errorf("Unlimited answer = %+v, want the five paid members nil", answer)
+	}
+}
+
+// Every first_seen and last_seen that overlay.yaml keeps a string, where the
+// spec gives it format: date, is held to RFC 3339's full-date on a real day, as
+// the types.Date it would otherwise be is. The members are read off
+// overlay.yaml, so one it keeps a string that heldDates does not hold fails
+// here. Through v2.16.2 any string was read.
+func TestASeenDayKeptAStringIsHeldToAFullDate(t *testing.T) {
+	overlay, err := os.ReadFile("overlay.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	matches := regexp.MustCompile(`schemas\.(\w+)\.properties\.(\w+_seen)\.format`).FindAllStringSubmatch(string(overlay), -1)
+	if len(matches) != 23 {
+		t.Fatalf("overlay.yaml keeps %d seen days a string, want 23", len(matches))
+	}
+	held := 0
+	for _, names := range heldDates {
+		held += len(names)
+	}
+	if held != len(matches) {
+		t.Errorf("heldDates holds %d members, overlay.yaml keeps %d a string", held, len(matches))
+	}
+	bad := []any{"x", "tomorrow", "", "2026-02-30", "2026-13-01", "2026-11-5", " 2026-11-23", "2026-11-23\n",
+		"2026-11-23T00:00:00Z", "20261123", "2026-W48-1", "2026-11-٢٣", float64(20261123), true}
+	for _, m := range matches {
+		schema, member := m[1], m[2]
+		var typ reflect.Type
+		for candidate, names := range heldDates {
+			if strings.EqualFold(candidate.Name(), schema) && slices.Contains(names, member) {
+				typ = candidate
+			}
+		}
+		if typ == nil {
+			t.Errorf("heldDates does not hold %s.%s", schema, member)
+			continue
+		}
+		with := func(value any) any {
+			zero, err := json.Marshal(reflect.New(typ).Elem().Interface())
+			if err != nil {
+				t.Fatal(err)
+			}
+			var raw map[string]any
+			if err := json.Unmarshal(zero, &raw); err != nil {
+				t.Fatal(err)
+			}
+			for i := range typ.NumField() {
+				name, _, _ := strings.Cut(typ.Field(i).Tag.Get("json"), ",")
+				if raw[name] == nil && typ.Field(i).Type.Kind() == reflect.Slice {
+					raw[name] = []any{}
+				}
+			}
+			for _, name := range heldDates[typ] {
+				raw[name] = "2026-11-23"
+			}
+			raw[member] = value
+			return raw
+		}
+		if _, ok := complete(typ, with("2026-11-23")); !ok {
+			t.Errorf("%s.%s 2026-11-23 refused", schema, member)
+		}
+		for _, value := range bad {
+			if _, ok := complete(typ, with(value)); ok {
+				t.Errorf("%s.%s %q read", schema, member, value)
+			}
+		}
+	}
+}
+
+// A seen day that is no date fails the call that served it as a retried
+// server_error, on each lookup, and is that address's error alone in a batch.
+func TestASeenDayThatIsNoDateFailsTheCall(t *testing.T) {
+	encode := func(v any) string {
+		encoded, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(encoded)
+	}
+	bot := corpusBody("paid-bot")
+	botDetail := maps.Clone(bot["bot"].(map[string]any))
+	botDetail["first_seen"] = "2026-02-30"
+	bot["bot"] = botDetail
+	asn := corpusBody("asn-paid-answer")
+	prefix := maps.Clone(asn["prefixes"].([]any)[0].(map[string]any))
+	prefix["first_seen"] = "2026-10-2"
+	asn["prefixes"] = []any{prefix}
+	domain := corpusBody("domain-paid-answer")
+	dns := maps.Clone(domain["dns"].(map[string]any))
+	dns["mx"] = []any{map[string]any{"priority": 10, "host": "mail.example.com", "last_seen": "tomorrow"}}
+	domain["dns"] = dns
+	for call, body := range map[string]string{"Lookup": encode(bot), "MyIP": encode(bot),
+		"LookupASN": encode(asn), "LookupDomain": encode(domain)} {
+		t.Run(call, func(t *testing.T) {
+			transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: body}
+			assertKind(t, answeringCalls[call](t.Context(), fixedClient(t, transport)), KindServerError, http.StatusOK)
+			if got := transport.sent(); got != 2 {
+				t.Errorf("sent %d requests, want 2", got)
+			}
+		})
+	}
+	good := corpusBody("paid-bot")
+	good["ip"] = "45.83.91.2"
+	bot["ip"] = "45.83.91.1"
+	transport := &fixedTransport{status: http.StatusOK, contentType: "application/json", body: `{"results":{` +
+		`"45.83.91.1":` + encode(bot) + `,"45.83.91.2":` + encode(good) + `},"errors":{}}`}
+	answers, err := fixedClient(t, transport).LookupBatch(t.Context(), []string{"45.83.91.1", "45.83.91.2"})
+	if err != nil {
+		t.Fatalf("LookupBatch: %v", err)
+	}
+	assertKind(t, answers["45.83.91.1"].Err, KindServerError, http.StatusOK)
+	if got := answers["45.83.91.2"]; got.Err != nil || got.Result.Bot == nil || *got.Result.Bot.FirstSeen != "2026-11-21" {
+		t.Errorf("45.83.91.2 = %+v, want its answer", got)
 	}
 }

@@ -71,6 +71,40 @@ var heldRequired = map[reflect.Type][]string{
 	reflect.TypeFor[Asn](): {"country", "rpki_status"},
 }
 
+// The members the spec gives format: date that overlay.yaml generates as
+// strings, so a v2 minor keeps their public types, by the Go type holding them.
+// Each is refused unless it is RFC 3339's full-date on a real day, the check
+// the types.Date it would otherwise be makes.
+var heldDates = map[reflect.Type][]string{
+	reflect.TypeFor[ClassDetail]():       {"last_seen"},
+	reflect.TypeFor[ProxyDetail]():       {"first_seen", "last_seen"},
+	reflect.TypeFor[PubproxyDetail]():    {"last_seen"},
+	reflect.TypeFor[BotDetail]():         {"first_seen", "last_seen"},
+	reflect.TypeFor[SSHDetail]():         {"first_seen", "last_seen"},
+	reflect.TypeFor[SMTPDetail]():        {"first_seen", "last_seen"},
+	reflect.TypeFor[WebDetail]():         {"first_seen", "last_seen"},
+	reflect.TypeFor[DNSResolverDetail](): {"first_seen", "last_seen"},
+	reflect.TypeFor[BitTorrentDetail]():  {"first_seen", "last_seen"},
+	reflect.TypeFor[AsnPrefix]():         {"first_seen"},
+	reflect.TypeFor[DNSAddressRecord]():  {"last_seen"},
+	reflect.TypeFor[DNSMxRecord]():       {"last_seen"},
+	reflect.TypeFor[DNSNsRecord]():       {"last_seen"},
+	reflect.TypeFor[DNSCnameRecord]():    {"last_seen"},
+	reflect.TypeFor[DisposableDetail]():  {"first_seen", "last_seen"},
+}
+
+var fullDateForm = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}$`)
+
+// Reports whether raw is RFC 3339's full-date on a day its month has.
+func fullDate(raw any) bool {
+	value, ok := raw.(string)
+	if !ok || !fullDateForm.MatchString(value) {
+		return false
+	}
+	_, err := time.Parse(time.DateOnly, value)
+	return err == nil
+}
+
 // RFC 3339's date-time, its T and Z in either case. time.Time reads a one-digit
 // hour and a comma before the fraction too, and refuses a lowercase t or z, so
 // through v2.8.3 the first two were dates and the last failed the call.
@@ -136,6 +170,9 @@ func complete(t reflect.Type, raw any) (any, bool) {
 			required := field.Type.Kind() != reflect.Pointer && !strings.Contains(options, "omitempty")
 			held := slices.Contains(heldRequired[t], name)
 			if (required || held) && !present || held && value == nil {
+				return raw, false
+			}
+			if present && value != nil && slices.Contains(heldDates[t], name) && !fullDate(value) {
 				return raw, false
 			}
 			if present {

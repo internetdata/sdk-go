@@ -7,6 +7,11 @@
 # an int64; generated as served, Asn.Country would stop being a *string and
 # Asn.Asn an int, so every caller that reads either would stop compiling. The
 # decoder still refuses an answer without either member (heldRequired,
+# decode.go).
+#
+# Spec 2026.11.23 gave 23 first_seen and last_seen members format: date;
+# generated as served, each would stop being a string and become a types.Date.
+# The decoder still refuses one that is no full-date on a real day (heldDates,
 # decode.go). Drop this file at v3.
 overlay: 1.0.0
 info:
@@ -24,4 +29,50 @@ actions:
   - target: $.components.schemas.Whois.properties.asn.format
     remove: true
   - target: $.components.schemas.SatelliteDetail.properties.asn.format
+    remove: true
+  - target: $.components.schemas.ClassDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.ProxyDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.ProxyDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.PubproxyDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.BotDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.BotDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.SshDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.SshDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.SmtpDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.SmtpDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.WebDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.WebDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.DnsResolverDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.DnsResolverDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.BitTorrentDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.BitTorrentDetail.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.AsnPrefix.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.DnsAddressRecord.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.DnsMxRecord.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.DnsNsRecord.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.DnsCnameRecord.properties.last_seen.format
+    remove: true
+  - target: $.components.schemas.DisposableDetail.properties.first_seen.format
+    remove: true
+  - target: $.components.schemas.DisposableDetail.properties.last_seen.format
     remove: true

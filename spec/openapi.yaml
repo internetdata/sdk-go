@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.22
+  version: 2026.11.23
 servers:
   - url: https://internetdata.io
 tags:
@@ -4005,6 +4005,7 @@ components:
           description: '`high`, `medium` or `low`: how sure we are the range is what the flag says.'
         last_seen:
           type: string
+          format: date
           description: The last day the range was seen as such.
     ProxyDetail:
       type: object
@@ -4017,9 +4018,11 @@ components:
           description: The name the catalog gives it.
         first_seen:
           type: string
+          format: date
           description: The first day of the window the address was seen as an exit.
         last_seen:
           type: string
+          format: date
           description: The last day it was.
         hits:
           type: integer
@@ -4052,6 +4055,7 @@ components:
           description: How many proxies' traffic left from here.
         last_seen:
           type: string
+          format: date
           description: The last day one was seen.
         last_usable:
           type: string
@@ -4178,9 +4182,11 @@ components:
           description: '`high`, `medium` or `low`: how sure we are the address is what the row says.'
         first_seen:
           type: string
+          format: date
           description: The first day the address was seen as such.
         last_seen:
           type: string
+          format: date
           description: The last day it was.
     SshDetail:
       type: object
@@ -4199,9 +4205,11 @@ components:
           description: A session was set up.
         first_seen:
           type: string
+          format: date
           description: The first day it answered.
         last_seen:
           type: string
+          format: date
           description: The last day it did.
     SmtpDetail:
       type: object
@@ -4217,9 +4225,11 @@ components:
           description: A session was set up.
         first_seen:
           type: string
+          format: date
           description: The first day it answered.
         last_seen:
           type: string
+          format: date
           description: The last day it did.
     WebDetail:
       type: object
@@ -4262,9 +4272,11 @@ components:
           description: The TLS version negotiated, empty without TLS.
         first_seen:
           type: string
+          format: date
           description: The first day the port was open.
         last_seen:
           type: string
+          format: date
           description: The last day it was.
       required:
         - port
@@ -4298,9 +4310,11 @@ components:
           description: Its answer was right.
         first_seen:
           type: string
+          format: date
           description: The first day it answered.
         last_seen:
           type: string
+          format: date
           description: The last day it did.
     BitTorrentDetail:
       type: object
@@ -4313,9 +4327,11 @@ components:
           description: A client here derived its node ID from the address (BEP 42).
         first_seen:
           type: string
+          format: date
           description: The first day a client was seen here.
         last_seen:
           type: string
+          format: date
           description: The last day.
         last_reachable:
           type: string
@@ -4728,6 +4744,7 @@ components:
           description: Its RPKI status.
         first_seen:
           type: string
+          format: date
           description: The first day BGP Route saw it.
         country:
           type: string
@@ -4873,7 +4890,7 @@ components:
           description: An English page's description.
         last_seen:
           type: string
-          description: The day it was last read.
+          description: The day it was last read, empty when the crawl holds no page.
         links:
           $ref: '#/components/schemas/DomainWebLinks'
       required:
@@ -4972,6 +4989,7 @@ components:
           description: The address.
         last_seen:
           type: string
+          format: date
           description: The last day the snapshot saw it.
       required:
         - ip
@@ -4987,6 +5005,7 @@ components:
           description: The mail host.
         last_seen:
           type: string
+          format: date
           description: The last day seen.
       required:
         - priority
@@ -5000,6 +5019,7 @@ components:
           description: The name server.
         last_seen:
           type: string
+          format: date
           description: The last day seen.
       required:
         - host
@@ -5012,6 +5032,7 @@ components:
           description: Where it points.
         last_seen:
           type: string
+          format: date
           description: The last day seen.
       required:
         - target
@@ -5072,9 +5093,11 @@ components:
           description: The providers behind it.
         first_seen:
           type: string
+          format: date
           description: The first day seen in use.
         last_seen:
           type: string
+          format: date
           description: The last day.
     BatchLookupRequest:
       type: object
