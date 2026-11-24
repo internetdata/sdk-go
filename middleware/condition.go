@@ -28,7 +28,11 @@ import (
 //	middleware.BlockCondition{"resproxy": middleware.BlockCondition{"hits": middleware.Gte(5)}}
 //
 // A value may be a scalar (equality, strings without regard to case), an AnyOf,
-// a Bound, or a nested BlockCondition.
+// a Bound, or a nested BlockCondition. Against a member the answer holds as a
+// list, it matches when any one element does:
+//
+//	middleware.BlockCondition{"pubproxy": middleware.BlockCondition{"protocols": "socks5"}}
+//	middleware.BlockCondition{"web": middleware.BlockCondition{"port": 443, "server": "nginx"}}
 type BlockCondition map[string]any
 
 // Conditions is a list of conditions, any one of which blocking is enough.
@@ -198,7 +202,19 @@ func matchesStruct(condition BlockCondition, value reflect.Value) bool {
 // whose Kind does not match, which is what makes "not in your plan" fail a
 // match rather than pass it. A new branch that skips that check would silently
 // let an unserved member block a request.
+//
+// A member the answer holds as a list (web's rows, pubproxy.protocols) matches
+// when any one element does, so an object term must hold within one element.
+// Through v2.16.2 the term was compared with the list itself and never matched.
 func matchesValue(want any, got reflect.Value) bool {
+	if got.Kind() == reflect.Slice {
+		for i := range got.Len() {
+			if matchesValue(want, deref(got.Index(i))) {
+				return true
+			}
+		}
+		return false
+	}
 	switch w := want.(type) {
 	case anyOf:
 		for _, entry := range w {
