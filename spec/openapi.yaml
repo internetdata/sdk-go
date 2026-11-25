@@ -13,7 +13,7 @@ info:
     email: support@internetdata.io
     url: https://internetdata.io
   termsOfService: https://internetdata.io/terms
-  version: 2026.11.23
+  version: 2026.11.25
 servers:
   - url: https://internetdata.io
 tags:
@@ -2801,21 +2801,21 @@ paths:
                       expires: null
                       allowed_cidrs: []
                     plan:
-                      key: max
-                      name: Max
+                      key: data_4
+                      name: Data
                       tier: max
                     usage:
                       requests: 580
-                      quota: 5000000
+                      quota: 1000000
                       hard_limit: null
                       window_start: '2026-09-04T07:00:00Z'
                       window_end: '2026-10-04T07:00:00Z'
                 free:
                   summary: >-
                     A key of an organization on the free plan, Unlimited: its usage is its trial,
-                    the lookups answered with every field, out of the quota the trial has. Nothing
-                    stops it past them, its lookups answering with Unlimited's fields, so there is
-                    no hard limit.
+                    the lookups answered with every field while it lasts, against the trial's limit.
+                    Nothing stops it past the trial, its lookups answering with Unlimited's fields,
+                    so there is no hard limit
                   value:
                     org_id: f32191d0-ef02-450e-a505-eb5814c35cab
                     apikey:
@@ -2828,10 +2828,10 @@ paths:
                       tier: free
                     usage:
                       requests: 37
-                      quota: 100
+                      quota: 250000
                       hard_limit: null
-                      window_start: '2026-11-11T00:00:00Z'
-                      window_end: '2026-11-12T00:00:00Z'
+                      window_start: '2026-11-24T10:15:00Z'
+                      window_end: '2026-12-08T10:15:00Z'
         '401':
           description: No key was presented, or it is unknown, revoked or expired.
           content:
@@ -3801,7 +3801,7 @@ components:
           description: Reserved space, answered from the address alone.
         is_vpn:
           type: boolean
-          description: 'In VPN IP: a VPN service''s server. Paid plans and the trial.'
+          description: 'In VPN IP: a VPN service''s server. On a paid plan or the trial.'
         is_tor:
           type: boolean
           description: 'In Tor IP: a Tor exit.'
@@ -3811,25 +3811,25 @@ components:
         is_resproxy:
           type: boolean
           description: >-
-            In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the
+            In Residential Proxy IP's 90-day window: a residential proxy exit. On a paid plan or the
             trial.
         is_dcproxy:
           type: boolean
-          description: In Datacenter Proxy IP's 90-day window. Paid plans and the trial.
+          description: In Datacenter Proxy IP's 90-day window. On a paid plan or the trial.
         is_mobproxy:
           type: boolean
-          description: In Mobile Proxy IP's 90-day window. Paid plans and the trial.
+          description: In Mobile Proxy IP's 90-day window. On a paid plan or the trial.
         is_pubproxy:
           type: boolean
           description: >-
-            In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid
-            plans and the trial.
+            In Public Proxy IP: a public proxy listens here, or its traffic left from here. On a
+            paid plan or the trial.
         is_hosting:
           type: boolean
-          description: 'In Hosting IP: a hosting or cloud network. Paid plans and the trial.'
+          description: 'In Hosting IP: a hosting or cloud network. On a paid plan or the trial.'
         is_cdn:
           type: boolean
-          description: 'In CDN IP: a content delivery network. Paid plans and the trial.'
+          description: 'In CDN IP: a content delivery network. On a paid plan or the trial.'
         is_bot:
           type: boolean
           description: >-
@@ -3863,7 +3863,7 @@ components:
         vpn:
           allOf:
             - $ref: '#/components/schemas/ClassDetail'
-          description: VPN IP's row, `{}` when `is_vpn` is false. Paid plans and the trial.
+          description: VPN IP's row, `{}` when `is_vpn` is false. On a paid plan or the trial.
         tor:
           allOf:
             - $ref: '#/components/schemas/ClassDetail'
@@ -3875,62 +3875,62 @@ components:
         resproxy:
           allOf:
             - $ref: '#/components/schemas/ProxyDetail'
-          description: '`{}` when `is_resproxy` is false. Paid plans and the trial.'
+          description: '`{}` when `is_resproxy` is false. On a paid plan or the trial.'
         dcproxy:
           allOf:
             - $ref: '#/components/schemas/ProxyDetail'
-          description: '`{}` when `is_dcproxy` is false. Paid plans and the trial.'
+          description: '`{}` when `is_dcproxy` is false. On a paid plan or the trial.'
         mobproxy:
           allOf:
             - $ref: '#/components/schemas/ProxyDetail'
-          description: '`{}` when `is_mobproxy` is false. Paid plans and the trial.'
+          description: '`{}` when `is_mobproxy` is false. On a paid plan or the trial.'
         pubproxy:
           allOf:
             - $ref: '#/components/schemas/PubproxyDetail'
-          description: '`{}` when `is_pubproxy` is false. Paid plans and the trial.'
+          description: '`{}` when `is_pubproxy` is false. On a paid plan or the trial.'
         hosting:
           allOf:
             - $ref: '#/components/schemas/ClassDetail'
-          description: '`{}` when `is_hosting` is false. Paid plans and the trial.'
+          description: '`{}` when `is_hosting` is false. On a paid plan or the trial.'
         cdn:
           allOf:
             - $ref: '#/components/schemas/ClassDetail'
-          description: '`{}` when `is_cdn` is false. Paid plans and the trial.'
+          description: '`{}` when `is_cdn` is false. On a paid plan or the trial.'
         bot:
           allOf:
             - $ref: '#/components/schemas/BotDetail'
-          description: '`{}` when `is_bot` is false. Paid plans and the trial.'
+          description: '`{}` when `is_bot` is false. On a paid plan or the trial.'
         carrier:
           allOf:
             - $ref: '#/components/schemas/CarrierDetail'
-          description: '`{}` when `is_carrier` is false. Paid plans and the trial.'
+          description: '`{}` when `is_carrier` is false. On a paid plan or the trial.'
         satellite:
           allOf:
             - $ref: '#/components/schemas/SatelliteDetail'
-          description: '`{}` when `is_satellite` is false. Paid plans and the trial.'
+          description: '`{}` when `is_satellite` is false. On a paid plan or the trial.'
         ssh:
           allOf:
             - $ref: '#/components/schemas/SshDetail'
-          description: '`{}` when `is_ssh` is false. Paid plans and the trial.'
+          description: '`{}` when `is_ssh` is false. On a paid plan or the trial.'
         smtp:
           allOf:
             - $ref: '#/components/schemas/SmtpDetail'
-          description: '`{}` when `is_smtp` is false. Paid plans and the trial.'
+          description: '`{}` when `is_smtp` is false. On a paid plan or the trial.'
         web:
           type: array
           items:
             $ref: '#/components/schemas/WebDetail'
           description: >-
-            A row per port that answered, lowest first; `[]` when `is_web` is false. Paid plans and
-            the trial.
+            A row per port that answered, lowest first; `[]` when `is_web` is false. On a paid plan
+            or the trial.
         dns_resolver:
           allOf:
             - $ref: '#/components/schemas/DnsResolverDetail'
-          description: '`{}` when `is_dns_resolver` is false. Paid plans and the trial.'
+          description: '`{}` when `is_dns_resolver` is false. On a paid plan or the trial.'
         bittorrent:
           allOf:
             - $ref: '#/components/schemas/BitTorrentDetail'
-          description: '`{}` when `is_bittorrent` is false. Paid plans and the trial.'
+          description: '`{}` when `is_bittorrent` is false. On a paid plan or the trial.'
         location:
           $ref: '#/components/schemas/Location'
         asn:
@@ -4388,34 +4388,34 @@ components:
           description: Its code points, `U+1F1E6 U+1F1F9`.
         region:
           type: string
-          description: Region (state or province). Paid plans and the trial.
+          description: Region (state or province). On a paid plan or the trial.
         region_code:
           type: string
-          description: ISO 3166-2 region code. Paid plans and the trial.
+          description: ISO 3166-2 region code. On a paid plan or the trial.
         city:
           type: string
-          description: City. Paid plans and the trial.
+          description: City. On a paid plan or the trial.
         postal_code:
           type: string
-          description: Postal code. Paid plans and the trial.
+          description: Postal code. On a paid plan or the trial.
         latitude:
           type: number
-          description: Latitude of the city. Paid plans and the trial.
+          description: Latitude of the city. On a paid plan or the trial.
         longitude:
           type: number
-          description: Longitude of the city. Paid plans and the trial.
+          description: Longitude of the city. On a paid plan or the trial.
         accuracy_radius:
           type: integer
-          description: Radius in km holding the true location with 67% confidence. Paid plans and the trial.
+          description: Radius in km holding the true location with 67% confidence. On a paid plan or the trial.
         geoname_id:
           type: string
-          description: GeoNames ID of the city. Paid plans and the trial.
+          description: GeoNames ID of the city. On a paid plan or the trial.
         dma_code:
           type: string
-          description: US TV market (DMA) code. Paid plans and the trial.
+          description: US TV market (DMA) code. On a paid plan or the trial.
         last_changed:
           type: string
-          description: The day the range's location last changed. Paid plans and the trial.
+          description: The day the range's location last changed. On a paid plan or the trial.
       required:
         - continent
         - continent_name
@@ -4474,11 +4474,11 @@ components:
         type:
           type: string
           description: >-
-            What kind of organization: hosting, isp, business, education, government. Paid plans and
-            the trial.
+            What kind of organization: hosting, isp, business, education, government. On a paid plan
+            or the trial.
         country:
           type: string
-          description: ISO 3166 country code. Paid plans and the trial.
+          description: ISO 3166 country code. On a paid plan or the trial.
       required:
         - name
         - domain
@@ -4491,25 +4491,25 @@ components:
           description: Where to report abuse from the address.
         name:
           type: string
-          description: The contact. Paid plans and the trial.
+          description: The contact. On a paid plan or the trial.
         phone:
           type: string
-          description: Its phone number. Paid plans and the trial.
+          description: Its phone number. On a paid plan or the trial.
         address:
           type: string
-          description: Its postal address. Paid plans and the trial.
+          description: Its postal address. On a paid plan or the trial.
         country:
           type: string
-          description: ISO 3166 country code. Paid plans and the trial.
+          description: ISO 3166 country code. On a paid plan or the trial.
         network:
           type: string
-          description: The registry block it was derived from. Paid plans and the trial.
+          description: The registry block it was derived from. On a paid plan or the trial.
         validated:
           type: boolean
-          description: ARIN reports the contact answered its yearly validation. Paid plans and the trial.
+          description: ARIN reports the contact answered its yearly validation. On a paid plan or the trial.
         unvalidated_since:
           type: string
-          description: Since when it has not. Paid plans and the trial.
+          description: Since when it has not. On a paid plan or the trial.
       required:
         - email
       description: Where to report abuse, from IP Abuse Contact.
@@ -4554,7 +4554,7 @@ components:
         - domain
         - abuse_email
         - asn
-      description: IP Whois's most specific record covering the address. Paid plans and the trial.
+      description: IP Whois's most specific record covering the address. On a paid plan or the trial.
     Rwhois:
       type: object
       properties:
@@ -4583,7 +4583,7 @@ components:
         - source
         - domain
         - abuse_email
-      description: IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+      description: IP RWHOIS's most specific network covering the address. On a paid plan or the trial.
     HostedDomains:
       type: object
       properties:
@@ -4599,7 +4599,7 @@ components:
         - total
       description: >-
         From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most
-        popular. Its database lists up to 1,000 an address. Paid plans and the trial.
+        popular. Its database lists up to 1,000 an address. On a paid plan or the trial.
     AsnHostedDomains:
       type: object
       properties:
@@ -4615,7 +4615,7 @@ components:
         - total
       description: >-
         From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular.
-        Its database lists up to 1,000 an AS. Paid plans and the trial.
+        Its database lists up to 1,000 an AS. On a paid plan or the trial.
     AsnLookupResponse:
       type: object
       properties:
@@ -4640,73 +4640,73 @@ components:
           description: Its operator's domain.
         type:
           type: string
-          description: The kind of network it runs. Paid plans and the trial.
+          description: The kind of network it runs. On a paid plan or the trial.
         num_ips:
           type: integer
-          description: IPv4 addresses it announces. Paid plans and the trial.
+          description: IPv4 addresses it announces. On a paid plan or the trial.
         num_prefixes4:
           type: integer
-          description: IPv4 prefixes it announces. Paid plans and the trial.
+          description: IPv4 prefixes it announces. On a paid plan or the trial.
         num_prefixes6:
           type: integer
-          description: IPv6 prefixes it announces. Paid plans and the trial.
+          description: IPv6 prefixes it announces. On a paid plan or the trial.
         rpki_valid:
           type: integer
-          description: Its announcements RPKI calls valid. Paid plans and the trial.
+          description: Its announcements RPKI calls valid. On a paid plan or the trial.
         rpki_invalid:
           type: integer
-          description: Invalid. Paid plans and the trial.
+          description: Invalid. On a paid plan or the trial.
         rpki_not_found:
           type: integer
-          description: With no RPKI record. Paid plans and the trial.
+          description: With no RPKI record. On a paid plan or the trial.
         whois:
           type: object
           additionalProperties:
             type: string
           description: >-
-            Its ASN Whois record, every column, empty where the registry states nothing. Paid plans
-            and the trial.
+            Its ASN Whois record, every column, empty where the registry states nothing. On a paid
+            plan or the trial.
         prefixes:
           type: array
           items:
             $ref: '#/components/schemas/AsnPrefix'
-          description: What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+          description: What it announces, IPv4 then IPv6, up to 20000 a family. On a paid plan or the trial.
         rank:
           type: integer
           description: >-
             Its rank in ASN Extended, by customer cone, 1 the largest; `0` for an AS seen in no AS
-            path. Paid plans and the trial.
+            path. On a paid plan or the trial.
         tier1:
           type: boolean
           description: >-
             Whether it is one of the transit-free networks at the top of the hierarchy, which get
-            transit from no one and peer with each other. Paid plans and the trial.
+            transit from no one and peer with each other. On a paid plan or the trial.
         num_upstreams:
           type: integer
-          description: How many AS numbers it gets transit from. Paid plans and the trial.
+          description: How many AS numbers it gets transit from. On a paid plan or the trial.
         upstreams:
           type: array
           items:
             type: integer
-          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+          description: Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
         num_peers:
           type: integer
           description: >-
-            How many AS numbers it exchanges its own and its customers' routes with. Paid plans and
-            the trial.
+            How many AS numbers it exchanges its own and its customers' routes with. On a paid plan
+            or the trial.
         peers:
           type: array
           items:
             type: integer
-          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+          description: Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
         num_downstreams:
           type: integer
-          description: How many AS numbers it provides transit to. Paid plans and the trial.
+          description: How many AS numbers it provides transit to. On a paid plan or the trial.
         downstreams:
           type: array
           items:
             type: integer
-          description: Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+          description: Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
         hosted_domains:
           $ref: '#/components/schemas/AsnHostedDomains'
         trial_expired:
@@ -4776,7 +4776,7 @@ components:
           description: 'In Domain List: a registered domain.'
         is_disposable:
           type: boolean
-          description: In Disposable Domain. Paid plans and the trial.
+          description: In Disposable Domain. On a paid plan or the trial.
         has_a:
           type: boolean
           description: It has A records.
@@ -4800,7 +4800,7 @@ components:
             $ref: '#/components/schemas/DomainHost'
           description: >-
             The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]`
-            where it resolves to none. Paid plans and the trial.
+            where it resolves to none. On a paid plan or the trial.
         cohosted_domains:
           $ref: '#/components/schemas/CohostedDomains'
         ip_ranges:
@@ -4808,7 +4808,7 @@ components:
         disposable:
           allOf:
             - $ref: '#/components/schemas/DisposableDetail'
-          description: '`{}` when `is_disposable` is false. Paid plans and the trial.'
+          description: '`{}` when `is_disposable` is false. On a paid plan or the trial.'
         web:
           $ref: '#/components/schemas/DomainWeb'
         redirects:
@@ -4875,7 +4875,7 @@ components:
         - domains
       description: >-
         From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how
-        many and the 10 most popular. Paid plans and the trial.
+        many and the 10 most popular. On a paid plan or the trial.
     DomainWeb:
       type: object
       properties:
@@ -4901,7 +4901,7 @@ components:
         - links
       description: >-
         What our crawl last read of the domain's own home page, every member empty where it holds
-        none. Paid plans and the trial.
+        none. On a paid plan or the trial.
     DomainWebLinks:
       type: object
       properties:
@@ -4933,7 +4933,7 @@ components:
         - domains
       description: >-
         The registered domains whose home page redirects to this one, how many and the 10 most
-        popular. Paid plans and the trial.
+        popular. On a paid plan or the trial.
     DomainBacklinks:
       type: object
       properties:
@@ -4950,7 +4950,7 @@ components:
         - domains
       description: >-
         The registered domains whose home page links to this one, how many and the 10 most popular.
-        Paid plans and the trial.
+        On a paid plan or the trial.
     DomainDns:
       type: object
       properties:
@@ -4980,7 +4980,7 @@ components:
         - mx
         - ns
         - cname
-      description: Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+      description: Its records in Domain DNS, up to 100 a type. On a paid plan or the trial.
     DnsAddressRecord:
       type: object
       properties:
@@ -5063,7 +5063,7 @@ components:
         - total
         - ipv4
         - ranges
-      description: The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+      description: The organization's IP ranges, from Domain IP Ranges. On a paid plan or the trial.
     DomainIpRange:
       type: object
       properties:
@@ -5222,15 +5222,16 @@ components:
             The plan the organization is on, as an identifier that is never
             renamed or reused: `free` for the free plan, or a paid plan's key.
             Compare against it and show `name`. On `free`, usage counts its
-            trial, the lookups answered with every field.
-          example: max
+            trial, the lookups answered with every field. The Data plan is a key
+            per quota, `data_1` to `data_7`, each named Data.
+          example: data_4
         name:
           type: string
           description: |
             The plan's name, as the site and console show it: `Unlimited` for
             the free plan. Show this rather than a name built from `key`: a
             plan's name can change, and its key never does.
-          example: Max
+          example: Data
         tier:
           type: string
           enum:
@@ -5277,11 +5278,15 @@ components:
         window_start:
           type: string
           format: date-time
-          description: When the current allowance period began.
+          description: |
+            When the current allowance period began. On the free plan, when
+            its trial began, or now before a first lookup starts it.
         window_end:
           type: string
           format: date-time
-          description: When the allowance next resets.
+          description: |
+            When the allowance next resets. On the free plan, when its trial
+            ends, which it does once.
     EntitlementError:
       type: object
       required:

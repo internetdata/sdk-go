@@ -191,28 +191,28 @@ func (e OauthAuthorizeParamsCodeChallengeMethod) Valid() bool {
 
 // AbuseContact Where to report abuse, from IP Abuse Contact.
 type AbuseContact struct {
-	// Address Its postal address. Paid plans and the trial.
+	// Address Its postal address. On a paid plan or the trial.
 	Address *string `json:"address,omitempty"`
 
-	// Country ISO 3166 country code. Paid plans and the trial.
+	// Country ISO 3166 country code. On a paid plan or the trial.
 	Country *string `json:"country,omitempty"`
 
 	// Email Where to report abuse from the address.
 	Email string `json:"email"`
 
-	// Name The contact. Paid plans and the trial.
+	// Name The contact. On a paid plan or the trial.
 	Name *string `json:"name,omitempty"`
 
-	// Network The registry block it was derived from. Paid plans and the trial.
+	// Network The registry block it was derived from. On a paid plan or the trial.
 	Network *string `json:"network,omitempty"`
 
-	// Phone Its phone number. Paid plans and the trial.
+	// Phone Its phone number. On a paid plan or the trial.
 	Phone *string `json:"phone,omitempty"`
 
-	// UnvalidatedSince Since when it has not. Paid plans and the trial.
+	// UnvalidatedSince Since when it has not. On a paid plan or the trial.
 	UnvalidatedSince *string `json:"unvalidated_since,omitempty"`
 
-	// Validated ARIN reports the contact answered its yearly validation. Paid plans and the trial.
+	// Validated ARIN reports the contact answered its yearly validation. On a paid plan or the trial.
 	Validated *bool `json:"validated,omitempty"`
 }
 
@@ -325,7 +325,7 @@ type Asn struct {
 	Type string `json:"type"`
 }
 
-// AsnHostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. Paid plans and the trial.
+// AsnHostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. On a paid plan or the trial.
 type AsnHostedDomains struct {
 	// Domains Up to 10 of them, the most popular first; `[]` when none does.
 	Domains *[]string `json:"domains,omitempty"`
@@ -351,67 +351,67 @@ type AsnLookupResponse struct {
 	// Domain Its operator's domain.
 	Domain string `json:"domain"`
 
-	// Downstreams Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	// Downstreams Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
 	Downstreams *[]int `json:"downstreams,omitempty"`
 
-	// HostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. Paid plans and the trial.
+	// HostedDomains From ASN Hosted Domains: how many registered domains the AS hosts, and the 10 most popular. Its database lists up to 1,000 an AS. On a paid plan or the trial.
 	HostedDomains *AsnHostedDomains `json:"hosted_domains,omitempty"`
 
 	// Name Its operator.
 	Name string `json:"name"`
 
-	// NumDownstreams How many AS numbers it provides transit to. Paid plans and the trial.
+	// NumDownstreams How many AS numbers it provides transit to. On a paid plan or the trial.
 	NumDownstreams *int `json:"num_downstreams,omitempty"`
 
-	// NumIps IPv4 addresses it announces. Paid plans and the trial.
+	// NumIps IPv4 addresses it announces. On a paid plan or the trial.
 	NumIps *int `json:"num_ips,omitempty"`
 
-	// NumPeers How many AS numbers it exchanges its own and its customers' routes with. Paid plans and the trial.
+	// NumPeers How many AS numbers it exchanges its own and its customers' routes with. On a paid plan or the trial.
 	NumPeers *int `json:"num_peers,omitempty"`
 
-	// NumPrefixes4 IPv4 prefixes it announces. Paid plans and the trial.
+	// NumPrefixes4 IPv4 prefixes it announces. On a paid plan or the trial.
 	NumPrefixes4 *int `json:"num_prefixes4,omitempty"`
 
-	// NumPrefixes6 IPv6 prefixes it announces. Paid plans and the trial.
+	// NumPrefixes6 IPv6 prefixes it announces. On a paid plan or the trial.
 	NumPrefixes6 *int `json:"num_prefixes6,omitempty"`
 
-	// NumUpstreams How many AS numbers it gets transit from. Paid plans and the trial.
+	// NumUpstreams How many AS numbers it gets transit from. On a paid plan or the trial.
 	NumUpstreams *int `json:"num_upstreams,omitempty"`
 
-	// Peers Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	// Peers Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
 	Peers *[]int `json:"peers,omitempty"`
 
-	// Prefixes What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+	// Prefixes What it announces, IPv4 then IPv6, up to 20000 a family. On a paid plan or the trial.
 	Prefixes *[]AsnPrefix `json:"prefixes,omitempty"`
 
-	// Rank Its rank in ASN Extended, by customer cone, 1 the largest; `0` for an AS seen in no AS path. Paid plans and the trial.
+	// Rank Its rank in ASN Extended, by customer cone, 1 the largest; `0` for an AS seen in no AS path. On a paid plan or the trial.
 	Rank *int `json:"rank,omitempty"`
 
 	// Registry The registry that allocated it.
 	Registry string `json:"registry"`
 
-	// RpkiInvalid Invalid. Paid plans and the trial.
+	// RpkiInvalid Invalid. On a paid plan or the trial.
 	RpkiInvalid *int `json:"rpki_invalid,omitempty"`
 
-	// RpkiNotFound With no RPKI record. Paid plans and the trial.
+	// RpkiNotFound With no RPKI record. On a paid plan or the trial.
 	RpkiNotFound *int `json:"rpki_not_found,omitempty"`
 
-	// RpkiValid Its announcements RPKI calls valid. Paid plans and the trial.
+	// RpkiValid Its announcements RPKI calls valid. On a paid plan or the trial.
 	RpkiValid *int `json:"rpki_valid,omitempty"`
 
-	// Tier1 Whether it is one of the transit-free networks at the top of the hierarchy, which get transit from no one and peer with each other. Paid plans and the trial.
+	// Tier1 Whether it is one of the transit-free networks at the top of the hierarchy, which get transit from no one and peer with each other. On a paid plan or the trial.
 	Tier1 *bool `json:"tier1,omitempty"`
 
 	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 
-	// Type The kind of network it runs. Paid plans and the trial.
+	// Type The kind of network it runs. On a paid plan or the trial.
 	Type *string `json:"type,omitempty"`
 
-	// Upstreams Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+	// Upstreams Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
 	Upstreams *[]int `json:"upstreams,omitempty"`
 
-	// Whois Its ASN Whois record, every column, empty where the registry states nothing. Paid plans and the trial.
+	// Whois Its ASN Whois record, every column, empty where the registry states nothing. On a paid plan or the trial.
 	Whois *map[string]string `json:"whois,omitempty"`
 }
 
@@ -616,7 +616,7 @@ type ClientRegistrationRequest struct {
 	TokenEndpointAuthMethod *string `json:"token_endpoint_auth_method,omitempty"`
 }
 
-// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. Paid plans and the trial.
+// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. On a paid plan or the trial.
 type CohostedDomains struct {
 	// Domains Up to 10 of them, the most popular first, the domain itself left out; `[]` when none does.
 	Domains []string `json:"domains"`
@@ -630,7 +630,7 @@ type CohostedDomains struct {
 
 // Company Who uses the address, from IP Company.
 type Company struct {
-	// Country ISO 3166 country code. Paid plans and the trial.
+	// Country ISO 3166 country code. On a paid plan or the trial.
 	Country *string `json:"country,omitempty"`
 
 	// Domain Their domain.
@@ -639,7 +639,7 @@ type Company struct {
 	// Name Who uses the address.
 	Name string `json:"name"`
 
-	// Type What kind of organization: hosting, isp, business, education, government. Paid plans and the trial.
+	// Type What kind of organization: hosting, isp, business, education, government. On a paid plan or the trial.
 	Type *string `json:"type,omitempty"`
 }
 
@@ -875,7 +875,7 @@ type DNSResolverDetail struct {
 	RecursionAvailable *bool `json:"recursion_available,omitempty"`
 }
 
-// DomainBacklinks The registered domains whose home page links to this one, how many and the 10 most popular. Paid plans and the trial.
+// DomainBacklinks The registered domains whose home page links to this one, how many and the 10 most popular. On a paid plan or the trial.
 type DomainBacklinks struct {
 	// Domains Up to 10 of them, the most popular first; `[]` when none does.
 	Domains []string `json:"domains"`
@@ -884,7 +884,7 @@ type DomainBacklinks struct {
 	Total int `json:"total"`
 }
 
-// DomainDNS Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+// DomainDNS Its records in Domain DNS, up to 100 a type. On a paid plan or the trial.
 type DomainDNS struct {
 	A     []DNSAddressRecord `json:"a"`
 	Aaaa  []DNSAddressRecord `json:"aaaa"`
@@ -914,7 +914,7 @@ type DomainIPRange struct {
 	Range string `json:"range"`
 }
 
-// DomainIPRanges The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+// DomainIPRanges The organization's IP ranges, from Domain IP Ranges. On a paid plan or the trial.
 type DomainIPRanges struct {
 	// Domain The organization's domain.
 	Domain string `json:"domain"`
@@ -934,19 +934,19 @@ type DomainIPRanges struct {
 
 // DomainLookupResponse What every database says about one domain.
 type DomainLookupResponse struct {
-	// Backlinks The registered domains whose home page links to this one, how many and the 10 most popular. Paid plans and the trial.
+	// Backlinks The registered domains whose home page links to this one, how many and the 10 most popular. On a paid plan or the trial.
 	Backlinks *DomainBacklinks `json:"backlinks,omitempty"`
 
 	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
 	CapReached *bool `json:"cap_reached,omitempty"`
 
-	// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. Paid plans and the trial.
+	// CohostedDomains From IP Hosted Domains: the other registered domains on the domain's first IPv4 address, how many and the 10 most popular. On a paid plan or the trial.
 	CohostedDomains *CohostedDomains `json:"cohosted_domains,omitempty"`
 
-	// Disposable `{}` when `is_disposable` is false. Paid plans and the trial.
+	// Disposable `{}` when `is_disposable` is false. On a paid plan or the trial.
 	Disposable *DisposableDetail `json:"disposable,omitempty"`
 
-	// DNS Its records in Domain DNS, up to 100 a type. Paid plans and the trial.
+	// DNS Its records in Domain DNS, up to 100 a type. On a paid plan or the trial.
 	DNS *DomainDNS `json:"dns,omitempty"`
 
 	// Domain The domain, lowercase and in punycode.
@@ -967,29 +967,29 @@ type DomainLookupResponse struct {
 	// HasNs NS records.
 	HasNs bool `json:"has_ns"`
 
-	// Hosting The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where it resolves to none. Paid plans and the trial.
+	// Hosting The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where it resolves to none. On a paid plan or the trial.
 	Hosting *[]DomainHost `json:"hosting,omitempty"`
 
-	// IPRanges The organization's IP ranges, from Domain IP Ranges. Paid plans and the trial.
+	// IPRanges The organization's IP ranges, from Domain IP Ranges. On a paid plan or the trial.
 	IPRanges *DomainIPRanges `json:"ip_ranges,omitempty"`
 
-	// IsDisposable In Disposable Domain. Paid plans and the trial.
+	// IsDisposable In Disposable Domain. On a paid plan or the trial.
 	IsDisposable *bool `json:"is_disposable,omitempty"`
 
 	// IsRegistered In Domain List: a registered domain.
 	IsRegistered bool `json:"is_registered"`
 
-	// Redirects The registered domains whose home page redirects to this one, how many and the 10 most popular. Paid plans and the trial.
+	// Redirects The registered domains whose home page redirects to this one, how many and the 10 most popular. On a paid plan or the trial.
 	Redirects *DomainRedirects `json:"redirects,omitempty"`
 
 	// TrialExpired On every answer to a key on the free plan, and on no other: `false` while its organization's trial of every field lasts, `true` once the answer has Unlimited's fields.
 	TrialExpired *bool `json:"trial_expired,omitempty"`
 
-	// Web What our crawl last read of the domain's own home page, every member empty where it holds none. Paid plans and the trial.
+	// Web What our crawl last read of the domain's own home page, every member empty where it holds none. On a paid plan or the trial.
 	Web *DomainWeb `json:"web,omitempty"`
 }
 
-// DomainRedirects The registered domains whose home page redirects to this one, how many and the 10 most popular. Paid plans and the trial.
+// DomainRedirects The registered domains whose home page redirects to this one, how many and the 10 most popular. On a paid plan or the trial.
 type DomainRedirects struct {
 	// Domains Up to 10 of them, the most popular first; `[]` when none does.
 	Domains []string `json:"domains"`
@@ -998,7 +998,7 @@ type DomainRedirects struct {
 	Total int `json:"total"`
 }
 
-// DomainWeb What our crawl last read of the domain's own home page, every member empty where it holds none. Paid plans and the trial.
+// DomainWeb What our crawl last read of the domain's own home page, every member empty where it holds none. On a paid plan or the trial.
 type DomainWeb struct {
 	// Description An English page's description.
 	Description string `json:"description"`
@@ -1086,10 +1086,11 @@ type EntitlementPlan struct {
 	// Key The plan the organization is on, as an identifier that is never
 	// renamed or reused: `free` for the free plan, or a paid plan's key.
 	// Compare against it and show `name`. On `free`, usage counts its
-	// trial, the lookups answered with every field.
+	// trial, the lookups answered with every field. The Data plan is a key
+	// per quota, `data_1` to `data_7`, each named Data.
 	//
 	//
-	// Example: max
+	// Example: data_4
 	Key string `json:"key"`
 
 	// Name The plan's name, as the site and console show it: `Unlimited` for
@@ -1097,7 +1098,7 @@ type EntitlementPlan struct {
 	// plan's name can change, and its key never does.
 	//
 	//
-	// Example: Max
+	// Example: Data
 	Name string `json:"name"`
 
 	// Tier The field tier, which decides how much of a lookup answer comes
@@ -1132,10 +1133,12 @@ type EntitlementUsage struct {
 	// API gates on, and it can lag by a few seconds.
 	Requests int64 `json:"requests"`
 
-	// WindowEnd When the allowance next resets.
+	// WindowEnd When the allowance next resets. On the free plan, when its trial
+	// ends, which it does once.
 	WindowEnd time.Time `json:"window_end"`
 
-	// WindowStart When the current allowance period began.
+	// WindowStart When the current allowance period began. On the free plan, when
+	// its trial began, or now before a first lookup starts it.
 	WindowStart time.Time `json:"window_start"`
 }
 
@@ -1146,7 +1149,7 @@ type Error struct {
 	Rc string `json:"rc"`
 }
 
-// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. Paid plans and the trial.
+// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. On a paid plan or the trial.
 type HostedDomains struct {
 	// Domains Up to 10 of them, the most popular first; `[]` when none does.
 	Domains *[]string `json:"domains,omitempty"`
@@ -1167,10 +1170,10 @@ type Identity struct {
 
 // Location Where the address is.
 type Location struct {
-	// AccuracyRadius Radius in km holding the true location with 67% confidence. Paid plans and the trial.
+	// AccuracyRadius Radius in km holding the true location with 67% confidence. On a paid plan or the trial.
 	AccuracyRadius *int `json:"accuracy_radius,omitempty"`
 
-	// City City. Paid plans and the trial.
+	// City City. On a paid plan or the trial.
 	City *string `json:"city,omitempty"`
 
 	// Continent Continent code.
@@ -1194,7 +1197,7 @@ type Location struct {
 	// CurrencySymbol Currency symbol.
 	CurrencySymbol string `json:"currency_symbol"`
 
-	// DmaCode US TV market (DMA) code. Paid plans and the trial.
+	// DmaCode US TV market (DMA) code. On a paid plan or the trial.
 	DmaCode *string `json:"dma_code,omitempty"`
 
 	// FlagEmoji The country's flag.
@@ -1203,25 +1206,25 @@ type Location struct {
 	// FlagUnicode Its code points, `U+1F1E6 U+1F1F9`.
 	FlagUnicode string `json:"flag_unicode"`
 
-	// GeonameID GeoNames ID of the city. Paid plans and the trial.
+	// GeonameID GeoNames ID of the city. On a paid plan or the trial.
 	GeonameID *string `json:"geoname_id,omitempty"`
 
-	// LastChanged The day the range's location last changed. Paid plans and the trial.
+	// LastChanged The day the range's location last changed. On a paid plan or the trial.
 	LastChanged *string `json:"last_changed,omitempty"`
 
-	// Latitude Latitude of the city. Paid plans and the trial.
+	// Latitude Latitude of the city. On a paid plan or the trial.
 	Latitude *float32 `json:"latitude,omitempty"`
 
-	// Longitude Longitude of the city. Paid plans and the trial.
+	// Longitude Longitude of the city. On a paid plan or the trial.
 	Longitude *float32 `json:"longitude,omitempty"`
 
-	// PostalCode Postal code. Paid plans and the trial.
+	// PostalCode Postal code. On a paid plan or the trial.
 	PostalCode *string `json:"postal_code,omitempty"`
 
-	// Region Region (state or province). Paid plans and the trial.
+	// Region Region (state or province). On a paid plan or the trial.
 	Region *string `json:"region,omitempty"`
 
-	// RegionCode ISO 3166-2 region code. Paid plans and the trial.
+	// RegionCode ISO 3166-2 region code. On a paid plan or the trial.
 	RegionCode *string `json:"region_code,omitempty"`
 
 	// Timezone IANA timezone.
@@ -1242,34 +1245,34 @@ type LookupResponse struct {
 	// Asn The network announcing the address, from IP ASN.
 	Asn Asn `json:"asn"`
 
-	// Bittorrent `{}` when `is_bittorrent` is false. Paid plans and the trial.
+	// Bittorrent `{}` when `is_bittorrent` is false. On a paid plan or the trial.
 	Bittorrent *BitTorrentDetail `json:"bittorrent,omitempty"`
 
-	// Bot `{}` when `is_bot` is false. Paid plans and the trial.
+	// Bot `{}` when `is_bot` is false. On a paid plan or the trial.
 	Bot *BotDetail `json:"bot,omitempty"`
 
 	// CapReached On every answer to a key on a paid plan, and on no other: `false` while the answer has every field, `true` once its organization's overage cap is reached and the answer has Unlimited's. Lookups answered past the cap are not billed; raising or removing the cap in Billing turns it `false` again.
 	CapReached *bool `json:"cap_reached,omitempty"`
 
-	// Carrier `{}` when `is_carrier` is false. Paid plans and the trial.
+	// Carrier `{}` when `is_carrier` is false. On a paid plan or the trial.
 	Carrier *CarrierDetail `json:"carrier,omitempty"`
 
-	// Cdn `{}` when `is_cdn` is false. Paid plans and the trial.
+	// Cdn `{}` when `is_cdn` is false. On a paid plan or the trial.
 	Cdn *ClassDetail `json:"cdn,omitempty"`
 
 	// Company Who uses the address, from IP Company.
 	Company Company `json:"company"`
 
-	// Dcproxy `{}` when `is_dcproxy` is false. Paid plans and the trial.
+	// Dcproxy `{}` when `is_dcproxy` is false. On a paid plan or the trial.
 	Dcproxy *ProxyDetail `json:"dcproxy,omitempty"`
 
-	// DNSResolver `{}` when `is_dns_resolver` is false. Paid plans and the trial.
+	// DNSResolver `{}` when `is_dns_resolver` is false. On a paid plan or the trial.
 	DNSResolver *DNSResolverDetail `json:"dns_resolver,omitempty"`
 
-	// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. Paid plans and the trial.
+	// HostedDomains From IP Hosted Domains: how many registered domains resolve to the address, and the 10 most popular. Its database lists up to 1,000 an address. On a paid plan or the trial.
 	HostedDomains *HostedDomains `json:"hosted_domains,omitempty"`
 
-	// Hosting `{}` when `is_hosting` is false. Paid plans and the trial.
+	// Hosting `{}` when `is_hosting` is false. On a paid plan or the trial.
 	Hosting *ClassDetail `json:"hosting,omitempty"`
 
 	// Hostname The name the address's reverse DNS (PTR) record points to in IP RDNS, empty when it has none.
@@ -1293,28 +1296,28 @@ type LookupResponse struct {
 	// IsCarrier In Carrier IP: a mobile carrier's address space.
 	IsCarrier bool `json:"is_carrier"`
 
-	// IsCdn In CDN IP: a content delivery network. Paid plans and the trial.
+	// IsCdn In CDN IP: a content delivery network. On a paid plan or the trial.
 	IsCdn *bool `json:"is_cdn,omitempty"`
 
-	// IsDcproxy In Datacenter Proxy IP's 90-day window. Paid plans and the trial.
+	// IsDcproxy In Datacenter Proxy IP's 90-day window. On a paid plan or the trial.
 	IsDcproxy *bool `json:"is_dcproxy,omitempty"`
 
 	// IsDNSResolver In DNS Resolver IP: an open DNS resolver answered here.
 	IsDNSResolver bool `json:"is_dns_resolver"`
 
-	// IsHosting In Hosting IP: a hosting or cloud network. Paid plans and the trial.
+	// IsHosting In Hosting IP: a hosting or cloud network. On a paid plan or the trial.
 	IsHosting *bool `json:"is_hosting,omitempty"`
 
-	// IsMobproxy In Mobile Proxy IP's 90-day window. Paid plans and the trial.
+	// IsMobproxy In Mobile Proxy IP's 90-day window. On a paid plan or the trial.
 	IsMobproxy *bool `json:"is_mobproxy,omitempty"`
 
-	// IsPubproxy In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid plans and the trial.
+	// IsPubproxy In Public Proxy IP: a public proxy listens here, or its traffic left from here. On a paid plan or the trial.
 	IsPubproxy *bool `json:"is_pubproxy,omitempty"`
 
 	// IsRelay In Relay IP: an anonymizing relay such as iCloud Private Relay.
 	IsRelay bool `json:"is_relay"`
 
-	// IsResproxy In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the trial.
+	// IsResproxy In Residential Proxy IP's 90-day window: a residential proxy exit. On a paid plan or the trial.
 	IsResproxy *bool `json:"is_resproxy,omitempty"`
 
 	// IsSatellite In Satellite IP: a satellite operator's address space.
@@ -1329,7 +1332,7 @@ type LookupResponse struct {
 	// IsTor In Tor IP: a Tor exit.
 	IsTor bool `json:"is_tor"`
 
-	// IsVpn In VPN IP: a VPN service's server. Paid plans and the trial.
+	// IsVpn In VPN IP: a VPN service's server. On a paid plan or the trial.
 	IsVpn *bool `json:"is_vpn,omitempty"`
 
 	// IsWeb In Web IP: a web server answered here on port 80 or 443.
@@ -1338,28 +1341,28 @@ type LookupResponse struct {
 	// Location Where the address is.
 	Location Location `json:"location"`
 
-	// Mobproxy `{}` when `is_mobproxy` is false. Paid plans and the trial.
+	// Mobproxy `{}` when `is_mobproxy` is false. On a paid plan or the trial.
 	Mobproxy *ProxyDetail `json:"mobproxy,omitempty"`
 
-	// Pubproxy `{}` when `is_pubproxy` is false. Paid plans and the trial.
+	// Pubproxy `{}` when `is_pubproxy` is false. On a paid plan or the trial.
 	Pubproxy *PubproxyDetail `json:"pubproxy,omitempty"`
 
 	// Relay Relay IP's row, `{}` when `is_relay` is false.
 	Relay ClassDetail `json:"relay"`
 
-	// Resproxy `{}` when `is_resproxy` is false. Paid plans and the trial.
+	// Resproxy `{}` when `is_resproxy` is false. On a paid plan or the trial.
 	Resproxy *ProxyDetail `json:"resproxy,omitempty"`
 
-	// Rwhois IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+	// Rwhois IP RWHOIS's most specific network covering the address. On a paid plan or the trial.
 	Rwhois *Rwhois `json:"rwhois,omitempty"`
 
-	// Satellite `{}` when `is_satellite` is false. Paid plans and the trial.
+	// Satellite `{}` when `is_satellite` is false. On a paid plan or the trial.
 	Satellite *SatelliteDetail `json:"satellite,omitempty"`
 
-	// SMTP `{}` when `is_smtp` is false. Paid plans and the trial.
+	// SMTP `{}` when `is_smtp` is false. On a paid plan or the trial.
 	SMTP *SMTPDetail `json:"smtp,omitempty"`
 
-	// SSH `{}` when `is_ssh` is false. Paid plans and the trial.
+	// SSH `{}` when `is_ssh` is false. On a paid plan or the trial.
 	SSH *SSHDetail `json:"ssh,omitempty"`
 
 	// Tor Tor IP's row, `{}` when `is_tor` is false.
@@ -1371,13 +1374,13 @@ type LookupResponse struct {
 	// UserAgent When the request sent `user_agent`, with every field, the agent it names and whether this address bears it out. Absent otherwise.
 	UserAgent *UserAgentVerdict `json:"user_agent,omitempty"`
 
-	// Vpn VPN IP's row, `{}` when `is_vpn` is false. Paid plans and the trial.
+	// Vpn VPN IP's row, `{}` when `is_vpn` is false. On a paid plan or the trial.
 	Vpn *ClassDetail `json:"vpn,omitempty"`
 
-	// Web A row per port that answered, lowest first; `[]` when `is_web` is false. Paid plans and the trial.
+	// Web A row per port that answered, lowest first; `[]` when `is_web` is false. On a paid plan or the trial.
 	Web *[]WebDetail `json:"web,omitempty"`
 
-	// Whois IP Whois's most specific record covering the address. Paid plans and the trial.
+	// Whois IP Whois's most specific record covering the address. On a paid plan or the trial.
 	Whois *Whois `json:"whois,omitempty"`
 }
 
@@ -1470,7 +1473,7 @@ type RevokeRequest struct {
 	Token string `json:"token"`
 }
 
-// Rwhois IP RWHOIS's most specific network covering the address. Paid plans and the trial.
+// Rwhois IP RWHOIS's most specific network covering the address. On a paid plan or the trial.
 type Rwhois struct {
 	// AbuseEmail Its abuse contact.
 	AbuseEmail string `json:"abuse_email"`
@@ -1680,7 +1683,7 @@ type WebDetail struct {
 	TLSVersion string `json:"tls_version"`
 }
 
-// Whois IP Whois's most specific record covering the address. Paid plans and the trial.
+// Whois IP Whois's most specific record covering the address. On a paid plan or the trial.
 type Whois struct {
 	// AbuseEmail The record's abuse contact.
 	AbuseEmail string `json:"abuse_email"`
