@@ -47,6 +47,10 @@ func (c *Client) MyEntitlement(ctx context.Context, opts ...LookupOption) (*Enti
 	if err := call.refused(); err != nil {
 		return nil, err
 	}
+	// Accepted by type, since UserAgent is a LookupOption, and meaningless here.
+	if call.agent != "" {
+		return nil, &Error{Kind: KindBadRequest, Message: "MyEntitlement takes no user agent"}
+	}
 	ctx = call.carry(ctx)
 	return withRetry(ctx, call.retries, func() (*Entitlement, error) {
 		return decodeAnswer[Entitlement](c.api.MyEntitlement(ctx))

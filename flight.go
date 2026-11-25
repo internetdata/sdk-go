@@ -3,7 +3,8 @@ package internetdata
 import "sync"
 
 // flights is the board of addresses with a request in flight, so concurrent
-// misses share one. A cache that checks, misses and then fetches let every
+// misses share one. A flight is keyed as the cache is, on the address and the
+// user agent sent with it, so only misses for the same pair share a request. A cache that checks, misses and then fetches let every
 // caller missing in the same moment fetch too: a middleware answering several
 // requests from one visitor at once paid for the same lookup several times.
 //
@@ -12,7 +13,7 @@ import "sync"
 // decides that inside DoChan and runs the function on a goroutine of its own.
 type flights struct {
 	mu sync.Mutex
-	m  map[string]*flight
+	m  map[answerKey]*flight
 }
 
 // flight is one address's request. Every caller awaiting it reads the answer
@@ -25,22 +26,22 @@ type flight struct {
 
 // board joins the flight for each address that has one and starts one for each
 // that has none, which the caller then sends and lands.
-func (f *flights) board(ips []string) (led, joined map[string]*flight) {
-	led = make(map[string]*flight, len(ips))
-	joined = make(map[string]*flight)
+func (f *flights) board(keys []answerKey) (led, joined map[answerKey]*flight) {
+	led = make(map[answerKey]*flight, len(keys))
+	joined = make(map[answerKey]*flight)
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.m == nil {
-		f.m = make(map[string]*flight)
+		f.m = make(map[answerKey]*flight)
 	}
-	for _, ip := range ips {
-		if fl, ok := f.m[ip]; ok {
-			joined[ip] = fl
+	for _, key := range keys {
+		if fl, ok := f.m[key]; ok {
+			joined[key] = fl
 			continue
 		}
 		fl := &flight{done: make(chan struct{})}
-		f.m[ip] = fl
-		led[ip] = fl
+		f.m[key] = fl
+		led[key] = fl
 	}
 	return led, joined
 }
@@ -48,10 +49,10 @@ func (f *flights) board(ips []string) (led, joined map[string]*flight) {
 // land hands every waiter the answer and takes the address off the board. Cache
 // a served answer FIRST: a caller that missed the cache just before it landed
 // finds no flight after this, and reads the cache again before it sends.
-func (f *flights) land(ip string, fl *flight, result *Result, err error) {
+func (f *flights) land(key answerKey, fl *flight, result *Result, err error) {
 	f.mu.Lock()
-	if f.m[ip] == fl {
-		delete(f.m, ip)
+	if f.m[key] == fl {
+		delete(f.m, key)
 	}
 	f.mu.Unlock()
 	fl.result, fl.err = result, err

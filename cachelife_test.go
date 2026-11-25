@@ -52,7 +52,7 @@ func TestEachAnswerIsCachedAsLongAsItsFlagsAllow(t *testing.T) {
 				t.Fatalf("%s(%s): %v", how, tc.ip, err)
 			}
 
-			expires, ok := client.cache.expiry(tc.ip)
+			expires, ok := client.cache.expiry(answerKey{ip: tc.ip})
 			if !ok {
 				t.Fatalf("%s: %s under a %s TTL was not cached", how, tc.ip, tc.ttl)
 			}
@@ -90,9 +90,9 @@ func TestAReducedAnswerPastItsLifeIsAskedForAgain(t *testing.T) {
 	if _, err := client.Lookup(t.Context(), "45.83.91.4"); err != nil {
 		t.Fatalf("Lookup: %v", err)
 	}
-	held, _ := client.cache.lru.Peek("45.83.91.4")
+	held, _ := client.cache.lru.Peek(answerKey{ip: "45.83.91.4"})
 	held.expires = time.Now().Add(-time.Millisecond)
-	client.cache.lru.Add("45.83.91.4", held)
+	client.cache.lru.Add(answerKey{ip: "45.83.91.4"}, held)
 	if _, err := client.Lookup(t.Context(), "45.83.91.4"); err != nil {
 		t.Fatalf("Lookup: %v", err)
 	}

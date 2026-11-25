@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/netip"
 	"net/url"
@@ -136,6 +137,10 @@ func New(opts ...Option) (*Client, error) {
 // Anything but an IP address is refused before sending, as a bad_request: the
 // API answers an AS or a domain at the same path, in a shape this call cannot
 // read, so LookupASN and LookupDomain are how to ask for those.
+//
+// With UserAgent, the answer is cached and shared on the address and that
+// agent together: apart from the address's plain answer and from another
+// agent's. A bogon's answer carries no UserAgent verdict.
 func (c *Client) Lookup(ctx context.Context, ip string, opts ...LookupOption) (*Result, error) {
 	call := c.callConfig()
 	for _, opt := range opts {
@@ -152,20 +157,21 @@ func (c *Client) Lookup(ctx context.Context, ip string, opts ...LookupOption) (*
 	if IsBogon(ip) {
 		return bogonResult(ip), nil
 	}
+	key := answerKey{ip: ip, agent: call.agent}
 	ctx = call.carry(ctx)
 	if c.cache == nil {
-		return c.serve(ctx, ip, call.retries)
+		return c.serve(ctx, key, call.retries)
 	}
-	if hit, ok := c.cache.Get(ip); ok {
+	if hit, ok := c.cache.Get(key); ok {
 		return &hit, nil
 	}
 
-	led, joined := c.flights.board([]string{ip})
-	fl, leads := led[ip]
+	led, joined := c.flights.board([]answerKey{key})
+	fl, leads := led[key]
 	if leads {
-		go c.fly(context.WithoutCancel(ctx), ip, fl, call.retries)
+		go c.fly(context.WithoutCancel(ctx), key, fl, call.retries)
 	} else {
-		fl = joined[ip]
+		fl = joined[key]
 	}
 	select {
 	case <-fl.done:
@@ -178,21 +184,22 @@ func (c *Client) Lookup(ctx context.Context, ip string, opts ...LookupOption) (*
 // fly sends one address's request and lands it. A request that landed between
 // the caller's miss and its boarding cached its answer first, so it is found
 // here rather than asked for again.
-func (c *Client) fly(ctx context.Context, ip string, fl *flight, retries int) {
-	if hit, ok := c.cache.Get(ip); ok {
-		c.flights.land(ip, fl, &hit, nil)
+func (c *Client) fly(ctx context.Context, key answerKey, fl *flight, retries int) {
+	if hit, ok := c.cache.Get(key); ok {
+		c.flights.land(key, fl, &hit, nil)
 		return
 	}
-	result, err := c.serve(ctx, ip, retries)
+	result, err := c.serve(ctx, key, retries)
 	if err == nil {
-		c.cache.Add(ip, *result)
+		c.cache.Add(key, *result)
 	}
-	c.flights.land(ip, fl, result, err)
+	c.flights.land(key, fl, result, err)
 }
 
-func (c *Client) serve(ctx context.Context, ip string, retries int) (*Result, error) {
+func (c *Client) serve(ctx context.Context, key answerKey, retries int) (*Result, error) {
+	params := &api.LookupIPParams{UserAgent: agentParam(key.agent)}
 	return withRetry(ctx, retries, func() (*Result, error) {
-		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupIP(ctx, ip, nil))
+		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupIP(ctx, key.ip, params))
 		if err != nil {
 			return nil, err
 		}
@@ -219,8 +226,9 @@ func (c *Client) MyIP(ctx context.Context, opts ...LookupOption) (*Result, error
 		return nil, err
 	}
 	ctx = call.carry(ctx)
+	params := &api.LookupMyIPParams{UserAgent: agentParam(call.agent)}
 	return withRetry(ctx, call.retries, func() (*Result, error) {
-		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupMyIP(ctx, nil))
+		answer, err := decodeAnswer[api.LookupResponse](c.api.LookupMyIP(ctx, params))
 		if err != nil {
 			return nil, err
 		}
@@ -291,6 +299,10 @@ func (c *Client) LookupDomain(
 // its lookup would be. The returned error is reserved for the batch as a
 // whole failing: the context canceled, or a Concurrency below 1 or negative
 // Retries, refused before any request.
+//
+// UserAgents sends each address's agent, and UserAgent one for every address
+// UserAgents does not name. Each address's answer is cached and shared on the
+// address and its agent together, as Lookup's is.
 func (c *Client) LookupBatch(
 	ctx context.Context, ips []string, opts ...BatchOption,
 ) (map[string]BatchResult, error) {
@@ -309,48 +321,83 @@ func (c *Client) LookupBatch(
 	}
 	ctx = call.carry(ctx)
 
-	// An IPv4-mapped address is looked up as the IPv4 address it carries, once,
+	// An IPv4-mapped address is looked up as the IPv4 address it carries, with
+	// the agent named for the address as the caller passed it, once per pair,
 	// and its answer keyed as the caller passed it.
 	asked := dedupe(ips)
-	wire := make([]string, len(asked))
-	mapped := false
+	keys := make([]answerKey, len(asked))
 	for i, ip := range asked {
-		wire[i] = unmapped(ip)
-		mapped = mapped || wire[i] != ip
+		keys[i] = answerKey{ip: unmapped(ip), agent: call.agentFor(ip)}
 	}
-	unique := asked
-	if mapped {
-		unique = dedupe(wire)
+	parts := rounds(keys)
+	if len(parts) == 0 {
+		parts = [][]answerKey{nil}
 	}
-	results, err := c.lookupBatch(ctx, call, unique)
-	if !mapped {
-		return results, err
+	results := make(map[answerKey]BatchResult, len(keys))
+	var err error
+	for _, part := range parts {
+		var answers map[answerKey]BatchResult
+		answers, err = c.lookupBatch(ctx, call, part)
+		maps.Copy(results, answers)
+		if err != nil {
+			break
+		}
 	}
 	out := make(map[string]BatchResult, len(asked))
 	for i, ip := range asked {
-		if answer, ok := results[wire[i]]; ok {
+		if answer, ok := results[keys[i]]; ok {
 			out[ip] = answer
 		}
 	}
 	return out, err
 }
 
-// lookupBatch answers LookupBatch's addresses, each already the form it is sent in.
-func (c *Client) lookupBatch(ctx context.Context, call callConfig, unique []string) (map[string]BatchResult, error) {
-	results := make(map[string]BatchResult, len(unique))
-	var pending []string
-	for _, ip := range unique {
-		if IsBogon(ip) {
-			results[ip] = BatchResult{Result: bogonResult(ip)}
+// rounds splits a batch's pairs so that no round holds one address twice, once
+// each pair is deduplicated: a request keys user_agents by address, so 8.8.8.8
+// and ::ffff:8.8.8.8 passed with different agents take two. Almost every batch
+// is one round.
+func rounds(keys []answerKey) [][]answerKey {
+	var parts [][]answerKey
+	var held []map[string]bool
+	seen := make(map[answerKey]bool, len(keys))
+	for _, key := range keys {
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		i := 0
+		for i < len(parts) && held[i][key.ip] {
+			i++
+		}
+		if i == len(parts) {
+			parts = append(parts, nil)
+			held = append(held, map[string]bool{})
+		}
+		parts[i] = append(parts[i], key)
+		held[i][key.ip] = true
+	}
+	return parts
+}
+
+// lookupBatch answers LookupBatch's pairs, each address already the form it is
+// sent in and none twice.
+func (c *Client) lookupBatch(
+	ctx context.Context, call callConfig, unique []answerKey,
+) (map[answerKey]BatchResult, error) {
+	results := make(map[answerKey]BatchResult, len(unique))
+	var pending []answerKey
+	for _, key := range unique {
+		if IsBogon(key.ip) {
+			results[key] = BatchResult{Result: bogonResult(key.ip)}
 			continue
 		}
 		if c.cache != nil {
-			if hit, ok := c.cache.Get(ip); ok {
-				results[ip] = BatchResult{Result: &hit}
+			if hit, ok := c.cache.Get(key); ok {
+				results[key] = BatchResult{Result: &hit}
 				continue
 			}
 		}
-		pending = append(pending, ip)
+		pending = append(pending, key)
 	}
 	if c.cache != nil {
 		c.shareBatch(ctx, call, pending, results)
@@ -363,7 +410,7 @@ func (c *Client) lookupBatch(ctx context.Context, call callConfig, unique []stri
 	// One map of answers per chunk, written by index so the workers need no
 	// lock, and merged afterwards.
 	chunks := chunk(pending, batchMax)
-	answers := make([]map[string]BatchResult, len(chunks))
+	answers := make([]map[answerKey]BatchResult, len(chunks))
 	group := new(errgroup.Group)
 	group.SetLimit(call.concurrency)
 	for i, addrs := range chunks {
@@ -375,9 +422,7 @@ func (c *Client) lookupBatch(ctx context.Context, call callConfig, unique []stri
 	// Every unit records its own outcome and returns nil, so this only waits.
 	_ = group.Wait()
 	for _, chunkAnswers := range answers {
-		for ip, answer := range chunkAnswers {
-			results[ip] = answer
-		}
+		maps.Copy(results, chunkAnswers)
 	}
 
 	if err := ctx.Err(); err != nil {
@@ -391,20 +436,22 @@ func (c *Client) lookupBatch(ctx context.Context, call callConfig, unique []stri
 // run detached from ctx, as a Lookup's request does, so a batch given up part
 // way fails no Lookup that joined it; ctx ends only this call's wait, and an
 // address still unanswered then carries that error.
-func (c *Client) shareBatch(ctx context.Context, call callConfig, pending []string, results map[string]BatchResult) {
+func (c *Client) shareBatch(
+	ctx context.Context, call callConfig, pending []answerKey, results map[answerKey]BatchResult,
+) {
 	led, joined := c.flights.board(pending)
-	var send []string
-	for _, ip := range pending {
-		fl, ok := led[ip]
+	var send []answerKey
+	for _, key := range pending {
+		fl, ok := led[key]
 		if !ok {
 			continue
 		}
 		// Landed since the cache was read, and cached before it landed.
-		if hit, ok := c.cache.Get(ip); ok {
-			c.flights.land(ip, fl, &hit, nil)
+		if hit, ok := c.cache.Get(key); ok {
+			c.flights.land(key, fl, &hit, nil)
 			continue
 		}
-		send = append(send, ip)
+		send = append(send, key)
 	}
 
 	detached := context.WithoutCancel(ctx)
@@ -413,8 +460,8 @@ func (c *Client) shareBatch(ctx context.Context, call callConfig, pending []stri
 		group.SetLimit(call.concurrency)
 		for _, addrs := range chunk(send, batchMax) {
 			group.Go(func() error {
-				for ip, answer := range c.lookupChunk(detached, addrs, call.retries) {
-					c.flights.land(ip, led[ip], answer.Result, answer.Err)
+				for key, answer := range c.lookupChunk(detached, addrs, call.retries) {
+					c.flights.land(key, led[key], answer.Result, answer.Err)
 				}
 				return nil
 			})
@@ -422,17 +469,17 @@ func (c *Client) shareBatch(ctx context.Context, call callConfig, pending []stri
 		_ = group.Wait()
 	}()
 
-	for _, ip := range pending {
-		fl, ok := led[ip]
+	for _, key := range pending {
+		fl, ok := led[key]
 		if !ok {
-			fl = joined[ip]
+			fl = joined[key]
 		}
 		select {
 		case <-fl.done:
 			result, err := fl.answer()
-			results[ip] = BatchResult{Result: result, Err: err}
+			results[key] = BatchResult{Result: result, Err: err}
 		case <-ctx.Done():
-			results[ip] = BatchResult{Err: errorFromTransport(ctx.Err())}
+			results[key] = BatchResult{Err: errorFromTransport(ctx.Err())}
 		}
 	}
 }
@@ -441,41 +488,57 @@ func (c *Client) shareBatch(ctx context.Context, call callConfig, pending []stri
 // addresses it was asked about. A chunk-level failure - the call refused, the
 // transport failing, the retries exhausted - becomes every address's error,
 // exactly as it would have been had each been looked up alone.
-func (c *Client) lookupChunk(ctx context.Context, addrs []string, retries int) map[string]BatchResult {
-	out := make(map[string]BatchResult, len(addrs))
+//
+// user_agents goes only with a chunk where some address carries an agent,
+// keyed by the address as ips sends it, and never as an empty map.
+func (c *Client) lookupChunk(ctx context.Context, keys []answerKey, retries int) map[answerKey]BatchResult {
+	out := make(map[answerKey]BatchResult, len(keys))
+	ips := make([]string, len(keys))
+	request := api.BatchLookupRequest{Ips: &ips}
+	agents := make(map[string]string)
+	for i, key := range keys {
+		ips[i] = key.ip
+		if key.agent != "" {
+			agents[key.ip] = key.agent
+		}
+	}
+	if len(agents) > 0 {
+		request.UserAgents = &agents
+	}
 	body, err := withRetry(ctx, retries, func() (*batchAnswer, error) {
-		return decodeBatch(c.api.LookupBatch(ctx, api.BatchLookupRequest{Ips: &addrs}))
+		return decodeBatch(c.api.LookupBatch(ctx, request))
 	})
 	if err != nil {
-		for _, ip := range addrs {
-			out[ip] = BatchResult{Err: err}
+		for _, key := range keys {
+			out[key] = BatchResult{Err: err}
 		}
 		return out
 	}
-	for _, ip := range addrs {
+	for _, key := range keys {
+		ip := key.ip
 		if raw, ok := body.Results[ip]; ok {
 			served, ok := decodeComplete[api.LookupResponse](raw)
 			if !ok {
-				out[ip] = BatchResult{Err: unreadable(body.status, "the batch answer for "+ip+" was not a lookup answer")}
+				out[key] = BatchResult{Err: unreadable(body.status, "the batch answer for "+ip+" was not a lookup answer")}
 				continue
 			}
 			result := &Result{LookupResponse: *served}
 			if c.cache != nil {
-				c.cache.Add(ip, *result)
+				c.cache.Add(key, *result)
 			}
-			out[ip] = BatchResult{Result: result}
+			out[key] = BatchResult{Result: result}
 			continue
 		}
 		if raw, ok := body.Errors[ip]; ok {
 			failed, ok := decodeComplete[api.BatchLookupError](raw)
 			if !ok {
-				out[ip] = BatchResult{Err: unreadable(body.status, "the batch error for "+ip+" was not one")}
+				out[key] = BatchResult{Err: unreadable(body.status, "the batch error for "+ip+" was not one")}
 				continue
 			}
-			out[ip] = BatchResult{Err: errorFromEntry(failed.Status, failed.Error)}
+			out[key] = BatchResult{Err: errorFromEntry(failed.Status, failed.Error)}
 			continue
 		}
-		out[ip] = BatchResult{Err: unreadable(body.status, "the batch answer did not include "+ip)}
+		out[key] = BatchResult{Err: unreadable(body.status, "the batch answer did not include "+ip)}
 	}
 	return out
 }
@@ -680,6 +743,25 @@ func Timeout(d time.Duration) LookupOption {
 	return timeoutOption(d)
 }
 
+// UserAgent sends the User-Agent header of the request you are deciding on with
+// this call. With every field, on a paid plan or the trial, the answer then
+// carries UserAgent: the agent it names, and whether this address bears that
+// out. Unlimited never answers one. An empty agent is none; a long one is sent
+// whole, and the API reads its first 1024 characters.
+//
+// On a batch it is every address's agent, except one UserAgents names.
+// MyEntitlement refuses one with a bad_request *Error.
+func UserAgent(agent string) LookupOption {
+	return userAgentOption(agent)
+}
+
+// UserAgents sends each address's user agent with this batch, keyed by the
+// address as you pass it to LookupBatch. An empty agent is none, and an
+// address it does not name takes UserAgent's, if any.
+func UserAgents(agents map[string]string) BatchOption {
+	return userAgentsOption(agents)
+}
+
 type config struct {
 	apiKey      string
 	baseURL     string
@@ -694,6 +776,10 @@ type config struct {
 type callConfig struct {
 	retries     int
 	concurrency int
+	// agent is the user agent sent with the call, empty for none; on a batch,
+	// every address's that agents does not name.
+	agent  string
+	agents map[string]string
 	// timeout is meaningful only when timed is set; otherwise the HTTP client's
 	// own Timeout applies.
 	timeout time.Duration
@@ -708,6 +794,23 @@ func (c callConfig) refused() error {
 		return &Error{Kind: KindBadRequest, Message: fmt.Sprintf("retries cannot be negative, got %d", c.retries)}
 	}
 	return nil
+}
+
+// agentFor is the user agent a batch sends with ip, as the caller passed it.
+func (c callConfig) agentFor(ip string) string {
+	if agent := c.agents[ip]; agent != "" {
+		return agent
+	}
+	return c.agent
+}
+
+// agentParam is the user_agent query parameter, absent for no agent: the API
+// reads user_agent= as none too, but a request without it is the plain one.
+func agentParam(agent string) *string {
+	if agent == "" {
+		return nil
+	}
+	return &agent
 }
 
 func (c *Client) callConfig() callConfig {
@@ -736,6 +839,15 @@ type timeoutOption time.Duration
 
 func (o timeoutOption) applyLookup(c *callConfig) { c.timeout, c.timed = time.Duration(o), true }
 func (o timeoutOption) applyBatch(c *callConfig)  { c.timeout, c.timed = time.Duration(o), true }
+
+type userAgentOption string
+
+func (o userAgentOption) applyLookup(c *callConfig) { c.agent = string(o) }
+func (o userAgentOption) applyBatch(c *callConfig)  { c.agent = string(o) }
+
+type userAgentsOption map[string]string
+
+func (o userAgentsOption) applyBatch(c *callConfig) { c.agents = o }
 
 type timeoutKey struct{}
 
@@ -875,15 +987,15 @@ func dedupe(ips []string) []string {
 	return unique
 }
 
-// chunk splits addresses into consecutive slices of at most size each.
-func chunk(ips []string, size int) [][]string {
-	var out [][]string
-	for len(ips) > size {
-		out = append(out, ips[:size])
-		ips = ips[size:]
+// chunk splits a batch into consecutive slices of at most size each.
+func chunk[T any](items []T, size int) [][]T {
+	var out [][]T
+	for len(items) > size {
+		out = append(out, items[:size])
+		items = items[size:]
 	}
-	if len(ips) > 0 {
-		out = append(out, ips)
+	if len(items) > 0 {
+		out = append(out, items)
 	}
 	return out
 }
