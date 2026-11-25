@@ -81,8 +81,8 @@ Same answer `Lookup` would give for that address, and the same cost against your
 
 ```go
 acct, err := client.MyEntitlement(ctx)
-fmt.Println(acct.Plan.Key)         // max
-fmt.Println(acct.Plan.Name)        // Max, the name to show
+fmt.Println(acct.Plan.Key)         // data_4
+fmt.Println(acct.Plan.Name)        // Data, the name to show
 fmt.Println(acct.Usage.Requests)   // 580
 fmt.Println(acct.Usage.WindowEnd)  // when the allowance resets
 ```
