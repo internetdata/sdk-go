@@ -94,6 +94,14 @@ type Options[Req any] struct {
 	Skip func(request Req) bool
 	// Logger receives the warnings. Defaults to slog.Default().
 	Logger *slog.Logger
+	// AllowBots sends the request's own User-Agent header with its lookup,
+	// and never refuses a request whose answer's UserAgent verdict is
+	// verified, whatever BlockCondition matches; the answer is still
+	// attached. An absent or empty header sends none. A keyless client, or a
+	// free key past its trial, is never answered a verdict, so nothing is let
+	// through and OnMissingField says so once. Off by default, so the cache
+	// holds one answer per address rather than one per agent.
+	AllowBots bool
 }
 
 // Core is the framework-agnostic half of a middleware.
@@ -106,6 +114,7 @@ type Core[Req any] struct {
 	failClosed     bool
 	onMissingField MissingFieldAction
 	skip           func(Req) bool
+	allowBots      bool
 	warn           func(string)
 }
 
@@ -167,6 +176,7 @@ func New[Req any](options Options[Req], defaultIPSelector IPSelector[Req]) (*Cor
 		failClosed:     options.FailClosed,
 		onMissingField: action,
 		skip:           options.Skip,
+		allowBots:      options.AllowBots,
 		warn:           onceEach(func(message string) { logger.Warn(message) }),
 	}, nil
 }
@@ -180,6 +190,13 @@ func (c *Core[Req]) Blocking() bool { return len(c.condition) > 0 }
 // does not serve, with OnMissingField set to error. A failed LOOKUP is not an
 // error here: it lands on Lookup.Err and the request is let through.
 func (c *Core[Req]) Evaluate(ctx context.Context, request Req) (*Lookup, error) {
+	return c.EvaluateAgent(ctx, request, "")
+}
+
+// EvaluateAgent is Evaluate for an adapter that reads the request's own
+// User-Agent header, which AllowBots sends with the lookup. Off, the agent is
+// never sent.
+func (c *Core[Req]) EvaluateAgent(ctx context.Context, request Req, userAgent string) (*Lookup, error) {
 	if c.skip != nil && c.skip(request) {
 		return nil, nil
 	}
@@ -202,7 +219,13 @@ func (c *Core[Req]) Evaluate(ctx context.Context, request Req) (*Lookup, error) 
 
 	lookupCtx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
-	result, err := c.client.Lookup(lookupCtx, ip, internetdata.Retries(c.retries))
+	options := []internetdata.LookupOption{internetdata.Retries(c.retries)}
+	agent := ""
+	if c.allowBots {
+		agent = strings.TrimSpace(userAgent)
+		options = append(options, internetdata.UserAgent(agent))
+	}
+	result, err := c.client.Lookup(lookupCtx, ip, options...)
 	if err != nil {
 		return &Lookup{IP: ip, Err: err, Blocked: c.failClosed}, nil
 	}
@@ -211,10 +234,18 @@ func (c *Core[Req]) Evaluate(ctx context.Context, request Req) (*Lookup, error) 
 			return nil, err
 		}
 	}
+	if agent != "" && !result.IsBogon && result.UserAgent == nil {
+		if err := c.report("AllowBots sent the request's user agent, and the answer carries no " +
+			"user_agent verdict, so no crawler is let through: a keyless client, or a free key " +
+			"past its trial, is never answered one"); err != nil {
+			return nil, err
+		}
+	}
+	verified := agent != "" && result.UserAgent != nil && result.UserAgent.Verdict == internetdata.VerdictVerified
 	return &Lookup{
 		IP:      ip,
 		Result:  result,
-		Blocked: len(c.condition) > 0 && Matches(c.condition, result),
+		Blocked: len(c.condition) > 0 && !verified && Matches(c.condition, result),
 	}, nil
 }
 
@@ -226,10 +257,18 @@ func (c *Core[Req]) reportMissing(result *internetdata.Result) error {
 	if len(missing) == 0 {
 		return nil
 	}
-	message := fmt.Sprintf("block condition names %s, which your plan does not include, so "+
+	return c.report(fmt.Sprintf("block condition names %s, which your plan does not include, so "+
 		"those terms can never match; an absent member means \"not in your plan\", not "+
-		"\"checked, and no\"", strings.Join(missing, ", "))
-	if c.onMissingField == MissingFieldError {
+		"\"checked, and no\"", strings.Join(missing, ", ")))
+}
+
+// report says what the plan does not serve as OnMissingField asks: an error,
+// a warning once, or nothing.
+func (c *Core[Req]) report(message string) error {
+	switch c.onMissingField {
+	case MissingFieldIgnore:
+		return nil
+	case MissingFieldError:
 		return errors.New("internetdata: " + message)
 	}
 	c.warn(message)
