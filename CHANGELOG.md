@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.18.1 - 2026-11-26
+
+### Fixes
+
+- Refuse a user agent on the AS and domain lookups ([`d5f2d6b`](https://github.com/internetdata/sdk-go/commit/d5f2d6bdfb9251aefc56fe9bc698bb4eb2e4eae9))
+
 ## 2.18.0 - 2026-11-25
 
 ### Features
