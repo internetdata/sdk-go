@@ -21,7 +21,7 @@ import internetdata "github.com/internetdata/sdk-go/v2"
 
 ## Usage
 
-**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay, a bot, anycast, a carrier or satellite network, or runs SSH, SMTP, a web server, a DNS resolver or BitTorrent, with no daily or monthly cap.
+**No API key needed to start.** Unlimited, the free plan, answers where an address is, the AS and company behind it, its abuse contact, and whether it's a Tor exit, a relay or anycast, with no daily or monthly cap.
 
 ```go
 client, err := internetdata.New()
@@ -361,7 +361,7 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited answers `IsBot` without `Bot`, and leaves out `IsVpn`, `IsHosting`, `IsCdn` and the four proxy flags, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its trial is spent. A paid key's carries `CapReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A `nil` pointer means "not in your plan", not "checked, and no".
+Beyond the members every plan answers, each field is a pointer, because your key decides which of them the API sends, and so is each paid field inside a shared object, such as `Location.City` or `Abuse.Phone`. Unlimited leaves out `IsVpn`, `IsHosting`, `IsCdn`, the four proxy flags, the eight service flags (`IsBot`, `IsCarrier`, `IsSatellite`, `IsSSH`, `IsSMTP`, `IsWeb`, `IsDNSResolver` and `IsBittorrent`), the AS's type, the detail behind each flag but Tor's and relay's, and the whois record; a free-plan key's answer carries `TrialExpired`, true once its trial is spent. A paid key's carries `CapReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A `nil` pointer means "not in your plan", not "checked, and no". The eight service flags and `Asn.Type` keep the plain `bool` and `string` they had, until the next major, so on Unlimited they read `false` and empty, which is "not in your plan" as well; the `middleware` package reads them as absent.
 
 ```go
 internetdata.BoolValue(result.IsVpn)        // when you only want the flag

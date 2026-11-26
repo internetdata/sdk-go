@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	internetdata "github.com/internetdata/sdk-go/v2"
 	"github.com/internetdata/sdk-go/v2/middleware"
 )
 
@@ -126,13 +127,17 @@ func TestAPaidMemberInsideAnObjectEveryPlanGetsIsWarnedAboutByItsPath(t *testing
 	}
 }
 
-// is_bot is on every plan, so a bot condition decides on a keyless answer too.
-func TestAnIsBotConditionBlocksABotsAddressAndPassesAnother(t *testing.T) {
+// is_bot is a paid plan's: a bot condition blocks a bot's address on one, and
+// on Unlimited, whose answer carries no is_bot, it is reported once and blocks
+// nothing, though the attached IsBot reads false there.
+func TestAnIsBotConditionBlocksABotsAddressAndIsReportedOnUnlimited(t *testing.T) {
 	for name, blocked := range map[string]bool{"paid-bot": true, "unlimited-answer": false} {
 		origin := serving(t, lookupBody(t, name), nil)
+		var warnings strings.Builder
 		core, err := middleware.New(middleware.Options[string]{
 			BaseURL:        origin.URL,
 			BlockCondition: middleware.Conditions{{"is_bot": true}},
+			Logger:         slog.New(slog.NewTextHandler(&warnings, nil)),
 		}, selectorOf(publicIP))
 		if err != nil {
 			t.Fatalf("New: %v", err)
@@ -147,6 +152,57 @@ func TestAnIsBotConditionBlocksABotsAddressAndPassesAnother(t *testing.T) {
 		if lookup.Blocked != blocked {
 			t.Errorf("%s: Blocked = %v, want %v", name, lookup.Blocked, blocked)
 		}
+		if warned := strings.Contains(warnings.String(), "is_bot"); warned == blocked {
+			t.Errorf("%s: warned = %v (%q), want a warning naming is_bot on Unlimited alone", name, warned, warnings.String())
+		}
+	}
+}
+
+// A Result built by hand was served in full, so each of the eight reads as the
+// value it holds, and a bot condition decides on it.
+func TestAResultBuiltByHandHasEveryMemberServed(t *testing.T) {
+	result := &internetdata.Result{LookupResponse: internetdata.LookupResponse{IsBot: true}}
+	conditions := middleware.Conditions{{"is_bot": true}}
+	if !middleware.Matches(conditions, result) {
+		t.Error("a hand-built bot did not match an is_bot condition")
+	}
+	if missing := middleware.MissingMembers(conditions, result); len(missing) != 0 {
+		t.Errorf("MissingMembers = %v, want none", missing)
+	}
+}
+
+// The AS's type is a paid plan's too, and is reported by its path.
+func TestAnAsnTypeTheAnswerDoesNotCarryIsReportedByItsPath(t *testing.T) {
+	body := lookupBody(t, "unlimited-answer")
+	asn := map[string]any{}
+	for key, value := range body["asn"].(map[string]any) {
+		if key != "type" {
+			asn[key] = value
+		}
+	}
+	body["asn"] = asn
+	origin := serving(t, body, nil)
+	core, err := middleware.New(middleware.Options[string]{
+		BaseURL:        origin.URL,
+		BlockCondition: middleware.Conditions{{"asn": middleware.BlockCondition{"type": middleware.AnyOf("hosting", "")}}},
+		OnMissingField: middleware.MissingFieldError,
+	}, selectorOf(publicIP))
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if _, err := core.Evaluate(t.Context(), "request"); err == nil || !strings.Contains(err.Error(), "asn.type") {
+		t.Errorf("Evaluate = %v, want an error naming asn.type", err)
+	}
+	client, err := internetdata.New(internetdata.WithBaseURL(origin.URL))
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	result, err := client.Lookup(t.Context(), publicIP)
+	if err != nil {
+		t.Fatalf("Lookup: %v", err)
+	}
+	if middleware.Matches(middleware.Conditions{{"asn": middleware.BlockCondition{"type": middleware.AnyOf("hosting", "")}}}, result) {
+		t.Error("an AS type the answer does not carry matched its empty value")
 	}
 }
 

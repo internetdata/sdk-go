@@ -696,6 +696,15 @@ func assertEmpty(t *testing.T, answer reflect.Value, wire string) {
 	}
 }
 
+// The eight members held at their public type, a bool, until the next major:
+// Unlimited's answer stopped carrying them on 2026-11-26, and an absent one
+// reads false there, as every Unlimited answer said for each before. Result's
+// unserved, which the middleware package reads, is what tells the two apart.
+var heldAtTheirPublicType = []string{
+	"is_bot", "is_carrier", "is_satellite", "is_ssh",
+	"is_smtp", "is_web", "is_dns_resolver", "is_bittorrent",
+}
+
 // assertAbsent holds a member to nil: not in this plan, never false or zero.
 func assertAbsent(t *testing.T, answer reflect.Value, wire string) {
 	t.Helper()
@@ -704,6 +713,13 @@ func assertAbsent(t *testing.T, answer reflect.Value, wire string) {
 		name = wire
 	}
 	member := wireField(t, answer, name)
+	if !nested && slices.Contains(heldAtTheirPublicType, wire) {
+		if member.Kind() != reflect.Bool || member.Bool() {
+			t.Errorf("%s is held at its public type, so an absent one must read false, not %+v",
+				wire, member.Interface())
+		}
+		return
+	}
 	if member.Kind() != reflect.Pointer {
 		t.Errorf("%s is not optional, so it cannot express absent-versus-false", wire)
 		return

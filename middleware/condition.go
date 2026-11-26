@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	internetdata "github.com/internetdata/sdk-go/v2"
+	"github.com/internetdata/sdk-go/v2/internal/held"
 )
 
 // BlockCondition is what makes a request worth blocking, written in the shape
@@ -80,12 +81,23 @@ type anyOf []any
 // therefore be blocked.
 func Matches(conditions Conditions, result *internetdata.Result) bool {
 	value := reflect.ValueOf(result).Elem()
+	unserved := unservedBy(result)
 	for _, one := range conditions {
-		if matchesStruct(one, value) {
+		if matchesStruct(one, value, "", unserved) {
 			return true
 		}
 	}
 	return false
+}
+
+// The wire paths the answer left out although the member's Go type is not
+// optional (is_bot on Unlimited), which are absent whatever the value reads.
+func unservedBy(result *internetdata.Result) map[string]bool {
+	paths := map[string]bool{}
+	for _, path := range held.Unserved(result) {
+		paths[path] = true
+	}
+	return paths
 }
 
 // MissingMembers names the members a condition asks about that this answer did
@@ -99,14 +111,19 @@ func Matches(conditions Conditions, result *internetdata.Result) bool {
 // populated object carries every member the plan includes, so a member missing
 // there is one.
 //
+// A member the answer left out is absent whatever its Go type reads: is_bot and
+// the seven service flags, and asn.type, keep a bool and a string, and read
+// false and empty on Unlimited.
+//
 // A locally answered bogon needs no special case: it is synthesized in the
 // widest shape, so every member is present and nothing reads as missing.
 func MissingMembers(conditions Conditions, result *internetdata.Result) []string {
 	value := reflect.ValueOf(result).Elem()
+	unserved := unservedBy(result)
 	seen := map[string]bool{}
 	var missing []string
 	for _, one := range conditions {
-		collectMissing(one, value, "", seen, &missing)
+		collectMissing(one, value, "", unserved, seen, &missing)
 	}
 	return missing
 }
@@ -161,7 +178,7 @@ func ConstraintCount(condition any) int {
 	}
 }
 
-func collectMissing(condition BlockCondition, value reflect.Value, prefix string, seen map[string]bool,
+func collectMissing(condition BlockCondition, value reflect.Value, prefix string, unserved, seen map[string]bool,
 	missing *[]string) {
 	for member, want := range condition {
 		if ConstraintCount(want) == 0 {
@@ -169,7 +186,7 @@ func collectMissing(condition BlockCondition, value reflect.Value, prefix string
 		}
 		path := prefix + member
 		field, ok := fieldFor(value, member)
-		if !ok || isAbsent(field) {
+		if !ok || isAbsent(field) || unserved[path] {
 			if !seen[path] {
 				seen[path] = true
 				*missing = append(*missing, path)
@@ -179,18 +196,18 @@ func collectMissing(condition BlockCondition, value reflect.Value, prefix string
 		nested, isObject := want.(BlockCondition)
 		got := deref(field)
 		if isObject && got.Kind() == reflect.Struct && !isEmptyObject(got) {
-			collectMissing(nested, got, path+".", seen, missing)
+			collectMissing(nested, got, path+".", unserved, seen, missing)
 		}
 	}
 }
 
-func matchesStruct(condition BlockCondition, value reflect.Value) bool {
+func matchesStruct(condition BlockCondition, value reflect.Value, prefix string, unserved map[string]bool) bool {
 	for member, want := range condition {
 		if ConstraintCount(want) == 0 {
 			continue
 		}
 		field, ok := fieldFor(value, member)
-		if !ok || !matchesValue(want, deref(field)) {
+		if !ok || unserved[prefix+member] || !matchesValue(want, deref(field), prefix+member+".", unserved) {
 			return false
 		}
 	}
@@ -206,10 +223,10 @@ func matchesStruct(condition BlockCondition, value reflect.Value) bool {
 // A member the answer holds as a list (web's rows, pubproxy.protocols) matches
 // when any one element does, so an object term must hold within one element.
 // Through v2.16.2 the term was compared with the list itself and never matched.
-func matchesValue(want any, got reflect.Value) bool {
+func matchesValue(want any, got reflect.Value, prefix string, unserved map[string]bool) bool {
 	if got.Kind() == reflect.Slice {
 		for i := range got.Len() {
-			if matchesValue(want, deref(got.Index(i))) {
+			if matchesValue(want, deref(got.Index(i)), prefix, unserved) {
 				return true
 			}
 		}
@@ -218,7 +235,7 @@ func matchesValue(want any, got reflect.Value) bool {
 	switch w := want.(type) {
 	case anyOf:
 		for _, entry := range w {
-			if matchesValue(entry, got) {
+			if matchesValue(entry, got, prefix, unserved) {
 				return true
 			}
 		}
@@ -229,7 +246,7 @@ func matchesValue(want any, got reflect.Value) bool {
 		if got.Kind() != reflect.Struct {
 			return false
 		}
-		return matchesStruct(w, got)
+		return matchesStruct(w, got, prefix, unserved)
 	case string:
 		// Providers are lowercase slugs and countries uppercase codes on the
 		// wire, and a caller should not have to know which, so a string

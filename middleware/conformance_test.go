@@ -67,7 +67,8 @@ func TestCorpusRefusesAConditionThatConstrainsNothing(t *testing.T) {
 }
 
 // An upper bound is met by a zero, so only it tells an absent member from its
-// zero value: Unlimited's answer carries no latitude and no resproxy.
+// zero value: Unlimited's answer carries no latitude and no resproxy, and no
+// is_bot, which reads false.
 func TestAnUpperBoundOnAMemberTheAnswerDoesNotCarryNeverMatches(t *testing.T) {
 	body, err := json.Marshal(unlimitedAnswer(t))
 	if err != nil {
@@ -78,6 +79,7 @@ func TestAnUpperBoundOnAMemberTheAnswerDoesNotCarryNeverMatches(t *testing.T) {
 		{{"location": middleware.BlockCondition{"latitude": middleware.Lt(90)}}},
 		{{"resproxy": middleware.BlockCondition{"hits": middleware.Lte(7)}}},
 		{{"is_hosting": middleware.AnyOf(true, false)}},
+		{{"is_bot": middleware.AnyOf(true, false)}},
 	} {
 		if middleware.Matches(condition, result) {
 			t.Errorf("%v matched a member the answer does not carry", condition)
@@ -100,11 +102,21 @@ func resultFor(t *testing.T, bogon string, body json.RawMessage) *internetdata.R
 		}
 		return result
 	}
-	var response internetdata.LookupResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	// Served and read by the client, since what an answer left out of a member
+	// whose Go type is a bool is known to the decoder alone.
+	var answer map[string]any
+	if err := json.Unmarshal(body, &answer); err != nil {
 		t.Fatalf("parsing the fixture body: %v", err)
 	}
-	return &internetdata.Result{LookupResponse: response}
+	client, err := internetdata.New(internetdata.WithBaseURL(serving(t, answer, nil).URL))
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	result, err := client.Lookup(t.Context(), publicIP)
+	if err != nil {
+		t.Fatalf("Lookup: %v (the fixture body must be an answer the client reads)", err)
+	}
+	return result
 }
 
 // The corpus is language-neutral JSON, so a bound arrives as an object with

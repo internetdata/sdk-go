@@ -9,6 +9,15 @@
 # decoder still refuses an answer without either member (heldRequired,
 # decode.go).
 #
+# Spec 2026.11.26 made is_bot, is_carrier, is_satellite, is_ssh, is_smtp, is_web,
+# is_dns_resolver and is_bittorrent optional, and the AS's type with them
+# (Unlimited's answer carries none of them); generated as served, each bool would
+# become a *bool and Asn.Type a *string, so every caller that reads one would stop
+# compiling. The update lists put them back in required, which generates the type
+# they had; the decoder accepts an answer without them (heldOptional, decode.go),
+# and the held ones read false and empty then. Drop the actions when the spec
+# requires them again, and this file at v3.
+#
 # Spec 2026.11.23 gave 23 first_seen and last_seen members format: date;
 # generated as served, each would stop being a string and become a types.Date.
 # The decoder still refuses one that is no full-date on a real day (heldDates,
@@ -18,6 +27,19 @@ info:
   title: Public types held at their v2 shape
   version: 1.0.0
 actions:
+  - target: $.components.schemas.LookupResponse.required
+    update:
+      - is_bot
+      - is_carrier
+      - is_satellite
+      - is_ssh
+      - is_smtp
+      - is_web
+      - is_dns_resolver
+      - is_bittorrent
+  - target: $.components.schemas.Asn.required
+    update:
+      - type
   - target: $.components.schemas.Asn.required[?(@ == 'country')]
     remove: true
   - target: $.components.schemas.Asn.required[?(@ == 'rpki_status')]

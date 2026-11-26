@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/internetdata/sdk-go/v2/internal/api"
 )
 
 // Reads the JSON answer a call returns. Anything but a 2xx is classified by its
@@ -20,6 +22,33 @@ import (
 // was a bad_request sent once, a cut-off body a network error with no status,
 // and `{}` an empty catalog handed back as the answer.
 func decodeAnswer[T any](res *http.Response, err error) (*T, error) {
+	body, err := answerBody(res, err)
+	if err != nil {
+		return nil, err
+	}
+	answer, _, ok := decodeComplete[T](body)
+	if !ok {
+		return nil, unreadable(res.StatusCode, "the response was not the answer this call returns")
+	}
+	return answer, nil
+}
+
+// Reads a lookup's answer as decodeAnswer reads any other, and keeps what it
+// left out of the members LookupResponse holds at a type that cannot say so.
+func decodeLookup(res *http.Response, err error) (*Result, error) {
+	body, err := answerBody(res, err)
+	if err != nil {
+		return nil, err
+	}
+	result, ok := lookupResult(body)
+	if !ok {
+		return nil, unreadable(res.StatusCode, "the response was not the answer this call returns")
+	}
+	return result, nil
+}
+
+// The body of a 2xx, or the error its status, its transport or its reading is.
+func answerBody(res *http.Response, err error) ([]byte, error) {
 	if err != nil {
 		return nil, errorFromTransport(err)
 	}
@@ -30,39 +59,58 @@ func decodeAnswer[T any](res *http.Response, err error) (*T, error) {
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return nil, errorFromResponse(res.StatusCode, res.Header, body)
 	}
-	answer, ok := decodeComplete[T](body)
-	if !ok {
-		return nil, unreadable(res.StatusCode, "the response was not the answer this call returns")
-	}
-	return answer, nil
+	return body, nil
 }
 
-// Decodes raw as a T holding every member T requires. The answer is decoded
-// from the value complete hands back, each date-time in the spelling time.Time
-// reads, so json.Number keeps every digit of a number on the way.
-func decodeComplete[T any](raw []byte) (*T, bool) {
+// Decodes raw, one lookup's answer, as a Result.
+func lookupResult(raw []byte) (*Result, bool) {
+	answer, left, ok := decodeComplete[api.LookupResponse](raw)
+	if !ok {
+		return nil, false
+	}
+	return &Result{LookupResponse: *answer, unserved: left}, true
+}
+
+// Decodes raw as a T holding every member T requires, and names, by path, the
+// members of heldOptional it did not carry. The answer is decoded from the
+// value complete hands back, each date-time in the spelling time.Time reads, so
+// json.Number keeps every digit of a number on the way.
+func decodeComplete[T any](raw []byte) (*T, []string, bool) {
 	var value any
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.UseNumber()
 	if decoder.Decode(&value) != nil || decoder.Decode(new(any)) != io.EOF {
-		return nil, false
+		return nil, nil, false
 	}
 	value, ok := complete(reflect.TypeFor[T](), value)
 	if !ok {
-		return nil, false
+		return nil, nil, false
 	}
 	spelled, err := json.Marshal(value)
 	var answer T
 	if err != nil || json.Unmarshal(spelled, &answer) != nil {
-		return nil, false
+		return nil, nil, false
 	}
-	return &answer, true
+	return &answer, unserved(reflect.TypeFor[T](), value, ""), true
 }
 
 var (
 	unmarshaler = reflect.TypeFor[json.Unmarshaler]()
 	timeType    = reflect.TypeFor[time.Time]()
 )
+
+// The members the spec does not require that overlay.yaml keeps required, so a
+// v2 minor keeps their public types, by the Go type holding them: Unlimited's
+// answer carries none of the eight flags or the AS's type, and each reads false
+// or empty then. An answer without one is read; a member present is checked as
+// any other, and is refused as a string, a number or null.
+var heldOptional = map[reflect.Type][]string{
+	reflect.TypeFor[LookupResponse](): {
+		"is_bot", "is_carrier", "is_satellite", "is_ssh",
+		"is_smtp", "is_web", "is_dns_resolver", "is_bittorrent",
+	},
+	reflect.TypeFor[Asn](): {"type"},
+}
 
 // The members the spec requires that overlay.yaml generates as pointers, so a
 // v2 minor keeps their public types, by the Go type holding them. Each is still
@@ -167,7 +215,8 @@ func complete(t reflect.Type, raw any) (any, bool) {
 				continue
 			}
 			value, present := object[name]
-			required := field.Type.Kind() != reflect.Pointer && !strings.Contains(options, "omitempty")
+			required := field.Type.Kind() != reflect.Pointer && !strings.Contains(options, "omitempty") &&
+				!slices.Contains(heldOptional[t], name)
 			held := slices.Contains(heldRequired[t], name)
 			if (required || held) && !present || held && value == nil {
 				return raw, false
@@ -203,4 +252,27 @@ func complete(t reflect.Type, raw any) (any, bool) {
 		}
 	}
 	return raw, true
+}
+
+// Names, by path, the members of heldOptional the decoded object raw, a t, did
+// not carry, looking inside each member that is an object too (asn.type).
+func unserved(t reflect.Type, raw any, prefix string) []string {
+	object, ok := raw.(map[string]any)
+	if !ok || t.Kind() != reflect.Struct {
+		return nil
+	}
+	var left []string
+	for _, name := range heldOptional[t] {
+		if _, present := object[name]; !present {
+			left = append(left, prefix+name)
+		}
+	}
+	for i := range t.NumField() {
+		field := t.Field(i)
+		name, _, _ := strings.Cut(field.Tag.Get("json"), ",")
+		if field.Type.Kind() == reflect.Struct && field.IsExported() && name != "" && name != "-" {
+			left = append(left, unserved(field.Type, object[name], prefix+name+".")...)
+		}
+	}
+	return left
 }

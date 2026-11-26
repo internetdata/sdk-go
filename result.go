@@ -2,6 +2,7 @@ package internetdata
 
 import (
 	"github.com/internetdata/sdk-go/v2/internal/api"
+	"github.com/internetdata/sdk-go/v2/internal/held"
 )
 
 // The wire shapes a lookup answers with, re-exported so a consumer never has to
@@ -86,11 +87,31 @@ const (
 // populated one always carries every one of its keys, empty values included.
 // IsBogon is true for a private or reserved address, which the client answers
 // itself.
+//
+// IsBot, IsCarrier, IsSatellite, IsSSH, IsSMTP, IsWeb, IsDNSResolver and
+// IsBittorrent, on a paid plan or the trial, and Asn.Type with them, keep the
+// non-optional types they had until the next major: on Unlimited they read
+// false, and "" for the type, which is absent as well, though never nil. The
+// middleware package reads them as absent.
 type Result struct {
 	// The answer as it was served, with the wire's own optionality intact. Its
 	// fields are promoted, so r.IsTor and r.Location read straight off the
 	// Result.
 	LookupResponse
+
+	// The wire paths of the members the answer left out that LookupResponse
+	// cannot show as nil, which the middleware package reads through held. A
+	// Result built by hand has none, so all of them read as served.
+	unserved []string
+}
+
+func init() {
+	held.Unserved = func(result any) []string {
+		if r, ok := result.(*Result); ok && r != nil {
+			return r.unserved
+		}
+		return nil
+	}
 }
 
 // BoolValue returns the value of the bool pointer passed in, or false if the

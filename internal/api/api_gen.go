@@ -321,7 +321,7 @@ type Asn struct {
 	// RpkiStatus The announcement's RPKI status.
 	RpkiStatus *string `json:"rpki_status,omitempty"`
 
-	// Type The kind of network it runs.
+	// Type The kind of network it runs. On a paid plan or the trial.
 	Type string `json:"type"`
 }
 
@@ -1284,16 +1284,16 @@ type LookupResponse struct {
 	// IsAnycast In Anycast IP: announced from many places at once.
 	IsAnycast bool `json:"is_anycast"`
 
-	// IsBittorrent In BitTorrent IP: a BitTorrent client was seen here in the last 90 days.
+	// IsBittorrent In BitTorrent IP: a BitTorrent client was seen here in the last 90 days. On a paid plan or the trial.
 	IsBittorrent bool `json:"is_bittorrent"`
 
 	// IsBogon Reserved space, answered from the address alone.
 	IsBogon bool `json:"is_bogon"`
 
-	// IsBot In Bot IP: an automated client's address, such as a search engine's or an AI company's crawler, an uptime monitor, an internet scanner or a webhook sender. `bot` says whose, what it does and whether its operator vouches for the address.
+	// IsBot In Bot IP: an automated client's address, such as a search engine's or an AI company's crawler, an uptime monitor, an internet scanner or a webhook sender. `bot` says whose, what it does and whether its operator vouches for the address. On a paid plan or the trial.
 	IsBot bool `json:"is_bot"`
 
-	// IsCarrier In Carrier IP: a mobile carrier's address space.
+	// IsCarrier In Carrier IP: a mobile carrier's address space. On a paid plan or the trial.
 	IsCarrier bool `json:"is_carrier"`
 
 	// IsCdn In CDN IP: a content delivery network. On a paid plan or the trial.
@@ -1302,7 +1302,7 @@ type LookupResponse struct {
 	// IsDcproxy In Datacenter Proxy IP's 90-day window. On a paid plan or the trial.
 	IsDcproxy *bool `json:"is_dcproxy,omitempty"`
 
-	// IsDNSResolver In DNS Resolver IP: an open DNS resolver answered here.
+	// IsDNSResolver In DNS Resolver IP: an open DNS resolver answered here. On a paid plan or the trial.
 	IsDNSResolver bool `json:"is_dns_resolver"`
 
 	// IsHosting In Hosting IP: a hosting or cloud network. On a paid plan or the trial.
@@ -1320,13 +1320,13 @@ type LookupResponse struct {
 	// IsResproxy In Residential Proxy IP's 90-day window: a residential proxy exit. On a paid plan or the trial.
 	IsResproxy *bool `json:"is_resproxy,omitempty"`
 
-	// IsSatellite In Satellite IP: a satellite operator's address space.
+	// IsSatellite In Satellite IP: a satellite operator's address space. On a paid plan or the trial.
 	IsSatellite bool `json:"is_satellite"`
 
-	// IsSMTP In SMTP IP: a mail server answered here.
+	// IsSMTP In SMTP IP: a mail server answered here. On a paid plan or the trial.
 	IsSMTP bool `json:"is_smtp"`
 
-	// IsSSH In SSH IP: an SSH server answered here.
+	// IsSSH In SSH IP: an SSH server answered here. On a paid plan or the trial.
 	IsSSH bool `json:"is_ssh"`
 
 	// IsTor In Tor IP: a Tor exit.
@@ -1335,7 +1335,7 @@ type LookupResponse struct {
 	// IsVpn In VPN IP: a VPN service's server. On a paid plan or the trial.
 	IsVpn *bool `json:"is_vpn,omitempty"`
 
-	// IsWeb In Web IP: a web server answered here on port 80 or 443.
+	// IsWeb In Web IP: a web server answered here on port 80 or 443. On a paid plan or the trial.
 	IsWeb bool `json:"is_web"`
 
 	// Location Where the address is.
