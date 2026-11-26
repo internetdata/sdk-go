@@ -299,9 +299,19 @@ func assertAskedOnce(t *testing.T, rec *recorder, path string) {
 	}
 }
 
+// The members held at their public type until the next major: Unlimited's
+// answer stopped carrying the eight flags and the AS's type on 2026-11-26, and
+// one the wire left out reads false, or empty, as each said before.
+var heldAtTheirPublicType = map[string]bool{
+	"LookupResponse.is_bot": true, "LookupResponse.is_carrier": true, "LookupResponse.is_satellite": true,
+	"LookupResponse.is_ssh": true, "LookupResponse.is_smtp": true, "LookupResponse.is_web": true,
+	"LookupResponse.is_dns_resolver": true, "LookupResponse.is_bittorrent": true, "Asn.type": true,
+}
+
 // A member the wire carried reached the result, and one it did not is absent
 // from it, never false or zero: at the top level, and inside each object
-// served with members.
+// served with members. A held member is the one exception, and reads false or
+// empty then.
 func assertServedAsSent(t *testing.T, answer any, raw map[string]any) {
 	t.Helper()
 	value := reflect.ValueOf(answer)
@@ -309,6 +319,12 @@ func assertServedAsSent(t *testing.T, answer any, raw map[string]any) {
 		name, _, _ := strings.Cut(value.Type().Field(i).Tag.Get("json"), ",")
 		member := value.Field(i)
 		served, onTheWire := raw[name]
+		if held := heldAtTheirPublicType[value.Type().Name()+"."+name]; held && !onTheWire {
+			if !member.IsZero() {
+				t.Errorf("%s was not served and reads %v, want false or empty", name, member)
+			}
+			continue
+		}
 		if member.Kind() == reflect.Pointer && member.IsNil() {
 			if onTheWire {
 				t.Errorf("%s was served and the client dropped it", name)
