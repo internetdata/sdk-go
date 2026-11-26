@@ -242,6 +242,8 @@ func (c *Client) MyIP(ctx context.Context, opts ...LookupOption) (*Result, error
 // knows is answered with empty values.
 //
 // Not cached, and not batched: the cache and the batch are for addresses.
+// UserAgent is refused as a bad_request with nothing sent, since an AS answer
+// carries no user agent verdict.
 func (c *Client) LookupASN(
 	ctx context.Context, asn uint32, opts ...LookupOption,
 ) (*AsnLookupResponse, error) {
@@ -250,6 +252,9 @@ func (c *Client) LookupASN(
 		opt.applyLookup(&call)
 	}
 	if err := call.refused(); err != nil {
+		return nil, err
+	}
+	if err := call.refusedAgent("LookupASN"); err != nil {
 		return nil, err
 	}
 	ctx = call.carry(ctx)
@@ -265,6 +270,8 @@ func (c *Client) LookupASN(
 // normalizes it and refuses one it cannot read as a bad_request.
 //
 // Not cached, and not batched: the cache and the batch are for addresses.
+// UserAgent is refused as a bad_request with nothing sent, since a domain
+// answer carries no user agent verdict.
 func (c *Client) LookupDomain(
 	ctx context.Context, domain string, opts ...LookupOption,
 ) (*DomainLookupResponse, error) {
@@ -273,6 +280,9 @@ func (c *Client) LookupDomain(
 		opt.applyLookup(&call)
 	}
 	if err := call.refused(); err != nil {
+		return nil, err
+	}
+	if err := call.refusedAgent("LookupDomain"); err != nil {
 		return nil, err
 	}
 	ctx = call.carry(ctx)
@@ -750,7 +760,7 @@ func Timeout(d time.Duration) LookupOption {
 // whole, and the API reads its first 1024 characters.
 //
 // On a batch it is every address's agent, except one UserAgents names.
-// MyEntitlement refuses one with a bad_request *Error.
+// LookupASN, LookupDomain and MyEntitlement refuse one with a bad_request *Error.
 func UserAgent(agent string) LookupOption {
 	return userAgentOption(agent)
 }
@@ -792,6 +802,16 @@ type callConfig struct {
 func (c callConfig) refused() error {
 	if c.retries < 0 {
 		return &Error{Kind: KindBadRequest, Message: fmt.Sprintf("retries cannot be negative, got %d", c.retries)}
+	}
+	return nil
+}
+
+// refusedAgent refuses UserAgent on a call the spec gives no user_agent: the
+// option is a LookupOption, so the type admits it, and dropping it would leave
+// a caller expecting a verdict that never comes. Empty is none, as on a lookup.
+func (c callConfig) refusedAgent(call string) error {
+	if c.agent != "" {
+		return &Error{Kind: KindBadRequest, Message: call + " takes no user agent"}
 	}
 	return nil
 }

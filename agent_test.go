@@ -359,15 +359,51 @@ func TestABogonCarriesNoUserAgentAndSendsNothing(t *testing.T) {
 	}
 }
 
-func TestMyEntitlementRefusesAUserAgent(t *testing.T) {
-	origin := &agentOrigin{}
-	client := agentClient(t, origin)
-	_, err := client.MyEntitlement(context.Background(), UserAgent(googlebot))
-	var apiErr *Error
-	if !errors.As(err, &apiErr) || apiErr.Kind != KindBadRequest {
-		t.Errorf("MyEntitlement with a user agent answered %v, want a bad_request", err)
+// Only an address lookup, MyIP and a batch take an agent, as the spec does:
+// the AS, domain and entitlement calls refuse one rather than drop it, since a
+// caller who sent one expects a verdict that would never come.
+func TestTheAsDomainAndEntitlementCallsRefuseAUserAgent(t *testing.T) {
+	calls := map[string]func(*Client, ...LookupOption) error{
+		"LookupASN": func(c *Client, opts ...LookupOption) error {
+			_, err := c.LookupASN(context.Background(), 9009, opts...)
+			return err
+		},
+		"LookupDomain": func(c *Client, opts ...LookupOption) error {
+			_, err := c.LookupDomain(context.Background(), "example.com", opts...)
+			return err
+		},
+		"MyEntitlement": func(c *Client, opts ...LookupOption) error {
+			_, err := c.MyEntitlement(context.Background(), opts...)
+			return err
+		},
 	}
-	if origin.requests() != 0 {
-		t.Errorf("the refused call sent %d requests", origin.requests())
+	for name, call := range calls {
+		t.Run(name, func(t *testing.T) {
+			origin := &agentOrigin{}
+			client := agentClient(t, origin)
+			err := call(client, UserAgent(googlebot))
+			var apiErr *Error
+			if !errors.As(err, &apiErr) || apiErr.Kind != KindBadRequest {
+				t.Errorf("%s with a user agent answered %v, want a bad_request", name, err)
+			}
+			if origin.requests() != 0 {
+				t.Errorf("the refused call sent %d requests", origin.requests())
+			}
+		})
+	}
+}
+
+// An empty agent is none, on these calls as on a lookup.
+func TestTheAsDomainAndEntitlementCallsTakeAnEmptyUserAgent(t *testing.T) {
+	routes := map[string]stubRoute{
+		"asn/9009":           {body: corpusBody("asn-unlimited-answer")},
+		"domain/example.com": {body: corpusBody("domain-unlimited-answer")},
+	}
+	client := newTestClient(t, newStub(routes), WithAPIKey("k"))
+	if _, err := client.LookupASN(context.Background(), 9009, UserAgent("")); err != nil {
+		t.Errorf("LookupASN with an empty agent: %v", err)
+	}
+	if _, err := client.LookupDomain(context.Background(), "example.com", UserAgent("")); err != nil {
+		t.Errorf("LookupDomain with an empty agent: %v", err)
 	}
 }

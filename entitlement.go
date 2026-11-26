@@ -38,7 +38,8 @@ type (
 // requests are counted in memory and flushed in aggregate.
 //
 // Deliberately NOT cached: the whole point is what has been spent, and a
-// cached answer is a wrong one within seconds of the next request.
+// cached answer is a wrong one within seconds of the next request. UserAgent
+// is refused as a bad_request with nothing sent.
 func (c *Client) MyEntitlement(ctx context.Context, opts ...LookupOption) (*Entitlement, error) {
 	call := c.callConfig()
 	for _, opt := range opts {
@@ -47,9 +48,8 @@ func (c *Client) MyEntitlement(ctx context.Context, opts ...LookupOption) (*Enti
 	if err := call.refused(); err != nil {
 		return nil, err
 	}
-	// Accepted by type, since UserAgent is a LookupOption, and meaningless here.
-	if call.agent != "" {
-		return nil, &Error{Kind: KindBadRequest, Message: "MyEntitlement takes no user agent"}
+	if err := call.refusedAgent("MyEntitlement"); err != nil {
+		return nil, err
 	}
 	ctx = call.carry(ctx)
 	return withRetry(ctx, call.retries, func() (*Entitlement, error) {
