@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.19.0 - 2026-11-26
+
+### Fixes
+
+- Read a keyless answer without the bot, carrier, satellite and service flags ([`f3864a2`](https://github.com/internetdata/sdk-go/commit/f3864a2c5c3dcf11e9dc503692d2a74e29d8c8bd))
+
 ## 2.18.1 - 2026-11-26
 
 ### Fixes
