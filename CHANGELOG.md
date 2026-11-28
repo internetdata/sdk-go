@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.20.1 - 2026-11-28
+
+### Fixes
+
+- Refuse a cache TTL under 100ns instead of crashing ([`7f3bf1f`](https://github.com/internetdata/sdk-go/commit/7f3bf1f92b45efd5f9787a6ad726c49c5ae1e082))
+
 ## 2.20.0 - 2026-11-28
 
 ### Features
