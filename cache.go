@@ -10,9 +10,9 @@ import (
 const reducedTTL = time.Minute
 
 // answerCache holds each address's answer for the client's TTL. A reduced answer,
-// a spent trial's or a reached cap's, ends with a new UTC month or a raised cap, so
-// it stays a minute at most. It is still cached, or a busy process would send
-// every repeat of an address to the API.
+// a spent trial's or a reached cap's, can change as soon as the organization's
+// plan or cap does, so it stays a minute at most. It is still cached, or a busy
+// process would send every repeat of an address to the API.
 //
 // An answer is held under the address and the user agent sent with it: one
 // with an agent carries that agent's verdict, so it is kept apart from the

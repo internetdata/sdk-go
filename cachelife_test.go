@@ -1,5 +1,6 @@
-// A spent trial's or a reached cap's answer ends with a new UTC month or a raised
-// cap, so it is cached for a minute at most rather than for the client's TTL.
+// A spent trial's or a reached cap's answer can change as soon as the
+// organization's plan or cap does, so it is cached for a minute at most rather
+// than for the client's TTL.
 
 package internetdata
 
