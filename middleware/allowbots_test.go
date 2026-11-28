@@ -386,3 +386,45 @@ func TestTheMissingVerdictIsReportedOnlyForAnAgentThatWasSent(t *testing.T) {
 		}
 	}
 }
+
+// A request that sent no agent has no verdict to lack, so OnMissingField set to
+// error fails no browser. Off, a condition on the verdict is still reported.
+func TestAConditionOnTheVerdictIsNoPlanGapForARequestThatSentNoAgent(t *testing.T) {
+	forged := middleware.Conditions{{"user_agent": middleware.BlockCondition{"verdict": "spoofed"}}}
+	asPeer := func(address string) string { return address }
+	for _, agent := range []string{chrome, ""} {
+		origin := &verdictOrigin{anyVerdict: "spoofed"}
+		logs := &warnings{}
+		options := peerOptions(t, origin)
+		options.OnMissingField = middleware.MissingFieldError
+		lookup := evaluate(t, newCore(t, options, forged, logs, asPeer), crawlerPeer, agent)
+		if lookup.Blocked {
+			t.Errorf("%q was refused", agent)
+		}
+		if !slices.Equal(origin.sent, []bool{false}) {
+			t.Errorf("%q reached the origin as %q, want no agent", agent, origin.agents)
+		}
+		if len(logs.messages) != 0 {
+			t.Errorf("%q warned %q", agent, logs.messages)
+		}
+	}
+
+	options := peerOptions(t, &verdictOrigin{anyVerdict: "spoofed"})
+	options.OnMissingField = middleware.MissingFieldError
+	core := newCore(t, options, forged, nil, asPeer)
+	for n := 1; n <= 4; n++ {
+		evaluate(t, core, crawlerPeer, crawlerAgent(n))
+	}
+	if evaluate(t, core, crawlerPeer, crawlerAgent(5)).Blocked {
+		t.Error("past the bound, the agent was refused: no gap either")
+	}
+
+	logs := &warnings{}
+	off := botCore(t, &verdictOrigin{}, false, forged, logs)
+	for range 2 {
+		evaluate(t, off, "request", chrome)
+	}
+	if len(logs.messages) != 1 || !strings.Contains(logs.messages[0], "user_agent") {
+		t.Errorf("off, a condition on the verdict can never match, and says so once: %q", logs.messages)
+	}
+}

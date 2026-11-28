@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -240,7 +241,7 @@ func (c *Core[Req]) EvaluateAgent(ctx context.Context, request Req, userAgent st
 		return &Lookup{IP: ip, Err: err, Blocked: c.failClosed}, nil
 	}
 	if len(c.condition) > 0 {
-		if err := c.reportMissing(result); err != nil {
+		if err := c.reportMissing(result, c.agents != nil && claim.sent == ""); err != nil {
 			return nil, err
 		}
 	}
@@ -265,11 +266,15 @@ func (c *Core[Req]) EvaluateAgent(ctx context.Context, request Req, userAgent st
 	}, nil
 }
 
-func (c *Core[Req]) reportMissing(result *internetdata.Result) error {
+func (c *Core[Req]) reportMissing(result *internetdata.Result, sentNoAgent bool) error {
 	if c.onMissingField == MissingFieldIgnore {
 		return nil
 	}
 	missing := MissingMembers(c.condition, result)
+	if sentNoAgent {
+		// A request that sent no agent has no verdict to lack, whatever the plan serves.
+		missing = slices.DeleteFunc(missing, func(member string) bool { return member == "user_agent" })
+	}
 	if len(missing) == 0 {
 		return nil
 	}
