@@ -16,6 +16,11 @@ import (
 )
 
 type corpusData struct {
+	CrawlerAgents struct {
+		Terms    []string `json:"terms"`
+		Crawlers []string `json:"crawlers"`
+		Others   []string `json:"others"`
+	} `json:"crawlerAgents"`
 	Middleware struct {
 		Conditions []struct {
 			Name      string          `json:"name"`

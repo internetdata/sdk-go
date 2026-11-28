@@ -94,13 +94,17 @@ type Options[Req any] struct {
 	Skip func(request Req) bool
 	// Logger receives the warnings. Defaults to slog.Default().
 	Logger *slog.Logger
-	// AllowBots sends the request's own User-Agent header with its lookup,
-	// and never refuses a request whose answer's UserAgent verdict is
-	// verified, whatever BlockCondition matches; the answer is still
-	// attached. An absent or empty header sends none. A keyless client, or a
-	// free key past its trial, is never answered a verdict, so nothing is let
-	// through and OnMissingField says so once. Off by default, so the cache
-	// holds one answer per address rather than one per agent.
+	// AllowBots sends the request's own User-Agent header with its lookup
+	// when it names a crawler, and never refuses a request whose answer's
+	// UserAgent verdict is verified, whatever BlockCondition matches; the
+	// answer is still attached. Any other agent, or none, is not sent, since
+	// its verdict could only be not_bot. One address is looked up with at most
+	// MaxAgentsPerAddress crawler agents an hour: past those its lookup sends
+	// none, and a request passes as a crawler only where the answer's
+	// Bot.Verified is true. A keyless client, or a free key past its trial, is
+	// never answered a verdict, so nothing is let through and OnMissingField
+	// says so once. Off by default, so the cache holds one answer per address
+	// rather than one per agent.
 	AllowBots bool
 }
 
@@ -114,7 +118,7 @@ type Core[Req any] struct {
 	failClosed     bool
 	onMissingField MissingFieldAction
 	skip           func(Req) bool
-	allowBots      bool
+	agents         *agentLedger
 	warn           func(string)
 }
 
@@ -167,6 +171,10 @@ func New[Req any](options Options[Req], defaultIPSelector IPSelector[Req]) (*Cor
 	if logger == nil {
 		logger = slog.Default()
 	}
+	var agents *agentLedger
+	if options.AllowBots {
+		agents = newAgentLedger()
+	}
 	return &Core[Req]{
 		client:         client,
 		selector:       selector,
@@ -176,7 +184,7 @@ func New[Req any](options Options[Req], defaultIPSelector IPSelector[Req]) (*Cor
 		failClosed:     options.FailClosed,
 		onMissingField: action,
 		skip:           options.Skip,
-		allowBots:      options.AllowBots,
+		agents:         agents,
 		warn:           onceEach(func(message string) { logger.Warn(message) }),
 	}, nil
 }
@@ -220,10 +228,12 @@ func (c *Core[Req]) EvaluateAgent(ctx context.Context, request Req, userAgent st
 	lookupCtx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 	options := []internetdata.LookupOption{internetdata.Retries(c.retries)}
-	agent := ""
-	if c.allowBots {
-		agent = strings.TrimSpace(userAgent)
-		options = append(options, internetdata.UserAgent(agent))
+	var claim agentClaim
+	if c.agents != nil {
+		claim = c.agents.claim(ip, strings.TrimSpace(userAgent))
+	}
+	if claim.sent != "" {
+		options = append(options, internetdata.UserAgent(claim.sent))
 	}
 	result, err := c.client.Lookup(lookupCtx, ip, options...)
 	if err != nil {
@@ -234,14 +244,20 @@ func (c *Core[Req]) EvaluateAgent(ctx context.Context, request Req, userAgent st
 			return nil, err
 		}
 	}
-	if agent != "" && !result.IsBogon && result.UserAgent == nil {
+	if claim.sent != "" && !result.IsBogon && result.UserAgent == nil {
 		if err := c.report("AllowBots sent the request's user agent, and the answer carries no " +
 			"user_agent verdict, so no crawler is let through: a keyless client, or a free key " +
 			"past its trial, is never answered one"); err != nil {
 			return nil, err
 		}
 	}
-	verified := agent != "" && result.UserAgent != nil && result.UserAgent.Verdict == internetdata.VerdictVerified
+	verified := false
+	switch {
+	case claim.sent != "":
+		verified = result.UserAgent != nil && result.UserAgent.Verdict == internetdata.VerdictVerified
+	case claim.named:
+		verified = result.Bot != nil && internetdata.BoolValue(result.Bot.Verified)
+	}
 	return &Lookup{
 		IP:      ip,
 		Result:  result,
