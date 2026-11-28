@@ -2,6 +2,18 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.3.1 are described by their release commits.
 
+## 2.20.0 - 2026-11-28
+
+### Features
+
+- Middleware: AllowBots sends only a crawler's User-Agent, at most four an address ([`6da517a`](https://github.com/internetdata/sdk-go/commit/6da517a09277de51e1ceebf98c35240ba60b1fc1))
+
+### Fixes
+
+- Spec 2026.11.27: the free plan's trial is a window, never a UTC month ([`6a3b2e8`](https://github.com/internetdata/sdk-go/commit/6a3b2e8090d08f7205e612833937aa37997753fb))
+- Middleware: a condition on the verdict is no plan gap for a request that sent no agent ([`9bfc940`](https://github.com/internetdata/sdk-go/commit/9bfc940633452f37624d86ba67b332f6ffe9958d))
+- Middleware: a bogon's answer reports no missing member ([`d9aef0a`](https://github.com/internetdata/sdk-go/commit/d9aef0ab0a3dbe5922291474b2151bc4d6d58847))
+
 ## 2.19.0 - 2026-11-26
 
 ### Fixes
