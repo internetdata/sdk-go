@@ -705,6 +705,10 @@ var heldAtTheirPublicType = []string{
 	"is_smtp", "is_web", "is_dns_resolver", "is_bittorrent",
 }
 
+// The AS's type is held at its public type too, a string: Unlimited's AS stopped
+// carrying it, and an absent one reads empty.
+const heldAsnType = "asn.type"
+
 // assertAbsent holds a member to nil: not in this plan, never false or zero.
 func assertAbsent(t *testing.T, answer reflect.Value, wire string) {
 	t.Helper()
@@ -713,6 +717,13 @@ func assertAbsent(t *testing.T, answer reflect.Value, wire string) {
 		name = wire
 	}
 	member := wireField(t, answer, name)
+	if wire == heldAsnType {
+		if member.Kind() != reflect.String || member.String() != "" {
+			t.Errorf("%s is held at its public type, so an absent one must read empty, not %+v",
+				wire, member.Interface())
+		}
+		return
+	}
 	if !nested && slices.Contains(heldAtTheirPublicType, wire) {
 		if member.Kind() != reflect.Bool || member.Bool() {
 			t.Errorf("%s is held at its public type, so an absent one must read false, not %+v",

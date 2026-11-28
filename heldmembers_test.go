@@ -50,10 +50,10 @@ func TestAnAnswerWithoutAHeldMemberIsReadAndItReadsFalse(t *testing.T) {
 	}{
 		"nothing absent":        {whole(), nil},
 		"every flag absent":     {without(heldAtTheirPublicType, false), heldAtTheirPublicType},
-		"the AS's type absent":  {without(nil, true), []string{"asn.type"}},
-		"all nine absent":       {without(heldAtTheirPublicType, true), append(slices.Clone(heldAtTheirPublicType), "asn.type")},
+		"the AS's type absent":  {without(nil, true), []string{heldAsnType}},
+		"all nine absent":       {without(heldAtTheirPublicType, true), append(slices.Clone(heldAtTheirPublicType), heldAsnType)},
 		"one flag absent":       {without([]string{"is_ssh"}, false), []string{"is_ssh"}},
-		"Unlimited's own shape": {answerAbout("45.83.91.1", nil), heldAtTheirPublicType},
+		"Unlimited's own shape": {answerAbout("45.83.91.1", nil), append(slices.Clone(heldAtTheirPublicType), heldAsnType)},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
