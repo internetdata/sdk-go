@@ -428,3 +428,38 @@ func TestAConditionOnTheVerdictIsNoPlanGapForARequestThatSentNoAgent(t *testing.
 		t.Errorf("off, a condition on the verdict can never match, and says so once: %q", logs.messages)
 	}
 }
+
+// A bogon peer, local development behind no proxy, is answered locally in the
+// widest shape and carries no verdict, and that is no plan gap: OnMissingField
+// set to error used to answer 500 to a crawler's request there.
+func TestABogonPeerWithACrawlerAgentIsNoPlanGap(t *testing.T) {
+	forged := middleware.Conditions{{"user_agent": middleware.BlockCondition{"verdict": "spoofed"}}}
+	asPeer := func(address string) string { return address }
+	for _, peer := range []string{"127.0.0.1", "10.0.0.1", "::1"} {
+		for _, action := range []middleware.MissingFieldAction{middleware.MissingFieldError, middleware.MissingFieldWarn} {
+			origin := &verdictOrigin{anyVerdict: "spoofed"}
+			logs := &warnings{}
+			options := peerOptions(t, origin)
+			options.OnMissingField = action
+			lookup, err := newCore(t, options, forged, logs, asPeer).EvaluateAgent(context.Background(), peer, googlebot)
+			if err != nil {
+				t.Errorf("%s, %s: reported a plan gap for a bogon: %v", peer, action, err)
+				continue
+			}
+			if lookup == nil || lookup.Blocked || lookup.Result == nil || !lookup.Result.IsBogon {
+				t.Errorf("%s, %s: want an unblocked bogon answer, got %+v", peer, action, lookup)
+			}
+			for _, message := range logs.messages {
+				if strings.Contains(message, "does not include") {
+					t.Errorf("%s, %s: warned of a plan gap: %q", peer, action, message)
+				}
+			}
+			if len(origin.agents) != 0 {
+				t.Errorf("%s, %s: a bogon reached the origin: %q", peer, action, origin.agents)
+			}
+			if got := middleware.MissingMembers(forged, lookup.Result); len(got) != 0 {
+				t.Errorf("%s, %s: MissingMembers named %q for a bogon", peer, action, got)
+			}
+		}
+	}
+}

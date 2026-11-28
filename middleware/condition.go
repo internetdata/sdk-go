@@ -115,9 +115,13 @@ func unservedBy(result *internetdata.Result) map[string]bool {
 // the seven service flags, and asn.type, keep a bool and a string, and read
 // false and empty on Unlimited.
 //
-// A locally answered bogon needs no special case: it is synthesized in the
-// widest shape, so every member is present and nothing reads as missing.
+// A bogon's answer reports nothing missing: it is synthesized in the widest
+// shape, so every member is present but a user agent's verdict, which the API
+// answers for a bogon and the client does not, and which no plan gap explains.
 func MissingMembers(conditions Conditions, result *internetdata.Result) []string {
+	if result.IsBogon {
+		return nil
+	}
 	value := reflect.ValueOf(result).Elem()
 	unserved := unservedBy(result)
 	seen := map[string]bool{}
