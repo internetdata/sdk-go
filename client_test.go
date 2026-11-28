@@ -105,6 +105,23 @@ func TestNewRejectsUnusableOptions(t *testing.T) {
 	}
 }
 
+// The expirable LRU sweeps every ttl/100, so a TTL under 100ns used to make New
+// succeed and a goroutine panic a moment later, taking the process with it. A
+// bare 60, as in WithCache(1000, 60), is 60ns.
+func TestNewRefusesACacheTTLTheLRUCannotRun(t *testing.T) {
+	for _, ttl := range []time.Duration{-time.Second, 0, 1, time.Nanosecond, 60, 99 * time.Nanosecond} {
+		client, err := New(WithCache(1000, ttl))
+		if err == nil {
+			t.Errorf("WithCache(1000, %s) was accepted", ttl)
+		}
+		if client != nil {
+			t.Errorf("WithCache(1000, %s) built a client beside its error", ttl)
+		}
+	}
+	// A cache that was built would have started its sweep, and panicked, by now.
+	time.Sleep(100 * time.Millisecond)
+}
+
 // The key is the whole identity here, so a client that quietly stopped sending
 // it would fail every call with a refusal that reads like a license problem.
 func TestTheKeyIsSentAsABearerTokenOnEveryEndpoint(t *testing.T) {

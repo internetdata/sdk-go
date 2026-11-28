@@ -639,14 +639,15 @@ func WithBaseURL(rawURL string) Option {
 
 // WithCache sizes the per-client answer cache. Defaults are 10000 addresses and
 // a one hour TTL. An answer marked TrialExpired or CapReached stays a minute at
-// most.
+// most. A TTL under 100ns is refused by New: a bare number such as 60 is 60ns,
+// so write it as 60*time.Second.
 func WithCache(size int, ttl time.Duration) Option {
 	return func(c *config) error {
 		if size < 1 {
 			return fmt.Errorf("cache size must be at least 1, got %d", size)
 		}
-		if ttl <= 0 {
-			return fmt.Errorf("cache ttl must be positive, got %s", ttl)
+		if ttl < minCacheTTL {
+			return fmt.Errorf("cache ttl must be at least %s, got %s", minCacheTTL, ttl)
 		}
 		c.cacheSize, c.cacheTTL, c.cacheOff = size, ttl, false
 		return nil

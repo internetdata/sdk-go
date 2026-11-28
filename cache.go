@@ -6,6 +6,11 @@ import (
 	"github.com/hashicorp/golang-lru/v2/expirable"
 )
 
+// minCacheTTL is the shortest TTL the expirable LRU runs: it sweeps every
+// ttl/100, and a TTL under 100ns makes that a zero interval, which panics its
+// goroutine, and the process with it, after New returned.
+const minCacheTTL = 100 * time.Nanosecond
+
 // reducedTTL is the longest a spent trial's or a reached cap's answer is cached.
 const reducedTTL = time.Minute
 
